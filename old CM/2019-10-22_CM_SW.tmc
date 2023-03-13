@@ -1,0 +1,1876 @@
+//+++++++++++++++++++++++++++++++++++++++
+// Name:        CM_SW.tmc
+//
+// Description: CM software
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Changes: 
+//    1. 
+//    2. 
+//    3. 
+//    4. 
+//    5. 
+//    6. 
+//    7. 
+//    8. 
+//    9. 
+//   10. 
+//   12. 
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//************
+// Includes
+//************
+
+#Include CM_TMCLParam.tmc              // TMCL Parameters
+#Include 2019-10-22_CM_Defines.tmc     // CM   definitions
+#Include 2019-10-22_CM_Init.tmc        // CM   initialization
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// stop all motors and return
+// - stop program at the calling function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ABORT:
+    SGP     GB_CurrentState, GPbank_2, ABORTED
+    GGP     GB_errors_needle_syringe, GPbank_2          // load  error word
+    CALC    OR, BitEr_machineAborted                    // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+
+ABORT_NoReport:
+    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH     // stop quicker
+    MST     M_verticalMotor                             // Stop up down
+    MST     M_linearMotor                               // Stop 
+    MST     M_armMotor                                  // Stop
+    MST     M_pistonMotor                               // Stop fill syringe
+    MST     M_headRotateMotor                           // Stop move
+    MST     M_disposeMotor                           // Stop move
+    SIO     Out_PulseCapHolder, OutBank_2, 0            // disable capHolder motor
+    SIO     Out_CAPHolderDIR_Down, OutBank_2, 0         // reset DIR for capHolderMotor
+    SIO     Out_VibrateDIR, OutBank_2, 1                // reset DIR for 2 vibrators
+    SIO     Out_enaVibrate_0, OutBank_2, 1              // disable vibrator_1
+    SIO     Out_enaVibrate_1, OutBank_2, 1              // disable vibrator_2
+    SGP     GB_slowCapHolder, GPbank_2, 0               //  set cap holder fast move. "1" will slow for homing
+    SGP     GB_MotorIsMoving, GPbank_2, clr             
+    CSUB    RED_ON                                      // red LED
+//    DI      TI_STOPLEFT5                              //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5                             //  dipper interrupt
+    WAIT    TICKS, 0, 100                                                // wait one second for all the motors to stop
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_LOW    // Set standby current low to enable moving the rotation down
+    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT                // Set maximum acceleration
+    RST     BACK_GROUND_PROCESS                         // Stop a running TMCL program. Reset program counter and stack pointer 
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Subroutines initialized from PC
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Name: CLEAR_ALL_ERRORS  
+//
+// Summary: reset all errors
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CLEAR_ALL_ERRORS:    // func 4
+
+    RST     continueClearErrors                //Stop a running TMCL program. Reset program counter and stack pointer 
+                                               // to zero. Reset accumulator and X register to zero. Reset all flags.
+continueClearErrors:    // stack is now empty
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE  //   5 
+    SGP     GB_MotorIsMoving, GPbank_2, clr                    //  16
+    CSUB    INIT
+    CSUB    ClearErrorsRAM
+    JA      ABORT_NoReport                                     // no return stack
+
+ClearRunningErrors:   // func 84
+    CSUB    INIT
+    CSUB    ClearErrorsRAM
+
+    RSGP    GB_any_Error, GPbank_2           // restore parameter from EEPROM. Now we see if errors in EEPROM
+    GGP     GB_any_Error, GPbank_2           // read the parameter. if set, reset data in EEPROM
+    COMP    set
+    JC      NE, endClearRunningErrors
+    SGP     GB_any_Error, GPbank_2, clr        // signal error: general
+    STGP    GB_any_Error, GPbank_2             // erase any error. The errors were erased already in RAM
+                                               // in "ClearErrorsRAM", now store in eeprom if needed
+    STGP    GB_errors_needle_syringe, GPbank_2
+    STGP    GB_errors_M_verticalMotor, GPbank_2
+    STGP    GB_errors_M_linearMotor, GPbank_2
+    STGP    GB_errors_M_armMotor, GPbank_2
+    STGP    GB_errors_M_pistonMotor, GPbank_2
+    STGP    GB_errors_M_headRotateMotor, GPbank_2
+    STGP    GB_errors_M_disposeMotor, GPbank_2
+    STGP    GB_errors_M_capHolderMotor, GPbank_2
+    STGP    GB_errors_Vial_0, GPbank_2
+    STGP    GB_errors_Vial_1, GPbank_2
+    STGP    GB_errors_Vial_2, GPbank_2
+    STGP    GB_errors_Vial_3, GPbank_2
+    STGP    GB_errors_Vial_4, GPbank_2
+    STGP    GB_errors_Vial_5, GPbank_2
+    STGP    GB_errors_findHome, GPbank_2
+    STGP    GB_errors_wrong_PC_command, GPbank_2
+    STGP    GB_special_Error, GPbank_2
+
+endClearRunningErrors:
+    CSUB    GREEN_ON
+    RSUB
+
+ClearErrorsRAM:
+    SGP     GB_any_Error, GPbank_2, clr                   // signal error: general
+    SGP     GB_errors_needle_syringe, GPbank_2, clr       // 28
+    SGP     GB_errors_M_verticalMotor, GPbank_2, clr      // 30      
+    SGP     GB_errors_M_linearMotor, GPbank_2, clr        // 31
+    SGP     GB_errors_M_armMotor, GPbank_2, clr           // 32
+    SGP     GB_errors_M_pistonMotor, GPbank_2, clr        // 33
+    SGP     GB_errors_M_headRotateMotor, GPbank_2, clr    // 34
+    SGP     GB_errors_M_disposeMotor, GPbank_2, clr       // 35
+    SGP     GB_errors_M_capHolderMotor, GPbank_2, clr     // 36
+    SGP     GB_errors_Vial_0, GPbank_2, clr               // 37
+    SGP     GB_errors_Vial_1, GPbank_2, clr               // 38
+    SGP     GB_errors_Vial_2, GPbank_2, clr               // 39
+    SGP     GB_errors_Vial_3, GPbank_2, clr               // 40
+    SGP     GB_errors_Vial_4, GPbank_2, clr               // 41
+    SGP     GB_errors_Vial_5, GPbank_2, clr               // 42
+    SGP     GB_errors_findHome, GPbank_2, clr             // 43
+    SGP     GB_errors_wrong_PC_command, GPbank_2, clr     // 44
+    SGP     GB_special_Error, GPbank_2, clr               // 45
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Summary: PC initialises this program after it put the requested option
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+INIT_DRAW_DOSE:  
+
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    EI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+// clear errors and check for syringe
+    CSUB    ClearRunningErrors                 
+    CSUB    checkOkToInitDrawDoze            // check if in right state,         sets STOPPED_ON_ERROR state
+    CSUB    checkNoSyringe                   // check syringe exists,            sets STOPPED_ON_ERROR state
+    CSUB    checkCapSensor                   // check cap sensor is not blocked, sets STOPPED_ON_ERROR state
+    GGP     GB_any_Error, GPbank_2           // get any error status
+    COMP    ANY_ERROR_EXISTS                 // exists?
+    JC      EQ, returnInitDraw               // error, return (keeps STATE WAITING_INIT_DRAW_DOSE)
+    CSUB    FIND_HOMES
+    GGP     GB_LoadingHight, GPbank_2
+    CSUB    moveCoordVertical
+// extend capHolder
+    GGP     GB_armHoldsSyringe, GPbank_2                        // go to required height
+//    ACO     ARM_POS_COORD, M_armMotor                         // target position into coordinate
+//    MVP     COORD, M_armMotor, ARM_POS_COORD                  // run to coord position
+    MVPA    ABS, M_armMotor                                     // move, wait later
+waitMotors:  // wait for both                                   // **** ADD DRAW VOLUME INITIALIZATION ****
+    CSUB    waitArmMotor
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH   // Set standby current 
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH             // Set standby current
+    SGP     GB_CurrentState, GPbank_2, WAITING_DRAW_DOSE
+
+returnInitDraw:
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    DI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Summary: draw 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+DRAW_DOSE:
+
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    EI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+    CSUB    ClearRunningErrors                 
+    CSUB    checkOkToDrawDoze          // check if in right state, sets STOPPED_ON_ERROR state
+    CSUB    checkDrawVolume            // verify draw volume,      sets STOPPED_ON_ERROR state
+    GGP     GB_any_Error, GPbank_2     // get any error status
+    COMP    ANY_ERROR_EXISTS           // any error?
+    JC      EQ, returnDrawDose         // yes, return with STOPPED_ON_ERROR state
+
+    CSUB    VERIFY_READY_DRAW          // check if syringe, vial are loaded
+                                       // keeps STATE WAITING_DRAW_DOSE for easy recovery
+    GGP     GB_any_Error, GPbank_2     // get any error status
+    COMP    ANY_ERROR_EXISTS           // exists?
+    JC      NE, noErrorFound           // yes, return with WAITING_DRAW_DOSE state for easy recovery
+ // errors found
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current 
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
+    JA      returnDrawDose                                     
+
+noErrorFound: 
+    CSUB    GREEN_ON
+    CSUB    decapSyringe
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM       // Set standby cap  holder current normal
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE   // Set standby hear rotate current normal
+pullAir:
+    CSUB    startPullAir70                             // pull 70% of the air
+pullAirDone:
+    CSUB    moveBelowVial   
+    CSUB    waitPiston
+    GGP     GB_any_Error, GPbank_2     // get any error status
+    COMP    ANY_ERROR_EXISTS           // exists?
+    JC      EQ, returnDrawDose         // yes, return 
+    CSUB    insertNeedle
+pushAir:
+    CSUB    push70air
+drawAll:
+    CSUB    drawVial
+    CSUB    drawVialMoreBack
+    CSUB    moveSlowlyBottom
+    CSUB    bumpPlunger
+    CSUB    rotateDown
+    CSUB    recapSyringe
+
+//    EI      TI_STOPRIGHT5              //  dipper interrupt
+
+    CSUB    incrementCycles
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_CHECK_DONE
+
+ // in case we do not want to stop in the dose calibrator, enable following 4 lines
+ //   SGP     GB_microLtoWithdraw, GPbank_2, 0      //eliminate filling the syringe
+ //   WAIT    TICKS, 0, 200                         // now wait 2 seconds
+ //   JA      CHECK_DONE                        
+
+ returnDrawDose:
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    DI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Summary: 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CHECK_DONE:
+
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    EI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+    CSUB    ClearRunningErrors                 
+    CSUB    checkOkToCheckDone
+    CSUB    checkSyrPoppedOut                           // verify that the syringe did not pop out
+    GGP     GB_any_Error, GPbank_2                      // get any error status
+    COMP    ANY_ERROR_EXISTS                            // exists?
+    JC      EQ, returnCheckDone                         // yes, return 
+
+    GGP     GB_any_Error, GPbank_2                      // get any error status
+    COMP    ANY_ERROR_EXISTS                            // exists?
+    JC      NE, errorsOK                              // no, continue 
+    SGP     GB_CurrentState, GPbank_2, WAITING_CHECK_DONE // enable easy recovery after hand is out
+    JA      returnCheckDone                             
+
+errorsOK:
+//    DI      TI_STOPLEFT4               //  Left rotate reference
+//    DI      TI_STOPLEFT5               //  syringe pop out interrupt
+//    DI      TI_STOPRIGHT5              //  dipper interrupt
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    CSUB    INIT_DRAW_DOSE                              // initialize
+    JA      returnCheckDone  
+
+returnCheckDone:
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Summary:  checks if the vial' syrine and are ready to draw
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+VERIFY_READY_DRAW:    //  checks if syringe, vail are in place
+
+    SGP     GB_readyToDraw, GPbank_2, clr               // not ready to draw (assume)  
+    CSUB    verifySyringe
+    CSUB    verifyVIAL
+
+    GGP     GB_any_Error, GPbank_2                      // get any error status
+    COMP    ANY_ERROR_EXISTS                            // exists?
+    JC      NE, returnVerify
+ // errors
+    CSUB    setAnyErrorYellow
+    SGP     GB_CurrentState, GPbank_2, WAITING_DRAW_DOSE
+    RSUB
+returnVerify:
+    SGP     GB_readyToDraw, GPbank_2, set               // ready to draw  
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+verifySyringe:  // check the syringe status, set the global parameter
+                // according to state
+
+    GAP  AP_LeftLimitSwitchState, M_disposeMotor // check if syringe is in
+ //    GIO     In_syringeInPlace, InBankDigital_0        // V002  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      EQ, returnVerifySyringe                     // syringe is in
+
+syringeMissing:
+    GGP     GB_special_Error, GPbank_2                  // load Ver002 error word
+    CALC    OR, BitEr_SyringeMissing                    // add the error bit
+    AGP     GB_special_Error, GPbank_2                  // and write again
+    STGP    GB_special_Error, GPbank_2                  // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+
+returnVerifySyringe:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+verifyVIAL:  // check the Vial status, set the global parameter
+             // according to state
+
+//    GIO     In_VialInPlace, InBankDigital_0             // check if Vial is in
+    COMP    VIAL_IS_LOADED                              // is the Vial in?
+    JC      EQ, returnVerifyVial                        // if not, continue
+
+noVial:
+    GGP     GB_special_Error, GPbank_2                  // load the error word
+    CALC    OR, BitEr_VialMissing                       // add the error bit
+    AGP     GB_special_Error, GPbank_2                  // and write again
+    STGP    GB_special_Error, GPbank_2                  // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+
+returnVerifyVial:
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Subroutines initialized localy
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Summary: Performs axis homeing
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+FIND_HOMES:
+
+    SGP     GB_HomingDone, GPbank_2, clr       // clear homing done  
+    CSUB    checkNoSyringeFH                   // make sure no syringe is in
+    GGP     GB_any_Error, GPbank_2             // get any error status
+    COMP    ANY_ERROR_EXISTS                   // exists?
+    JC      EQ, return_FIND_HOME               // yes, return 
+    SAP     AP_MaxCurrent, M_headRotateMotor, 0        // Set absolute max. current
+    CSUB    homeLinearHolderMotor                 // Linear and Cap holders first to clear the way for vertical
+    CSUB    homeCapHolderMotor
+    CSUB    startHomePistonMotor
+    CSUB    positionVerticalMotor              // get it out of Linear and cap
+    CSUB    PositionHeadRotateMotor
+    CSUB    waitHomePistonMotor
+    SGP     GB_HomingDone, GPbank_2, set       // home done
+return_FIND_HOME:
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+positionVerticalMotor:  
+    CSUB      homeVerticalMotor                                     // to home switch upwards
+    GGP       GB_VerticalHomePos, GPbank_2
+    CSUB      moveCoordVertical
+    RSUB
+homeVerticalMotor:          // to home switch upwards
+    SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH         // Set maximum acceleration
+    SAP       AP_RefSearchMode,  M_verticalMotor, APV_RefHomeviaLeftSw   // set the kind of search just go up
+    RFS       START, M_verticalMotor                                     // Start home sw search UP, then' if reached ref, Down
+    CSUB      waitVerticalRfs
+    SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT              // Set maximum acceleration
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+homeLinearHolderMotor:  
+    SAP       AP_StandbyCurrent, M_linearMotor, STBY_CURRENT_LINEAR_HIGH   // Set standby current
+    SAP       AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
+    RFS       START, M_linearMotor                             // Start reference search
+    CSUB      waitLinearHolderRfs
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+homeCapHolderMotor:  
+    GGP     GB_CurrentState, GPbank_2   // InitDrawDoze can run if WAITING_INIT_DRAW_DOSE or if WAITING_DRAW_DOSE
+    COMP    RUNNING_INIT_DRAW_DOSE                                    // RUNNING_INIT_DRAW_DOSE?
+    JC      NE, okHomeCapHolder                                       // no, continue
+ // set vertical motor current to zero for a case that the cap holder pushes the vertical axis:
+    SAP     AP_MaxCurrent, M_headRotateMotor, 0                       // Set absolute max. current
+okHomeCapHolder:
+    SAP       AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM   // speed for search
+    SAP       AP_RefSwitchSpeed, M_armMotor, SWITCH_SPEED_ARM   // speed for final search
+    SAP       AP_RefSearchMode, M_armMotor, APV_RefLeftSwitch
+    RFS       START, M_armMotor                                 // Start reference search
+//    CSUB      waitCapHolderRfs
+    SAP       AP_MaxCurrent, M_headRotateMotor, MAX_CURRENT_ROT           // Set absolute max. current
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+homePistonMotor:                           // only to home sensor
+    CSUB      startHomePistonMotor
+    CSUB      waitPistonRfs
+    RSUB
+startHomePistonMotor:
+    SAP       AP_RefSearchMode,  M_pistonMotor, APV_RefLeftSwitch  
+    RFS       START, M_pistonMotor                                 // Start reference search
+    RSUB
+waitHomePistonMotor:                      // wait home sensor and position
+    CSUB      waitPistonRfs
+    GGP       GB_PistonHomePos, GPbank_2                           // go to required height
+    CSUB      moveCoordPiston                                      // move, wait and error if delay
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+PositionHeadRotateMotor:   
+    CSUB      HomeHeadRotateMotor
+    GGP       GB_HeadRotateHomePos, GPbank_2                       // go to required height
+    CSUB      moveCoordRotate                                      // move, wait and error if delay
+    RSUB
+HomeHeadRotateMotor:   
+    CSUB      homeHeadRotateMotorFast                                       // find fast, before slow
+    CSUB      homeHeadRotateMotorSlow                                       // find fast, before slow
+    RSUB
+homeHeadRotateMotorSlow:
+    SAP       AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT_SLOW   // speed for search slow
+    SAP       AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT_SLOW   // speed for final search
+    SAP       AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
+    RFS       START, M_headRotateMotor                                      // Start reference search
+    CSUB      waitRotateRfsVeryShort
+    RSUB
+homeHeadRotateMotorFast:   
+    SAP       AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT   // speed for search
+    SAP       AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT   // speed for final search
+    SAP       AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
+    RFS       START, M_headRotateMotor                             // Start reference search
+    CSUB      waitRotateRfs
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+verticalMotorTOerr:  
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_verticalMotor, GPbank_2         // load piston error word
+    CALC    OR, BitEr_TimeOut                           // add the error bit
+    AGP     GB_errors_M_verticalMotor, GPbank_2         // and write again
+    STGP    GB_errors_M_verticalMotor, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+   JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+LinearMotorTOerr:   
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_linearMotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                        // add the error bit
+    AGP     GB_errors_M_linearMotor, GPbank_2        // and write again
+    STGP    GB_errors_M_linearMotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+armMotorTOerr:  
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_armMotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                     // add the error bit
+    AGP     GB_errors_M_armMotor, GPbank_2        // and write again
+    STGP    GB_errors_M_armMotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+pistonMotorTOerr:   
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_pistonMotor, GPbank_2           // load piston error word
+    CALC    OR, BitEr_TimeOut                           // add the error bit
+    AGP     GB_errors_M_pistonMotor, GPbank_2           // and write again
+    STGP    GB_errors_M_pistonMotor, GPbank_2           // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+headRotateMotorTOerr:
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_headRotateMotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                            // add the error bit
+    AGP     GB_errors_M_headRotateMotor, GPbank_2        // and write again
+    STGP    GB_errors_M_headRotateMotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+disposalMotorTOerr:
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_disposeMotor, GPbank_2         // load disposal error word
+    CALC    OR, BitEr_TimeOut                          // add the error bit
+    AGP     GB_errors_M_disposeMotor, GPbank_2         // and write again
+    STGP    GB_errors_M_disposeMotor, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+capHolderMotorTOerr:
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_capHolderMotor, GPbank_2        // load disposal error word
+    CALC    OR, BitEr_TimeOut                           // add the error bit
+    AGP     GB_errors_M_capHolderMotor, GPbank_2        // and write again
+    STGP    GB_errors_M_capHolderMotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkNoSyringe:
+
+    GAP     AP_LeftLimitSwitchState, M_disposeMotor  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      NE, returnCheckNoSyringe                    // if not, continue
+    // syringe found, signal errors
+    GGP     GB_special_Error, GPbank_2                  // load the error word
+    CALC    OR, BitEr_SyringeIsIn                       // add the error bit
+    AGP     GB_special_Error, GPbank_2                  // and write again
+    STGP    GB_special_Error, GPbank_2                  // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+
+returnCheckNoSyringe:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkCapSensor:
+
+    JC      NE, returncheckCapSensor                      // if not, continue
+    // sensor is blocked, signal errors
+    SAP     AP_MaxCurrent, M_headRotateMotor, 0         // Set absolute max. current to enable fix
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_LOW   // Set absolute max. current to enable fix
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_capSensorBlocked                  // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+
+returncheckCapSensor:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkSyrPoppedOut:
+
+    GAP  AP_LeftLimitSwitchState, M_disposeMotor     // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      EQ, returnSyrPoppedOut                      // if in, continue to check vial
+ // syringe popped out, signal errors
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_syringePoppedOut                  // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      ABORT
+
+returnSyrPoppedOut:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkSyrPoppedOut3Times:
+
+    GAP     AP_LeftLimitSwitchState, M_disposeMotor  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      EQ, returnSyrPoppedOut3                     // if in, continue to check vial
+ // try again
+    WAIT    TICKS, 0, WAIT_TICKS_200ms                  // wait ticks as in A
+    GAP     AP_LeftLimitSwitchState, M_disposeMotor  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      EQ, returnSyrPoppedOut3                     // if in, continue to check vial
+ // and again
+    WAIT    TICKS, 0, WAIT_TICKS_200ms                  // wait ticks as in A
+    GAP     AP_LeftLimitSwitchState, M_disposeMotor  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      EQ, returnSyrPoppedOut3                     // if in, continue to check vial
+
+ // syringe popped out, signal errors
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_syringePoppedOut                  // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      ABORT
+
+returnSyrPoppedOut3:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkVialPoppedOut:
+
+//    GIO     In_VialInPlace, InBankDigital_0           // check if syringe is in
+    COMP    VIAL_IS_LOADED                              // is the syringe in?
+    JC      EQ, returnVialPoppedOut                     // if not, continue
+ // vial popped out, signal errors
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_VialPoppedOut                     // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      ABORT
+
+returnVialPoppedOut:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkNoSyringeFH:
+
+    GAP     AP_LeftLimitSwitchState, M_disposeMotor  // check if syringe is in
+    COMP    SYRINGE_IN_PLACE                            // is the syringe in?
+    JC      NE, noSyringeFH                             // if not, continue
+    // syringe found, signal errors
+    GGP     GB_errors_findHome, GPbank_2                // load piston error word
+    CALC    OR, BitEr_syringeIsInwhileFindHome          // add the error bit
+    AGP     GB_errors_findHome, GPbank_2                // and write again
+    STGP    GB_errors_findHome, GPbank_2                // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnCheckNoSyringeFH
+
+noSyringeFH:
+    GGP     GB_errors_findHome, GPbank_2                // load piston error word
+    CALC    OR, BitEr_syringeIsInwhileFindHome          // add the error bit
+    CALC    XOR, BitEr_syringeIsInwhileFindHome         // Clear the error bit
+    AGP     GB_errors_findHome, GPbank_2                // and write again
+    STGP    GB_errors_findHome, GPbank_2                // and store it
+
+returnCheckNoSyringeFH:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+checkDrawVolume:
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkOkToInitDrawDoze:
+
+    SGP     GB_errors_wrong_PC_command, GPbank_2, clr
+    GGP     GB_CurrentState, GPbank_2   // InitDrawDoze can run if WAITING_INIT_DRAW_DOSE or if WAITING_DRAW_DOSE
+    COMP    WAITING_INIT_DRAW_DOSE                       // WAITING_INIT_DRAW_DOSE?
+    JC      EQ, okToInitDrawDoze                         // yes, return
+    GGP     GB_CurrentState, GPbank_2                    // no, try next
+    COMP    WAITING_DRAW_DOSE                            // WAITING_DRAW_DOSE?
+    JC      EQ, okToInitDrawDoze                         // yes, return
+    // InitDrawDoze does not fit, signal errors
+    GGP     GB_errors_wrong_PC_command, GPbank_2         // load error word
+    CALC    OR, BitEr_expecting_GP5_10_OR_30             // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2         // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2         // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnCheckInitDraw
+
+okToInitDrawDoze:    
+    SGP     GB_CurrentState, GPbank_2, RUNNING_INIT_DRAW_DOSE
+
+returnCheckInitDraw:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkOkToDrawDoze:
+
+    SGP     GB_errors_wrong_PC_command, GPbank_2, clr
+    GGP     GB_CurrentState, GPbank_2                      // current state to A
+    COMP    WAITING_DRAW_DOSE
+    JC      EQ, okToDrawDoze                               // if EQ, continue
+
+ // this not is the time for DrawDose
+    GGP     GB_errors_wrong_PC_command, GPbank_2           // load  error word
+    CALC    OR, BitEr_expecting_WAITING_DRAW_DOSE          // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2           // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnCheckOkDraw
+
+okToDrawDoze:    
+    SGP     GB_CurrentState, GPbank_2, RUNNING_DRAW_DOSE
+returnCheckOkDraw:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkOkToCheckDone:
+
+    SGP     GB_errors_wrong_PC_command, GPbank_2, clr
+    GGP     GB_CurrentState, GPbank_2                      // current state to A
+    COMP    WAITING_CHECK_DONE
+    JC      EQ, okToCheckDone                              // if EQ, continue
+    // syringe found, signal errors
+    GGP     GB_errors_wrong_PC_command, GPbank_2           // load  error word
+    CALC    OR, BitEr_expecting_WAITING_CHECK_DONE         // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2           // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnOkToCheckDone
+
+okToCheckDone:    
+    SGP     GB_CurrentState, GPbank_2, RUNNING_CHECK_DONE
+returnOkToCheckDone:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+decapSyringe:    // 
+
+//    GGP     GB_NeedleDecapLen_current, GPbank_2
+    GGP     GB_LoadingHight, GPbank_2               // get reference height
+    CALC    ADD, DECAP_HEIGHT_DELTA                 // add delta for required height
+    MVPA    ABS, M_verticalMotor                    // move to location
+    CSUB    waitVertical
+    CSUB    homeCapHolderMotor                      // cap holder out of the way
+    CSUB    checkSyrPoppedOut                       // verify that the syringe did not pop out
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+startPullAir70:  //  pull 70% of the air
+
+    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    CALCX   LOAD                                        // move it to X [uStep/100uL]
+    GGP     GB_microLtoWithdraw, GPbank_2               // load the withdraw volume [uL] into A
+    CALCX   MUL                                         // A <-- A*X [uSteps*100]
+    CALC    DIV, 100                                    // now in uSteps
+    CALCX   LOAD                                        // copy to X
+    GGP     GB_airToPullBefore, GPbank_2                // get the "70%"
+    CALCX   MUL                                         // calculate 70%
+    CALC    DIV, 100                                    // now in uSteps
+    CALCX   LOAD                                        // relative uSteps in X
+    GAP     AP_ActualPosition, M_pistonMotor            // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+
+//    ACO     PISTON_POS_COORD, M_pistonMotor             // target position into coordinate #1
+//    MVP     COORD, M_pistonMotor, PISTON_POS_COORD      // run to coord 1 position
+    MVPA    ABS, M_pistonMotor                          // move, wait later
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveBelowVial:   //   
+
+    MVP     COORD, $51, BELOW_VIAL_COORD                 // interpolate down and CCW to position
+    CSUB    waitRotateLong
+    CSUB    waitVerticalLong
+    CSUB    checkSyrPoppedOut                           // verify that the syringe did not pop out
+    CSUB    checkVialPoppedOut                          // verify that the syringe did not pop out
+    CSUB    findCenterOfNeedleSensor
+    CSUB    checkBentLimit
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+findCenterOfNeedleSensor:
+
+    MVP     ABS, M_verticalMotor, VERTICAL_FOR_NEEDLE    // move head up to sensor, wait later
+ // adjust for home position
+    GGP     GB_HeadRotateHomePos, GPbank_2               // where was the cap location (80)
+    CALC    ADD, HEAD_ROTATE_NEEDLE_SEARCH               // add current rotation location (31920)
+    CSUB    moveCoordRotate                              // move, wait and error if delay
+    CSUB    waitVertical
+ // first RFS
+    SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT_SLOW   // speed for search
+    SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT_SLOW   // speed for final search
+    SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefHomeRight        // search needle  
+    RFS     START, M_headRotateMotor                                      // Start reference search
+    WAIT    RFS, M_headRotateMotor, WAIT_NEEDLE_REF      // wait till reaches location or 0.8 seconds
+    JC      ETO, secondRFSback                           // timeout occured
+    JA      endFindNeedle
+secondRFSback:
+//    MST     M_headRotateMotor
+    RFS     STOP, M_headRotateMotor                      // Start reference search
+    WAIT    RFS, M_headRotateMotor, WAIT_TICKS_SHORT     // wait till stops or 2 seconds
+    SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefHomeLeft  // search needle  
+    RFS     START, M_headRotateMotor                     // Start reference search
+    CSUB    waitRotateRfsNeedle
+endFindNeedle:
+    SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT   // speed for search
+    SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT   // speed for final search
+//    MST     M_headRotateMotor
+
+    GAP     AP_LastRefPosition, M_headRotateMotor         // get position of reference
+    AGP     GB_lastTopRefPosition, GPBank_2               // remember position of reference
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkBentLimit:
+
+    GGP     GB_lastTopRefPosition, GPBank_2                     // get current position
+    CALCX   LOAD                                                // copy adjustment to X
+    GGP     GB_CenterOfVial, GPbank_2
+    CALCX   SUB
+    CALCX   LOAD                                                // copy adjustment to X
+    AGP     GB_NeedleVialError, GPbank_2                        // save error
+    COMP    limitNeedleBentMicroS                               // error greater than limit?
+    JC      GE, stopLimitBentNeedle                             // yes, do not calculate
+    GGP     GB_NeedleVialError, GPbank_2                        // reload error
+    COMP    -limitNeedleBentMicroS                              // error less that than negative limit?
+    JC      LE, stopLimitBentNeedle
+    JA      returnFindCenter
+
+stopLimitBentNeedle:
+    CSUB    rotateDown 
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_needleBentRotate                  // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR
+    JA      ABORT_NoReport
+
+returnFindCenter:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+insertNeedle:    // 
+
+ // randomly move the needle right or left +/-20 us (+/-0.5mm)
+
+    CSUB    getRandom
+    MVPA    REL, M_headRotateMotor                        // move to random location. A holds the amount
+    CSUB    waitRotate  
+  
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
+    MVP     ABS, M_verticalMotor, VERTICAL_IN_VIAL        // insert needle into vial
+    CSUB    waitVertical
+    CSUB    checkSyrPoppedOut                             // verify that the syringe did not pop out
+    CSUB    checkVialPoppedOut                            // verify that the vial did not pop out
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+getRandom:
+    GGP     GB_RandomNumber, GPbank_0              // get a random number (0. . . 2147483647)
+    CALC    SUB, 1073741820                        // sub half to get  -107374182 to + 107374182
+    CALC    DIV, 1073741820/randomStepsToMove      // devide by to get +/-40
+    RSUB
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+push70air:    
+
+    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    CALCX   LOAD                                        // move it to X [uStep/100uL]
+    GGP     GB_microLtoWithdraw, GPbank_2               // load the withdraw volume [uL] into A
+    CALCX   MUL                                         // A <-- A*X [uSteps*100]
+    CALC    DIV, 100                                    // now in uSteps
+    CALCX   LOAD                                        // copy to X
+    GGP     GB_airToPullBefore, GPbank_2                // get the "70%"
+    CALCX   MUL                                         // calculate 70%
+    CALC    DIV, 100                                    // A = 70% in uSteps
+    CALCX   LOAD                                        // copy to X = 70% in uStep
+    GAP     AP_ActualPosition, M_pistonMotor            // get current position to A
+    CALCX   SUB                                         // add current position to required relative
+    CSUB    moveCoordPiston
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+drawVial:    // just pull to required volume
+
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW   // Set maximum positioning speed
+    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    CALCX   LOAD                                        // move it to X [uStep/100uL]
+    GGP     GB_microLtoWithdraw, GPbank_2               // load the withdraw volume [uL] into A
+    CALCX   MUL                                         // A <-- A*X [uSteps*100]
+    CALC    DIV, 100                                    // now in uSteps
+    CALCX   LOAD                                        // move it to X [uStep/100uL]
+    GAP     AP_ActualPosition, M_pistonMotor            // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    CSUB    moveCoordPiston
+
+    MVP     REL, M_pistonMotor, PISTON_MORE             // move more
+    CSUB    waitPiston
+    CSUB    waitAfterDraw
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
+returnDrawVial:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+drawVialMoreBack:    // just pull to required volume
+
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW  // Set maximum positioning speed
+  // always push for later bump
+    MVP     REL, M_pistonMotor, -BUMP_DOWN_REL          // re-push to compensate the "bump"
+    CSUB    waitPiston
+    MVP     REL, M_pistonMotor, -PISTON_MORE            // push back the 300[uL]
+    CSUB    waitPiston
+returnMoreBack: 
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitAfterDraw:
+
+    GGP     GB_DrawWaitTime, GPbank_2              // get time in [100ms]
+    WAIT    TICKS, 0, ACCUMULATOR_WAIT             // wait ticks as in A
+
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveSlowlyBottom:    // 
+ 
+    GGP     GB_BumpPosVert, GPbank_2                  // go to required height
+    CSUB    moveCoordVertical                         // move, wait and error if delay
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+bumpPlunger:   // 
+
+    MVP     REL, M_pistonMotor, BUMP_DOWN_REL           // bump piston
+// the piston bump will run in parallel to the vertical down, and wait after start of vertical
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+rotateDown:   // 
+
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
+    MVP     ABS, M_verticalMotor, VERTICAL_FOR_ROTATION                    // move head down while "bump"
+    CSUB    waitPiston
+    CSUB    waitVertical
+    MVP     COORD, $51, ABOVE_CAP_COORD              // interpolate up and CW to position
+    CSUB    waitRotateLong
+    CSUB    waitVerticalLong
+    CSUB    PositionHeadRotateMotor
+    CSUB    adjustNeedleLocaction                    // according to miss location at top
+    GGP     GB_LoadingHight, GPbank_2                // get reference height
+    CALC    ADD, DECAP_HEIGHT_DELTA                  // add delta for required height
+    MVPA    ABS, M_verticalMotor                     // move to location
+    CSUB    waitVertical
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+adjustNeedleLocaction:   //  will adjust the needle to the midle of cap CENTER_OF_VIAL
+
+    GGP     GB_NeedleVialError, GPbank_2                        // save error
+    CALCX   LOAD                                                // put adjustment in X
+    GAP     AP_ActualPosition, M_headRotateMotor
+    CALCX   SUB                                                 // now the target is with adjustment 
+    CSUB    moveCoordRotate                                     // move, wait and error if delay
+
+ // check if to add to average
+ //   GGP     GB_NeedleVialError, GPbank_2                        // reload error
+ //   COMP    RE_CALC_CENTER_OF_VIAL_LIMIT                        // error greater than limit?
+ //   JC      GE, returnAdjustNeedle                              // yes, do not calculate
+ //   GGP     GB_NeedleVialError, GPbank_2                        // reload error
+ //   COMP    -RE_CALC_CENTER_OF_VIAL_LIMIT                       // error less that than negative limit?
+ //   JC      LE, returnAdjustNeedle                              // yes, do not calculate
+
+ // calculate new Center of vial
+ // this will calculate the running average of the center of vial, according to the reading of the sensor.
+ // if AVERAGE_CENTER_VIAL_WEIGHT=100:
+ // center-of-vial = (old*99+new)/100
+ // or:   100*center = 100*old+(new-old)=100*old+error
+ // this will be calculated only for small errors
+ 
+ //   GGP     GB_MulCenterOfVial, GPbank_2                        // load it to A
+ //   CALCX   LOAD
+ //   GGP     GB_NeedleVialError, GPbank_2                        // where was the reference at vial?
+ //   CALCX   ADD
+ //   AGP     GB_MulCenterOfVial, GPbank_2                        // load into current center of vial
+ //   CALC    DIV, AVERAGE_CENTER_VIAL_WEIGHT            
+ // not implemented yet. enable 2 following lines to enable
+ //   AGP     GB_CenterOfVial, GPbank_2                         // load into current center of vial
+ //   STGP    GB_CenterOfVial, GPbank_2                         // store center of vial
+
+returnAdjustNeedle:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+recapSyringe:   // 
+
+    CSUB    checkSyrPoppedOut                              // verify that the syringe did not pop out
+    CSUB    findCapHolderAtNeedle                          // look for RFS twice and if not found, put in default setting
+    CSUB    checkSyrPoppedOut                              // verify that the syringe did not pop out
+ 
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_INTO_CAP   // Set slow positioning speed
+    MVP     ABS, M_verticalMotor, VERTICAL_BACK_TO_CENTER  // move head down into cap, where we adjust back to center 
+    CSUB    waitVertical
+ // moving head and cap holder to center
+    CSUB    checkSyrPoppedOut                              // verify that the syringe did not pop out
+    GGP     GB_HeadRotateHomePos, GPbank_2                 // go back to loading position
+    MVPA    ABS, M_headRotateMotor                         // move, wait later
+    GGP     GB_armHoldsSyringe, GPbank_2                   // go back to loading position
+    MVPA    ABS, M_armMotor                                // move, wait later
+    CSUB    waitRotate                                     // wait and error if delay
+//    CSUB    waitCapHolder                                  // wait both axis to save time
+    CSUB    checkSyrPoppedOut                              // verify that the syringe did not pop out
+ // now down to loading hight
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_INTO_CAP/2 // Set slower positioning speed
+    GGP     GB_LoadingHight, GPbank_2
+    CSUB    moveCoordVertical
+    CSUB    checkSyrPoppedOut                              // verify that the syringe did not pop out
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_ROT// Set slower positioning speed
+
+//    DI      TI_STOPLEFT5                                 //  disable syringe pop out interrupt for this stage
+    SGP     GB_inHomeCapHolderMotor, GPbank_2, set
+    CSUB    homeCapHolderMotor
+    SGP     GB_inHomeCapHolderMotor, GPbank_2, clr
+//    CSUB    checkSyrPoppedOut3Times                      // verify that the syringe did not pop out
+//    EI      TI_STOPLEFT5                                 //  enable syringe pop out interrupt after checking 3 times if still on
+    
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+findCapHolderAtNeedle:         
+// any change in this function needs to be changed in "findCenterCapHolderManual" as well
+
+    GGP     GB_RobotSerialNumber, GPbank_2                  // what is my serial number
+    GGP     GB_armHoldsSyringe, GPbank_2                    // get center of cap holder
+    CALC    ADD, ARM_HOLDER_RELATIVE_RFS                    // 40 add relative cap holder location
+moveCalHolder:
+//    CSUB    moveCoordCapHolder                              // move, wait and error if delay
+
+// cap holder looks for the home ref sensor. 
+// This sensor senses the needle and positions exactely above cap holder
+    SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM_SLOW   // speed for search
+    SAP     AP_RefSwitchSpeed, M_armMotor, SWITCH_SPEED_ARM_SLOW   // speed for final search
+    SAP     AP_RefSearchMode, M_armMotor, APV_RefHomeLeft + AVP_ReverseHomePolarity // search needle  
+    RFS     START, M_armMotor                          // Start reference search
+    WAIT    RFS, M_armMotor, WAIT_ARM_REF              // wait till reaches location or 0.8 seconds
+    JC      ETO, gotoCapHoldsSyringe                         // timeout occured
+    GAP     AP_LastRefPosition, M_armMotor             // get position of reference
+    AAP     AP_ActualPosition, M_armMotor              // copy into current location
+
+    GGP     GB_RobotSerialNumber, GPbank_2                   // what is my serial number
+    GGP     GB_NeedleAtArmOffset, GPbank_2                   // get rel center of cap holder
+    MVPA    REL, M_armMotor                            // move cap holder to center of needle
+///    CSUB    waitCapHolder
+checkBent:
+    CSUB    checkCapBentLimit                                // if more than limit, stop ABORT
+    JA      endcapHolder
+
+gotoCapHoldsSyringe:
+    RFS     STOP, M_armMotor                           // Stop reference search
+    WAIT    RFS, M_armMotor, WAIT_ARM_REF              // wait till reaches location or 0.8 seconds
+    GGP     GB_armHoldsSyringe, GPbank_2                     // go to required angle
+//    CSUB    moveCoordCapHolder                               // move, wait and error if delay
+
+endcapHolder:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkCapBentLimit:
+
+    GAP     AP_ActualPosition, M_armMotor         // get current position
+    CALCX   LOAD                                        // copy current to X
+    GGP     GB_armHoldsSyringe, GPbank_2                // load center location of cap
+    CALCX   SUB
+    CALCX   LOAD                                        // copy adjustment to X                
+    AGP     GB_NeedleArmError, GPbank_2                 // save error
+    COMP    limitArmBentMicroS                          // error greater than limit?
+    JC      GE, stopCapLimitBentNeedle                  // yes, do not calculate
+    GGP     GB_NeedleArmError, GPbank_2                 // reload error
+    COMP    -limitArmBentMicroS                         // error less that than negative limit?
+    JC      LE, stopCapLimitBentNeedle
+    JA      returnCheckCapBentLimit
+
+stopCapLimitBentNeedle:
+    GGP     GB_errors_needle_syringe, GPbank_2          // load Ver002 error word
+    CALC    OR, BitEr_needleBentCap                     // add the error bit
+    AGP     GB_errors_needle_syringe, GPbank_2          // and write again
+    STGP    GB_errors_needle_syringe, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR
+    JA      ABORT_NoReport
+
+returnCheckCapBentLimit:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+findCenterCapHolderManual:
+// any change in this function needs to be changed in "findCapHolderAtNeedle" as well
+
+ // check state
+    GGP     GB_CurrentState, GPbank_2               // current state to A
+    COMP    WAITING_DRAW_DOSE                       // initialization done
+    JC      NE, okFindCenterCap                     // if EQ, continue
+    GGP     GB_LoadingHight, GPbank_2               // get reference height
+    CALC    ADD, DECAP_HEIGHT_DELTA                 // add delta for required height
+    MVPA    ABS, M_verticalMotor                    // move to location
+    CSUB    waitVertical
+
+    GGP     GB_ArmHoldsSyringe, GPbank_2            // get center of cap holder
+    CALC    ADD, ARM_HOLDER_RELATIVE_RFS            // 40 add relative cap holder location
+moveCalHolderMan:
+//    CSUB    moveCoordCapHolder                                     // move, wait and error if delay
+
+    SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_Arm_SLOW   // speed for search
+    SAP     AP_RefSwitchSpeed, M_armMotor, SWITCH_SPEED_Arm_SLOW   // speed for final search
+    SAP     AP_RefSearchMode, M_armMotor, APV_RefHomeLeft + AVP_ReverseHomePolarity   // search needle  
+    RFS     START, M_armMotor                                      // Start reference search
+    WAIT    RFS, M_armMotor, WAIT_Arm_REF                          // wait till reaches location or 0.8 seconds
+    JC      ETO, rfsCapError                                       // timeout occured
+    GAP     AP_LastRefPosition, M_armMotor                         // get position of reference
+    AAP     AP_ActualPosition, M_armMotor                          // copy into current location
+
+    GGP     GB_NeedleAtArmOffset, GPbank_2                         // get rel center of cap holder
+    MVPA    REL, M_armMotor                                        // move cap holder to center of needle
+//    CSUB    waitCapHolder
+    JA      okFindCenterCap 
+
+rfsCapError:
+    CSUB    RED_ON
+
+okFindCenterCap:    
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+capIntoCapHolder:
+
+ // go via home sensor
+    SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT_HIGH             // Set absolute max. current
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH   // Set maximum positioning speed
+    SGP     GB_TouchedLeftRef, GPbank_2, clr                                  // wait for set interrupt when going up
+//    EI      TI_STOPLEFT4                                                    // touched interrupt
+    GGP     GB_LoadingHight, GPbank_2                                         // go to required height
+    CALC    SUB, 10 * verticalMicroStepsPerMM                                 // move above, so will touch sensor for interrupt
+    MVPA    ABS, M_verticalMotor                                              // run to above 
+    CSUB    waitVerticalLong
+    GGP     GB_LoadingHight, GPbank_2                                         // go to required height
+    MVPA    ABS, M_verticalMotor                                              // run to above 
+    CSUB    waitVertical
+//    CSUB    moveCoordVertical                                               // move, wait and error if delay
+ // check if touched sensor
+    GGP     GB_TouchedLeftRef, GPBank_2                                       // check if touched ref sensor
+    COMP    set                                                               // touched?
+    JC      NE, verticalMotorTOerr                                            // if not, stop and error
+//    DI      TI_STOPLEFT4                                                    // touched interrupt
+
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, SEARCH_SPEED_VERT        // Set maximum positioning speed
+    SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT                  // Set absolute max. current
+    CSUB    checkSyrPoppedOut                                      // verify that the syringe did not pop out
+    GGP     GB_ArmHoldsSyringe, GPbank_2                           // go to required height
+//    CSUB    moveCoordCapHolder                                     // move, wait and error if delay
+    CSUB    checkSyrPoppedOut                                      // verify that the syringe did not pop out
+    RSUB
+    
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+incrementAdjustments:
+    GGP     GB_adjustmentsTotal, GPbank_2                   // cycles so far into A
+    CALC    ADD, 1                                          // add 1 to accumulator
+    AGP     GB_adjustmentsTotal, GPbank_2                   // A to Global parameter
+    STGP    GB_adjustmentsTotal, GPbank_2                   // store it in EEPROM
+    RSUB 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+incrementCycles:
+    GGP     GB_cyclesTotal, GPbank_2                   // cycles so far into A
+    CALC    ADD, 1                                     // add 1 to accumulator
+    AGP     GB_cyclesTotal, GPbank_2                   // A to Global parameter
+    STGP    GB_cyclesTotal, GPbank_2                   // store it in EEPROM
+    RSUB 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Manual Axis movements 
+//  Use carefully, only in direct mode
+//  The movement consists of the following commands.
+//  The global parameter GP_uPulsesManual (address 19)  holds the micro-meters 
+//  or mili-degrees to go, which can be negative or positive.
+//  Before sending the next movement look if GB_MotorIsMoving (GB_16) is clear
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+VerticalManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALC    MUL, verticalMicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CALCX   LOAD                                        // move it to X [uStep]
+    GAP     AP_ActualPosition, M_verticalMotor          // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    MVPA    ABS, M_verticalMotor                         // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_verticalMotor, WAIT_TICKS_SHORT      // wait till reaches location or 2 seconds
+    JC      ETO, verticalMotorTOerr                     // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordVertical:    // 
+
+    MVPA    ABS, M_verticalMotor                         // move, wait later
+    CSUB    waitVertical
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitVertical:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_verticalMotor, WAIT_TICKS            // wait till reaches location or 10 seconds
+    JC      ETO, verticalMotorTOerr                     // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitVerticalLong:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_verticalMotor, WAIT_TICKS_LONG        // wait till reaches location or 15 seconds
+    JC      ETO, verticalMotorTOerr                      // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+ 
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitVerticalRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_verticalMotor, WAIT_TICKS_LONG         // wait end of reference search 15 seconds
+    JC      ETO, verticalMotorTOerr                       // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+ 
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+LinearHolderManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [mDeg] into A
+    CALC    MUL, linearMicroStepsPerRev                
+    CALC    DIV, 1000                                   // now in mDeg
+    CALCX   LOAD                                        // move it to X
+    GAP     AP_ActualPosition, M_linearMotor            // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    MVPA    ABS, M_linearMotor                            // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_linearMotor, WAIT_TICKS_SHORT        // wait till reaches location or 2 second
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordLinearHolder:    // 
+
+    MVPA    ABS, M_linearMotor                            // move, wait later
+    CSUB    waitLinearHolder
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitLinearHolder:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_linearMotor, WAIT_TICKS           // wait till reaches location or 10 seconds
+    JC      ETO, LinearMotorTOerr                    // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitLinearHolderRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_linearMotor, WAIT_TICKS           // wait end of reference search 15 seconds
+    JC      ETO, LinearMotorTOerr                    // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+armMotorManual:    // 
+
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2        // load the movement [mDeg] into A
+    CALC    MUL, ArmMicrostepsPerDeg                
+    CALC    DIV, 1000                             // now in mDeg
+    CALCX   LOAD                                  // move it to X 
+    GAP     AP_ActualPosition, M_armMotor         // get current position to A
+    CALCX   ADD                                   // add current position to required relative
+    MVPA    ABS, M_armMotor                         // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_armMotor, WAIT_TICKS_SHORT     // wait till reaches location or 2 seconds
+    JC      ETO, armMotorTOerr              // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordArmMotor:    // 
+
+    MVPA    ABS, M_armMotor                         // move, wait later
+    CSUB    waitArmMotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitArmMotor:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_armMotor, WAIT_TICKS            // wait till reaches location or 10 seconds
+    JC      ETO, armMotorTOerr                     // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitArmMotorRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_armMotor, WAIT_TICKS           // wait end of reference search 15 seconds
+    JC      ETO, armMotorTOerr                    // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+PistonManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALC    MUL, pistonMicroStepsPerMM           
+    CALC    DIV, 1000                                   // now in uSteps
+    CALCX   LOAD                                        // move it to X [uStep]
+    GAP     AP_ActualPosition, M_pistonMotor            // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    MVPA    ABS, M_pistonMotor                            // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_pistonMotor, WAIT_TICKS_SHORT        // wait till reaches location or 2 seconds
+    JC      ETO, pistonMotorTOerr                       // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordPiston:    // 
+
+    MVPA    ABS, M_pistonMotor                            // move, wait later
+    CSUB    waitPiston
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitPiston:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_pistonMotor, WAIT_TICKS              // wait till reaches location or 10 seconds
+    JC      ETO, pistonMotorTOerr                       // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitPistonRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_pistonMotor, WAIT_TICKS             // wait end of reference search 15 seconds
+    JC      ETO, pistonMotorTOerr                      // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+RotationManual:    // 
+
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current 
+    SAP     AP_LeftLimitSwitchDisable, M_headRotateMotor, set           // Disable left limit switch
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [mDeg] into A
+    CALC    MUL, rotateMicrostepsPerDeg                 // 
+    CALC    DIV, 1000                                   // now in mDeg
+    CALCX   LOAD                                        // move it to X 
+    GAP     AP_ActualPosition, M_headRotateMotor        // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    MVPA    ABS, M_headRotateMotor                        // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_headRotateMotor, WAIT_TICKS_SHORT    // wait till reaches location or 2 seconds
+    JC      ETO, headRotateMotorTOerr                   // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordRotate:    // 
+
+    MVPA    ABS, M_headRotateMotor                        // move, wait later
+    CSUB    waitRotate
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotate:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_headRotateMotor, WAIT_TICKS          // wait till reaches location or 10 seconds
+    JC      ETO, headRotateMotorTOerr                   // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotateLong:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_headRotateMotor, WAIT_TICKS_LONG     // wait till reaches location or 10 seconds
+    JC      ETO, headRotateMotorTOerr                   // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotateRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_headRotateMotor, WAIT_TICKS_LONG     // wait end of reference search 15 seconds
+    JC      ETO, headRotateMotorTOerr                   // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotateRfsShort:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_headRotateMotor, WAIT_TICKS_SHORT   // wait end of reference search 15 seconds
+    JC      ETO, headRotateMotorTOerr                  // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotateRfsNeedle:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_headRotateMotor, WAIT_TICKS_NEEDLE   // wait end of reference search 15 seconds
+    JC      ETO, headRotateMotorTOerr                   // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitRotateRfsVeryShort:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_headRotateMotor, WAIT_TICKS_VERY_SHORT   // wait end of reference search 15 seconds
+    JC      ETO, headRotateMotorTOerr                       // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+DisposalManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALC    MUL, disposeMicroStepsPerMM           
+    CALC    DIV, 1000                                   // now in uSteps
+    CALCX   LOAD                                        // move it to X [uStep]
+    GAP     AP_ActualPosition, M_disposeMotor        // get current position to A
+    CALCX   ADD                                         // add current position to required relative
+    MVPA    ABS, M_disposeMotor                        // move, wait later
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_disposeMotor, WAIT_TICKS_SHORT    // wait till reaches location or 2 seconds
+    JC      ETO, disposalMotorTOerr                     // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveCoordDisposable:    // 
+
+    MVPA    ABS, M_disposeMotor                        // move, wait later
+    CSUB    waitPiston
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitDisposable:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    POS, M_disposeMotor, WAIT_TICKS          // wait till reaches location or 10 seconds
+    JC      ETO, disposalMotorTOerr                     // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitDisposableRfs:    // 
+
+    SGP     GB_MotorIsMoving, GPbank_2, set
+    WAIT    RFS, M_disposeMotor, WAIT_TICKS         // wait end of reference search 15 seconds
+    JC      ETO, disposalMotorTOerr                    // timeout occured
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CapHolderManual:   // FUNC 140   
+
+//   GB_UnitsToMoveManual             = 19    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
+//   GB_CapHolderPulses               = 55    
+//   GB_slowCapHolder                 = 88
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_19 load the movement [uMeter] into A
+    CALC    MUL, capHolderMicroStepsPerMM           
+    CALC    DIV, 1000                                   // now in uSteps
+    CALCVA  LOAD, GB_CapHolderPulses                    // The required pulses in GB
+    SGP     GB_MotorIsMoving, GPbank_2, set
+// check direction
+    SIO     Out_CAPHolderDIR_Down, OutBank_2, set       // assume "down", positive steps
+    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_19 load the movement [uMeter] into A
+    COMP    0
+    JC      GE, CapGoDownwards                          // as assumed
+// change to UP
+    SIO     Out_CAPHolderDIR_Down, OutBank_2, clr       // assume positive steps, go up
+    CALCV   MUL, GB_CapHolderPulses, -1                 // change pulses to absolute
+CapGoDownwards:
+// move the motor
+nextStep:
+// check if to test sensor
+    GIO     Out_CAPHolderDIR_Down, InBankOuput_2
+    COMP    1
+    JC      EQ, noCheckCapSensor                        // going down, don't check sensor
+    GIO     In_capHolderHome, InBankDigital_0                 
+    COMP    0                             
+    JC      EQ, exitCapHolderManual                     // reached home sensor, exit
+noCheckCapSensor:
+    SIO     Out_PulseCapHolder, OutBank_2, 0            // pulse up
+    SIO     Out_PulseCapHolder, OutBank_2, 1            // pulse down
+    GGP     GB_slowCapHolder, GPbank_2                  // move slowy?
+    COMP    0
+    JC      ZE, fastLoop
+    WAIT    TICKS, 0, 1                                 // wait 10 ms
+fastLoop:
+    DJNZ    GB_CapHolderPulses, nextStep                //  if not zero: decrement and jump 
+exitCapHolderManual:
+    SGP     GB_MotorIsMoving, GPbank_2, clr
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// VIBRATE
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+defaultVibrate:   // func 126
+    SGP    GB_vibrationTime_4, GPbank_2, 3
+    SGP    GB_vibrationTime_56, GPbank_2, 2
+    SGP    GB_vibrationHz, GPbank_2, 25
+    SGP    GB_vibrationStrengthLevel, GPbank_2, 2
+    SGP    GB_vibrationStrengthLevel, GPbank_2, 2
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+StopVibrate:   // FUNC 120   
+    CALCV  LOAD, GB_vibrationTime_4_calc, 0
+    CALCV  LOAD, GB_vibrationTime_56_calc, 0
+    SIO    Out_enaVibrate_0, GPbank_2, 1           // switch off OUT0 high vibrator 0
+    SIO    Out_enaVibrate_1, GPbank_2, 1           // switch off OUT1 high vibrator 1
+    DI     TI_TIMER0           // enable the timer for cycle (duty cycle enabled at interrupt
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Vibrate:   // FUNC 114   
+//GB_vibrationTime_4           = 114
+//GB_vibrationTime_4_calc      = 115
+//GB_vibrationTime_56          = 116
+//GB_vibrationTime_56_calc     = 117
+//GB_vibrationStrengthLevel    = 123        // 1/2/3/4
+//GB_vibrationStrengthPercent  = 119        // set up %
+//GB_PwmDutyCycleMS            = 120        // calculated [ms]
+//GB_vibrator4done             = 121
+//GB_vibrator56done            = 122
+//  STRENGTH_1                       =  5   // % pwm
+//  STRENGTH_2                       = 10   // % pwm
+//  STRENGTH_3                       = 15   // % pwm
+//  STRENGTH_4                       = 20   // % pwm
+//  STRENGTH_5                       = 25   // % pwm
+//GB_vibrationCycleMS          = 124        // ms
+//GB_vibrationHz               = 125        // data input
+
+ 
+//  reset current vibration
+    DI     TI_TIMER0     
+    DI     TI_TIMER1 
+    DI     TI_TIMER2 
+    SGP    GB_vibrator4done, GPbank_2, 1
+    SGP    GB_vibrator56done, GPbank_2, 1
+    SGP    GB_vibrationTime_4_calc, GPbank_2, 0
+    SGP    GB_vibrationTime_56_calc, GPbank_2, 0
+    SIO    Out_enaVibrate_0, GPbank_2, 1           // switch off OUT0 high vibrator 0
+    SIO    Out_enaVibrate_1, GPbank_2, 1           // switch off OUT1 high vibrator 1
+// check values validity
+    GGP      GB_vibrationStrengthLevel, GPbank_2
+    COMP     1                                      // acceptable values 1-4
+    JC       LT, errorVibrateParameter
+    GGP      GB_vibrationStrengthLevel, GPbank_2
+    COMP     10
+    JC       GT, errorVibrateParameter
+    GGP      GB_vibrationHz, GPbank_2
+    COMP     100
+    JC       GT, errorVibrateParameter
+    GGP      GB_vibrationHz, GPbank_2
+    COMP     4
+    JC       LT, errorVibrateParameter
+    GGP      GB_vibrationTime_4, GPbank_2
+    COMP     0
+    JC       LT, errorVibrateParameter
+    GGP      GB_vibrationTime_56, GPbank_2
+    COMP     0
+    JC       LT, errorVibrateParameter
+// load parameters
+    CALCVV   LOAD, GB_vibrationTime_4_calc, GB_vibrationTime_4
+    CALCVV   LOAD, GB_vibrationTime_56_calc, GB_vibrationTime_56
+// calculate cycle time from HZ
+    CALC     LOAD, 500                     // load 500 to A
+    CALCAV   DIV, GB_vibrationHz           // A=500 / HZ = ms
+    CALCVA   LOAD, GB_vibrationCycleMS     // load into GB
+// calculate duty cycle time
+    CALCVV   LOAD, GB_vibrationStrengthPercent, GB_vibrationStrengthLevel
+    CALCV    MUL, GB_vibrationStrengthPercent, 10                  // 1->10 ... 10->100 // 1->5%, 2->10%, 3->15%, 4->20%, 5->25%
+    CALCVV   LOAD, GB_PwmDutyCycleMS, GB_vibrationCycleMS          // ms
+    CALCVV   MUL, GB_PwmDutyCycleMS, GB_vibrationStrengthPercent   // ms * %
+    CALCV    DIV, GB_PwmDutyCycleMS, 100                           // :100 = ms
+
+    SGP    GB_vibrator4done, GPbank_2, 0     // will sign when it finished
+    SGP    GB_vibrator56done, GPbank_2, 0    // will sign when it finished
+    CSUB   initInterrups                     // re-initialize
+    JA     endVibrate
+
+errorVibrateParameter:
+    GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
+    CALC    OR, BitEr_vibrateParemeterError             // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
+    CSUB    setStateSTOPPED_ON_ERROR
+    JA      ABORT_NoReport
+    
+endVibrate:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  calibration functions  
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+HomeCalibration:
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_verticalMotor
+    JC      EQ, calibMotorVertical
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_linearMotor
+    JC      EQ, calibMotorLinear
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_armMotor
+    JC      EQ, calibMotorCap
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_pistonMotor
+    JC      EQ, calibMotorPiston
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_headRotateMotor
+    JC      EQ, calibMotorRotate
+    JA     returnHomeCalibration
+
+calibMotorVertical:
+    CSUB   homeVerticalMotor
+    JA     returnHomeCalibration
+
+calibMotorLinear:
+    CSUB   homeLinearHolderMotor
+    JA     returnHomeCalibration
+
+calibMotorCap:
+    CSUB   homeCapHolderMotor
+    JA     returnHomeCalibration
+
+calibMotorPiston:
+    CSUB   homePistonMotor
+    JA     returnHomeCalibration
+
+calibMotorRotate:
+    CSUB   HomeHeadRotateMotor
+//    JA     returnHomeCalibration
+
+returnHomeCalibration:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setCenterOfSeptum:
+
+    GAP     AP_ActualPosition, M_headRotateMotor
+    COMP    31500                                        // syringe holder should be on the vial sensor
+    JC      GT, atCorrectAngle  
+  // location error
+    GGP     GB_errors_M_headRotateMotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_calibrationErr                     // add the error bit
+    AGP     GB_errors_M_headRotateMotor, GPbank_2        // and write again
+    STGP    GB_errors_M_headRotateMotor, GPbank_2        // and store it
+    CSUB    setStateSTOPPED_ON_ERROR
+    JA      ABORT_NoReport
+
+atCorrectAngle:
+    GGP     GB_HeadRotateHomePos, GPbank_2         // where was the cap location (80)
+    CALC    ADD, HEAD_ROTATE_NEEDLE_SEARCH         // add current rotation location 
+    CSUB    moveCoordRotate                        // move, wait and error if delay
+//    MVP     REL, M_headRotateMotor, -100         // get out of sensor
+//    CSUB    waitRotateLong
+    CSUB    findCenterOfNeedleSensor               // find the center of the sensor
+    GGP     GB_lastTopRefPosition, GPbank_2        // where was the location?
+//    AGP     GB_CenterOfVial, GPbank_2            // set the global parameter
+//    STGP    GB_CenterOfVial, GPbank_2
+    AAP     AP_ActualPosition, M_headRotateMotor   // set the axis parameter
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+DoseCalibratorCheck:
+
+ // check syringe
+    CSUB    checkNoSyringe                   // check syringe exists, sets STOPPED_ON_ERROR state
+    GGP     GB_any_Error, GPbank_2           // get any error status
+    COMP    ANY_ERROR_EXISTS                 // exists?
+    JC      EQ, returnDoseCalibCheck         // error, return             
+ // check state
+    GGP     GB_CurrentState, GPbank_2                      // current state to A
+    COMP    WAITING_DRAW_DOSE                              // initialization complete?
+    JC      EQ, okClearCalibrator                          // if EQ, continue
+    // syringe found, signal errors
+    GGP     GB_errors_wrong_PC_command, GPbank_2           // load  error word
+    CALC    OR, BitEr_expecting_WAITING_DRAW_DOSE          // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2           // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
+    CSUB    setAnyErrorYellow
+    JA      returnDoseCalibCheck
+
+okClearCalibrator:    
+
+    CSUB    homeCapHolderMotor
+    CSUB    homeLinearHolderMotor                       // Cap holders first to clear the way for vertical
+    SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT_HIGH           // Set absolute max. current
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
+    GGP     GB_VerticalHomePos, GPbank_2 
+    CSUB    moveCoordVertical                                     // move, wait and error if delay
+    MVP     ABS, M_headRotateMotor, HEAD_ROTATE_CALIBRATOR_CHECK  // go to 90 degrees right
+    CSUB    waitRotateLong
+    SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT      // Set absolute max. current back
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_DRAW_DOSE
+
+returnDoseCalibCheck:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setStateSTOPPED_ON_ERROR:
+
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    CSUB    setAnyError
+    RSUB
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setStateSTOPPED_ON_ERROR_Yellow:
+
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    CSUB    setAnyErrorYellow
+    RSUB
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setAnyError:
+
+    SGP     GB_any_Error, GPbank_2, set                  // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    RED_ON
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setAnyErrorYellow:
+
+    SGP     GB_any_Error, GPbank_2, set                  // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    YELLOW_ON
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+clrAnyError:
+
+    SGP     GB_any_Error, GPbank_2, clr                  // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    GREEN_ON
+    RSUB
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GREEN_ON:
+    SIO     Out_RedLED, OutBank_2, LED_OFF                   // turn off red led
+    SIO     Out_GreenLED, OutBank_2, LED_ON                  // turn on green led
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+RED_ON:
+    SIO     Out_RedLED, OutBank_2, LED_ON                    // turn on red led
+    SIO     Out_GreenLED, OutBank_2, LED_OFF                 // turn off green led
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+YELLOW_ON:
+    SIO     Out_RedLED, OutBank_2, LED_ON                     // turn on red led
+    SIO     Out_GreenLED, OutBank_2, LED_ON                   // turn on green led
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+LEDS_OFF:
+    SIO     Out_RedLED, OutBank_2, LED_OFF                    // turn off red led
+    SIO     Out_GreenLED, OutBank_2, LED_OFF                  // turn off green led
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+

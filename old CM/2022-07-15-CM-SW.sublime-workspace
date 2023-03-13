@@ -1,0 +1,298 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"loa",
+				"LOAD"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 136.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/leshe/Desktop/1  2022-07-15-CM-SW.tmc",
+		"/C/Users/leshe/Desktop/2022-07-15-CM-SW.tmc",
+		"/D/2021-05-15/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-15-CM-SW.tmc",
+		"/D/2021-05-15/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-06-CM-SW.tmc",
+		"/C/Users/leshe/Desktop/2022-07-15-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-15-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-15-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-15-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/CM I-Os.JPG",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2022-07-28_V60001_IsotopiaSetup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2022-07-28 V60001 isotopia.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/isotopia_TMCLParam.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/my parameters.txt",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-15-CM-SW.sym",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/CM_TMCLParam.tmc",
+		"/C/Users/leshe/Desktop/code 87 in taiwan/2022-07-06-V40087-UniDoze-Setup-BD-2ml.tmc",
+		"/C/Users/leshe/Desktop/code 87 in taiwan/2022-07-06-V40087-UniDoze-SW-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/my parameters.docx",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2022-07-18-V40088-UniDoze-Setup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2022-07-18-V40088-UniDoze-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2022-07-06-V40087-UniDoze-Setup-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2022-07-06-V40087-UniDoze-SW-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2021-10-07 V60001 isotopia.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2021-10-07_V60001_IsotopiaSetup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2022-07-18-V40088-UniDoze-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2022-07-18-V40088-UniDoze-Setup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2022-07-06-V40087-UniDoze-SW-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/UniDoze_Setup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2021-05-19-V40086-UniDoze-SW-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2021-03-26-V40081-UniDoze-SW-MoreSyringes.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2021-05-19-V40086-UniDoze-Setup-BD-2ml.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/UNI 2019-11-25_V4056_UniDoze_SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/UNI 2019-11-25_V4056_UniDoze_Setup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/ISO 2021-10-07 V60001 isotopia.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-07-06-CM-SW.tmc",
+		"/C/Users/leshe/Desktop/Form1 - Copy.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/USBVariables - Copy.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/old/2022-04-08 CM PC.zip",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-03-13-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-06-15-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-03-15-CM-SW index.tmc",
+		"/C/Users/leshe/Desktop/USBVariables - Copy.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Isotopia PC/Isotopia PC Hash/Isotopia PC Hash/Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/Form1 - Copy.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY USBVariables.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-03-14-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/old CM/2020-03-13-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/old CM/2022-03-14-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2020-03-13-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2020-03-15-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2022-03-15-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2020-06-15-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2020-03-13-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-03-14-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2019-8-14 V2010001 CM_Seutp vibratoion.tmc",
+		"/C/Users/leshe/Desktop/2022-03-15-CM-Defines COPY.tmc",
+		"/C/Users/leshe/Desktop/2020-03-15-CM-Init COPY.tmc",
+		"/C/Users/leshe/Desktop/Form1 COPY.cs",
+		"/C/Users/leshe/Desktop/USBVariables COPY.cs",
+		"/C/Users/leshe/Desktop/2020-03-15-CM-SW COPY.tmc",
+		"/C/Users/leshe/Desktop/COPY 2019-11-25_V4056_UniDoze_SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2019-11-25_V4056_UniDoze_Setup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2020-03-12-CM-SW.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2020-03-12-CM-Init.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/2022-03-14-CM-Defines.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM code/COPY 2021-10-07_V60001_IsotopiaSetup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/old/USBVariables-Isotopia.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/old/Form1-Isotopia.cs",
+		"/C/Users/leshe/Desktop/Form1-Isotopia.cs.lnk",
+		"/C/EliAcer/0 מיזם תרופות/Teva Terem/Form1 Isotopia.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/Isotopia PC Hash.csproj",
+		"/C/Users/leshe/Desktop/Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Isotopia PC/Isotopia PC Hash/Isotopia PC Hash/usbClass.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/CM/CM SW/CM PC/USBVariables.cs",
+		"/C/EliAcer/0 מיזם תרופות/Teva Terem/Form1.cs",
+		"/C/Users/leshe/Desktop/Form1-Isotopia.cs",
+		"/C/Users/leshe/Desktop/attachment.csv",
+		"/C/Users/leshe/Desktop/copy isotopia Form1.cs",
+		"/C/Users/leshe/Desktop/USBVariables.cs",
+		"/C/Teva Terem mixer/2022-03-18 Teva-Terem prescriptions 13.2-18.3.2022.xls",
+		"/C/Teva Terem mixer/2022-03-23  Medications Report .txt",
+		"/C/Teva Terem mixer/2022-03-22 Teva-Terem prescriptions 13.2-22.3.2022.xls",
+		"/C/Users/leshe/Desktop/teva_prescription_13.02.2022.csv",
+		"/C/Users/leshe/Desktop/Teva-Terem prescriptions 13-14.2.2022.xls",
+		"/C/Users/leshe/Desktop/Form1 worked.cs",
+		"/C/Users/leshe/Desktop/Form1 bad.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Isotopia PC Hash/Isotopia PC Hash/Form1.cs",
+		"/C/Users/leshe/Desktop/Form1.Old.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/BrettUSBoriginal.cs",
+		"/C/EliAcer/0  פרויקטים שהסתיימו/0 logic 2 motors/Motor/logic2motor A 2015-05-05 .mxt",
+		"/C/EliAcer/1 Intovision/Early rodent control/PLC/2021-01-05 Early no DB.ulpr",
+		"/C/EliAcer/1 Intovision/Early rodent control/PLC/DT ftp/20210106123327_Early.csv.sig",
+		"/C/Eli not to phone/8 PLCs Drivers/Trinamic/new project v1.45/2020-07-30 V60001 isotopia.tmc",
+		"/C/EliAcer/1 Intovision/Early rodent control/PLC/2021-01-11b Early DB button.ulpr",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/GlobalVariablesAndErrorsOriginal.cs",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Robots/1040008/2019-01-31 0008.bkr",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2021-05-19-V40086-UniDoze-SW-BD-2ml.tmc",
+		"/C/Users/leshe/Documents/Outlook Files/notes.pst",
+		"/C/EliAcer/1 Intovision/שבוצעו/מזרק בני אדם - גל/motor/syringe motor 2015-01-28.mxt",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/2020-10-19 Isotopia PC Hash/Isotopia PC Hash/Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC Hash/usbClass.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC Hash/Form1.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC Hash/Isotopia PC Hash.csproj",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Isotopia PC.csproj",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Form1.cs",
+		"/C/IsotopiaRUN/isotopiaLogs",
+		"/C/IsotopiaRUN/-2020-08-26-15-51-RunScan",
+		"/C/IsotopiaRUN/2020-08-26-15-51-RunScan",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/2020-08-24 Isotopia PC.zip",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/myUSB/FormUSB.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2020-02-12 UniDozeSW copy.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2020-07-05 UnidoseSetup copy.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/0 Isotopia from Erez/Calibration_Protocol.py",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/Class1.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2020-08-05_V60001_isotopiaSetup.tmc",
+		"/C/Eli not to phone/8 PLCs Drivers/modscan64/Custom4",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2020-07-31_V60001_isotopiaSetup.tmc",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/Commands to Isotopia Trinamic.docx",
+		"/D/Drive_C/EliAcer/1 Amir Berger/0 isotopia/SW/Trinamic/2020-08-01 V60001 isotopia.tmc",
+		"/C/EliAcer/1 Amir Berger/0 rescuedose/Unidose/Unidose SW/Unidoze Code/2020-02-12-V40076-UniDoze-Setup-slowPush.tmc",
+		"/C/Program Files (x86)/RescueDose/UniDose/log.txt",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Button_WOC.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/framework/Isotopia PC/BrettUSB.cs",
+		"/C/EliAcer/1 Amir Berger/0 isotopia/SW/Brett USB.cs",
+		"/C/Users/leshe/Desktop/Terminate/.git/COMMIT_EDITMSG",
+		"/C/Users/leshe/Desktop/Terminate/eli.txt"
+	],
+	"find":
+	{
+		"height": 29.0
+	},
+	"find_in_files":
+	{
+		"height": 197.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": false,
+		"use_buffer2": false,
+		"use_gitignore": false,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 198.0
+	},
+	"pinned_build_system": "",
+	"project": "2022-07-15-CM-SW.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": false,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

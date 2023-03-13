@@ -1,0 +1,65 @@
+GB_microLbagToFill           =  27    // microL to withdraw in BAG
+
+GB_microLtoWithdraw_current  =  90
+GB_microLtoWithdraw_1        =  91
+GB_microLtoWithdraw_2        =  92
+GB_microLtoWithdraw_3        =  93
+GB_microLtoWithdraw_4        =  94
+GB_microLtoWithdraw_5        =  95
+GB_microLtoWithdraw_6        =  96
+
+GB_vialsExist                =  98
+    Bit_vial1      =  %00000001 // bit   1
+    Bit_vial2      =  %00000010 // bit   2
+    Bit_vial3      =  %00000100 // bit   4
+    Bit_vial4      =  %00001000 // bit   8
+    Bit_vial5      =  %00010000 // bit  16
+    Bit_vial6      =  %00100000 // bit  32
+    Bit_bag        =  %01000000 // bit  64
+
+GB_microLitterInBAG          =  99
+
+GB_vialSize_microL_1         = 101
+GB_vialSize_microL_2         = 102
+GB_vialSize_microL_3         = 103
+GB_vialSize_microL_4         = 104
+GB_vialSize_microL_5         = 105
+GB_vialSize_microL_6         = 106
+
+GB_vialSize_microL_current   = 107
+GB_BagSize_microL            = 108
+
+GB_microLinVial_1            =  197
+GB_microLinVial_2            =  198
+GB_microLinVial_3            =  199
+GB_microLinVial_4            =  200
+GB_microLinVial_5            =  201
+GB_microLinVial_6            =  202
+GB_microLinVial_current      =  203
+
+GB_current_Vial              =  204
+
+VIBRATIONS
+==========
+GB_vibrationTime_4           = 114
+GB_vibrationTime_4_calc      = 115
+GB_vibrationTime_56          = 116
+GB_vibrationTime_56_calc     = 117
+
+// vibration strength for vials 4,56 -  1 / 2 / 3 / 4 / 5
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GB_vibrStrengthPercentCalc   = 119      // set up %
+GB_PwmDutyCycleMS            = 120      // calculated [ms]
+GB_vibrator4done             = 121
+GB_vibrator56done            = 122
+GB_vibrationDutyCyclePercent = 123      // 10-100 [%]
+
+// vibration cycle time for vials 4,56 - [ms]
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GB_vibrationCycleMS                = 124   // calculation to ms
+GB_vibrationHz                           = 125   // data input
+GB_vibrationIsNeeded               = 127
+
+GB_current_Vial_From_Bag        = 65
+GB_linearBagToVial1                  = 53      // 10800  GB_LinearCenterOfBag              = 50      
+

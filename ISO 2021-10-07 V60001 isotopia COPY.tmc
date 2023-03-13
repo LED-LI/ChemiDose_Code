@@ -1,0 +1,2466 @@
+//****************************************
+// Name:        isotopia_Setup.tmc
+//
+// Description: ISOTOPIA software
+//
+// **********************************************************************************************************
+// Changes: V2020-07-23 - initial code
+//
+// 2020-11-18   higher currents for p100 p1000
+// 2020-11-19   draw twice from the bulk into the tip
+// 2020-11-19   each time going to top of plunger, go through home
+// 2020-11-29   move to bulk while rising plunger, before plunger to bottom
+// 2021-01-08   when loading tips do it twice
+// 2021-01-11   motor stby current raised
+// 2021-01-11   calibrate on bulk P1000 on x,y,z
+// 2021-01-12   dispense twice into bottle
+// 2021-01-13   when loading tip go down 1 mm more on the 2'nd time
+//              Z home 2mm lower, on bulk' move down before plunger to bottom
+// 2021-01-14   after tip pick up go up farther from home to eliminate carsh
+// 2021-01-15   FIND_HOMES does not reset next tip. moved to INIT_DISPENSE
+// 2021-01-17   tip P1000 goes down 1 mm and faster
+// 2021-08-13   check tips are on the pipette - set, goto, run through
+// 2021-08-16   check tips are on the pipette - check on run and error
+// 2021-08-16a  Calibrate Bulk Depth Now. Vial -> Bulk
+// 2021-08-17   Calibrate Bulk Depth Now. Vial -> Bulk
+// 2021-08-18   calculate bulkheight
+// 2021-08-22   use reference search for Z clibration
+// 2021-08-29   change ABORT, INIT
+// 2021-09-01   Z  - start = 3mm. after draw move up before pipette,  pulling again
+// 2021-10-07   changes for no Tip was discovered  
+//              
+//***********************************************************************************************************
+
+//***********
+// Includes
+//***********
+
+#Include isotopia_TMCLParam.tmc                        // TMCL Parameters
+#Include 2021-10-07_V60001_IsotopiaSetup.tmc           // Isotopia Parameters & initialization
+
+// this file 2021-10-07 V60001 isotopia.tmc
+
+//*******************************************
+// Name: CLEAR_ALL_ERRORS  
+//
+// Summary: reset all errors
+//*******************************************
+
+CLEAR_ALL_ERRORS:   // FUNC_4
+    RST     continueClearErrors                            //Stop a running TMCL program. Reset program counter and stack pointer 
+                                                           // to zero. Reset accumulator and X register to zero. Reset all flags.
+continueClearErrors:      // stack is now empty
+    CSUB    INIT
+    CSUB    ClearErrorsRAM
+    JA      ABORT_NoReport                                 // no return stack
+
+ClearErrorsRAM:
+    SGP     GB_any_Error, GPbank_2, FALSE                  // signal error: general
+    SGP     GB_errors_control, GPbank_2, clr               // 28
+    SGP     GB_errors_M_Xmotor, GPbank_2, clr              // 31
+    SGP     GB_errors_M_Ymotor, GPbank_2, clr              // 32
+    SGP     GB_errors_M_Zmotor, GPbank_2, clr              // 30      
+    SGP     GB_errors_M_p100, GPbank_2, clr                // 33
+    SGP     GB_errors_M_p1000, GPbank_2, clr               // 34
+    SGP     GB_errors_wrong_PC_command, GPbank_2, clr      // 44
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT        // 58 
+    SGP     GB_motorIsMoving, GPbank_2, FALSE              // 16
+    SGP     GB_calibrateBulkDepthNow, GPbank_2, set        // 28
+    SGP     GB_CalcAllDone, GPbank_2, FALSE                //  
+    SGP     GB_moveManualBackwards, GPbank_2, 1            // move forward
+    SGP     GB_CmdInProcess, GPbank_2, FALSE               //  
+    SGP     GB_MovingToBottle, GPbank_2, FALSE             //  
+    SGP     GB_nextTipInProcess, GPbank_2, FALSE           //  
+    SGP     GB_CurrentPipette, GPbank_2, 0                 // P100=1, P1000=2
+    SGP     GB_microLdispensedSoFar, GPbank_2, 0           // reset done so far"
+    SGP     GB_machineIsCalibrated, GPbank_2, FALSE        //
+   // SGP     GB_nextTipP100, GPbank_2, 0                    // next tip 0
+   // SGP     GB_nextTipP1000, GPbank_2, 0                   // next tip 0
+    RSUB
+
+ClearRunningErrors:
+    CSUB    INIT
+    CSUB    ClearErrorsRAM
+    CSUB    GREEN_ON
+    RSUB
+
+//*******************************************************************************
+// Name: INIT_DISPENSE_DOSE   (6)
+//
+// Summary: PC initialises this program after it put the requested option
+//
+//*******************************************************************************
+
+INIT_DISPENSE:   // FUNC_6
+
+//  EI      TI_TIMER0                  //  interrupt from timer 0
+//  EI      TI_INPUT2                  //  interrupt from input 2
+//  EI      TI_STOPLEFT5               //  interrupt from motor 5 left REF
+
+    RST     startInitAfterRST         //   Reset program counter and stack pointer 
+
+startInitAfterRST:
+// clear errors and check for Plunger
+    CSUB    ClearRunningErrors                 
+    CSUB    checkOkToInit              // check if in right state,         sets STOPPED_ON_ERROR state
+    GGP     GB_any_Error, GPbank_2     // get any error status
+    COMP    ANY_ERROR_EXISTS           // exists?
+    JC      NE, initDispenseNoERR      // no, continue 
+// error exists
+    JA      returnInitDispense                             
+
+initDispenseNoERR:
+    CSUB    FIND_HOMES
+    SGP     GB_nextTipP100, GPbank_2, 0           // assume all the tips are in place and not loaded
+    SGP     GB_nextTipP1000, GPbank_2, 0          // assume all the tips are in place and not loaded
+    SGP     GB_tipP100isLoaded, GPbank_2, FALSE   // assume no tip on pipette
+    SGP     GB_tipP1000isLoaded, GPbank_2, FALSE  // assume no tip on pipette
+
+    //SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
+returnInitDispense:
+//  DI      TI_TIMER0                  //  interrupt from timer 0
+//  DI      TI_INPUT2                  //  hands in machine
+//  DI      TI_STOPLEFT5               //  Plunger pop out interrupt
+
+//    RSUB
+    JA     back_ground_process
+
+//*******************************************
+// Name: DISPENSE_DOSE  (8)
+//
+// Summary: draw 
+//*******************************************
+
+DISPENSE_MULTI:    //  FUNC_10
+
+    // for cycle time calculations
+    SGP     GB_CmdInProcess, GPbank_2, TRUE         // eliminate interupptions
+    SGP     GB_dispenseCycleTime01s, GPbank_2, 0    // clear draw cycle timer
+    SGP     GB_TMCLtickTimer, GPbank_0, 0           // reset the timer
+    SGP     GB_microLdispensedSoFar, GPbank_2, 0    // reset done so far"
+
+// check here if MAXIMUM_DISPENSE_MULTI_uL in range 
+    GGP     GB_microLtoDispense, GPbank_2       // get the dispense volume
+    COMP    MAXIMUM_DISPENSE_MULTI_uL           // more than maximum permitted?
+    JC      GT, drawVolumeMultiExeeds           // no, report error and stop
+
+ // check if too little
+    GGP     GB_microLtoDispense, GPbank_2       // load the draw volume [uL] into A
+    COMP    MINIMUM_DISPENSE_MULTI_uL                   
+    JC      LT, drawVolumeMultiExeeds           // no, report error and stop
+    JA      continueDispenseMulti               // yes, exit
+
+drawVolumeMultiExeeds:
+    GGP     GB_errors_control, GPbank_2         // load error word
+    CALC    OR, BitEr_volumeExceedsLimits       // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnDispenseMulti
+
+continueDispenseMulti:
+    GGP     GB_activeBottle, GPbank_2           // if bottles 1-4, use P100
+    COMP    4
+    JC      LE, multiP100
+
+    GGP     GB_microLtoDispense, GPbank_2       // load the draw volume [uL] into A
+    COMP    MAXIMUM_MULTI_P100_uL               // is the maximum (150) for multi P100. above, use P1000
+    JC      GT, multiP1000
+ 
+multiP100:
+    SGP     GB_CurrentPipette, GPbank_2, P100  // set current pipette
+loopMultiP100:
+    GGP     GB_microLtoDispense, GPBank_2       // load total amount
+    CALC    SUB, 1                              // so if 4000 -> 3999 -> 4 -> 5 cycles of 1000
+    CALC    DIV, MAXIMUM_DISPENSE_P100_uL       // divide to the number of cycles - 1
+    CALC    ADD, 1                              // increment for the cycles
+    AGP     GB_cyclesMulti, GPBank_2            // load the cycles
+    CALCVV  LOAD, GB_microLtoDispenseSingle, GB_microLtoDispense  // run several
+    CALCVV  DIV, GB_microLtoDispenseSingle, GB_cyclesMulti        // get the amount each cycle
+    CALCV   SUB, GB_cyclesMulti, 1                                // SO DJNZ will exit on time
+//loopMultiP100:
+    // ------------------
+    CSUB    DISPENSE_SINGLE                     // This is the main function
+    // ------------------
+    CALCVV  SUB, GB_microLtoDispense, GB_microLtoDispenseSingle       // substitute for next cycle
+    CALCVV  ADD, GB_microLdispensedSoFar, GB_microLtoDispenseSingle   // sum the qantity
+    DJNZ    GB_cyclesMulti, loopMultiP100
+    JA      returnDispenseMulti
+
+multiP1000:
+    SGP     GB_CurrentPipette, GPbank_2, P1000  // set current pipette
+loopMultiP1000:
+    GGP     GB_microLtoDispense, GPBank_2       // load total amount
+    CALC    SUB, 1                              // so if 4000 -> 3999 -> 4 -> 5 cycles of 1000
+    CALC    DIV, MAXIMUM_DISPENSE_P1000_uL      // divide to the number of cycles - 1
+    CALC    ADD, 1                              // increment for the cycles
+    AGP     GB_cyclesMulti, GPBank_2            // load the cycles
+    CALCVV  LOAD, GB_microLtoDispenseSingle, GB_microLtoDispense  // run several
+    CALCVV  DIV, GB_microLtoDispenseSingle, GB_cyclesMulti        // get the amount each cycle
+    CALCV   SUB, GB_cyclesMulti, 1                                // SO DJNZ will exit on time
+//loopMultiP1000:
+    // ------------------
+    CSUB    DISPENSE_SINGLE                     // This is the main function
+    // ------------------
+    CALCVV  SUB, GB_microLtoDispense, GB_microLtoDispenseSingle   // sum the qantity
+    CALCVV  ADD, GB_microLdispensedSoFar, GB_microLtoDispenseSingle   // sum the qantity
+    DJNZ    GB_cyclesMulti, loopMultiP1000
+
+returnDispenseMulti:
+    // save statistics
+    CSUB    incrementCycles
+    GAP     GB_TMCLtickTimer, GPbank_0                     // get TMCL Tick Timer in ms
+    AGP     GB_dispenseCycleTimeMS, GPbank_2               // save it
+    SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE    // ready for another DISPENSE or INIT
+    SGP     GB_CmdInProcess, GPbank_2, FALSE               // eliminate interupptions
+    RSUB
+
+//***********************************************************************
+DISPENSE_SINGLE:    // FUNC_8
+ 
+//  EI      TI_TIMER0                  //  interrupt from timer 0 to count cycle timer
+//  EI      TI_INPUT2                  //  interrupt from input 2
+//  EI      TI_STOPLEFT5               //  interrupt from motor 5 left REF
+
+//    CSUB    ClearRunningErrors                 
+    CSUB    checkOkToDispense              // check if in right state, sets STOPPED_ON_ERROR state
+    CSUB    checkPippeteTipLegalNum
+    CSUB    checkDispenseVolumeSingle      // verify draw volume,      sets STOPPED_ON_ERROR state
+    GGP     GB_any_Error, GPbank_2         // get any error status
+    COMP    ANY_ERROR_EXISTS               // any error?
+    JC      EQ, returnDispense             // yes, return with STOPPED_ON_ERROR state
+    CSUB    VERIFY_READY_DISPENSE          // check if all are loaded
+                                           // keeps STATE WAITING_DISPENSE for easy recovery
+    GGP     GB_any_Error, GPbank_2         // get any error status
+    COMP    ANY_ERROR_EXISTS               // exists?
+    JC      NE, noErrorFound               // yes, return with WAITING_DISPENSE state for easy recovery
+ // errors found
+    JA      returnDispense                                     
+
+noErrorFound: 
+    CSUB    GREEN_ON
+    GGP     GB_any_Error, GPbank_2     // get any error status
+    COMP    ANY_ERROR_EXISTS           // exists?
+    JC      EQ, returnDispense         // yes, return 
+    // ------------------------
+    CSUB    dispenseOneBottle          // this the main function of the robot
+    // ------------------------
+returnDispense:
+
+    DI      TI_TIMER0                  //  interrupt from timer 0. If it is disabled, counting will pause
+//  DI      TI_INPUT2                  //  hands in machine
+//  DI      TI_STOPLEFT5               //  Plunger pop out interrupt
+
+    RSUB
+
+//***********************************************************************
+
+dispenseOneBottle:    // FUNC_ 
+
+// check if new tip is required, If yes, drop existing tip and load the new one.
+// go to the bulk, load the required amount, go to bottle and dispense.
+
+   GGP     GB_CurrentPipette, GPbank_2         // load current pipette
+   COMP    P1000                               // P1000?
+   JC      EQ, checkTipP1000                  
+
+   GGP     GB_CurrentPipette, GPbank_2      
+   COMP    P100                                // P100?
+   JC      NE, errorPipette                    // no, error
+
+   // checkTipP100:
+   CSUB    checkDispenseVolumeSingle
+   GGP     GB_tipP100isLoaded, GPbank_2        // two tips loaded was tested before
+   COMP    TRUE
+   JC      EQ, drawP100                        // tip P100 already loaded
+   CSUB    LOAD_NEXT_TIP
+   CSUB    checkPippeteBottleLegalNum
+
+drawP100:
+   CSUB    initP100Motor                       // calculate:  GB_p100MicroStepPer100microL
+// draw first time (move before bottom of plunger)
+   CSUB    MOVE_TO_BULK                        // Enter Bulk
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   SAP     AP_MaxPositioningSpeed, M_p100, MAX_POS_SLOW_SPEED_p100motor   // Set slow positioning speed
+   CSUB    moveP100REL_uLwait                  // draw required amount
+// draw second time (move before bottom of plunger)
+   GGP     GB_P100PlungerBottom, GPbank_2      // move bottom of plunger
+   MVPA    ABS, M_p100                         // move, wait later
+   CSUB    waitP100                            // wait P100, just for safety, already waited
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   CSUB    moveP100REL_uLwait                  // draw required amount
+
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW           // wait 1 s
+   CSUB    MOVE_TO_TIP_CHECK
+   CSUB    MOVE_TO_BOTTLE                      // move to bottle 13
+   CSUB    MOVE_P100PlungerBlowout
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW           // wait 1 s
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   CSUB    moveP100REL_uLwait                  // draw required amount
+   SAP     AP_MaxPositioningSpeed, M_p100, MAX_POS_SPEED_P100motor   // Set maximum positioning speed
+   CSUB    MOVE_P100PlungerBlowout             // second time
+   CALC    LOAD, Z_MOTOR_P100_EXIT_FROM_VIAL   
+   CSUB    moveZMotorABSwait
+   JA      returnDispenseBulk                        // dropped, continue
+
+checkTipP1000:
+   CSUB    checkDispenseVolumeSingle
+   GGP     GB_tipP1000isLoaded, GPbank_2       // two tips loaded was tested before
+   COMP    TRUE
+   JC      EQ, drawP1000                       // tip P1000 already loaded
+   CSUB    LOAD_NEXT_TIP
+   CSUB    checkPippeteBottleLegalNum
+
+drawP1000:
+   CSUB    initP1000Motor                      // calculate:  GB_P1000MicroStepPer100microL
+// draw first time (move before bottom of plunger)
+   CSUB    MOVE_TO_BULK                        // Enter Bulk
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   SAP     AP_MaxPositioningSpeed, M_p1000, MAX_POS_SLOW_SPEED_p1000motor   // Set slow positioning speed
+   CSUB    moveP1000REL_uLwait                 // draw required amount
+// draw second time
+   GGP     GB_P1000PlungerBottom, GPbank_2     // move bottom of plunger
+   MVPA    ABS, M_p1000                        // move, wait later
+   CSUB    waitP1000                           // wait P100, just for safety, already waited
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   CSUB    moveP1000REL_uLwait                 // draw required amount
+
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW           // wait 1 s
+   CSUB    MOVE_TO_TIP_CHECK
+   CSUB    MOVE_TO_BOTTLE                      // move to bottle 13
+   CSUB    MOVE_P1000PlungerBlowout
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW           // wait 1 s
+   GGP     GB_microLtoDispenseSingle, GPbank_2 // how much to dispense?
+   CALC    MUL, -1                             // draw
+   CSUB    moveP1000REL_uLwait                 // draw required amount
+   SAP     AP_MaxPositioningSpeed, M_p1000, MAX_POS_SPEED_P1000motor   // Set maximum positioning speed
+   CSUB    MOVE_P1000PlungerBlowout            // second time
+   CALC   LOAD, Z_MOTOR_P1000_EXIT_FROM_VIAL   // 
+   CSUB   moveZMotorABSwait
+
+returnDispenseBulk:
+    CSUB   SEND_Z_P100_P1000_TO_START
+    SGP    GB_CurrentState, GPbank_2, WAITING_DISPENSE    // ready for another DISPENSE or INIT
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkOkToInit:
+
+    SGP     GB_errors_wrong_PC_command, GPbank_2, FALSE
+    GGP     GB_CurrentState, GPbank_2                    // InitDrawDoze can run if WAITING_INIT or if WAITING_DISPENSE
+    COMP    WAITING_INIT                                 // WAITING_INIT?
+    JC      EQ, checkOkToInitDone                        // yes, return
+    GGP     GB_CurrentState, GPbank_2                    // no, try next
+    COMP    WAITING_DISPENSE                             // WAITING_DISPENSE?
+    JC      EQ, checkOkToInitDone                        // yes, return
+    // InitDispenseDoze does not fit, signal errors
+    GGP     GB_errors_wrong_PC_command, GPbank_2         // load error word
+    CALC    OR, BitEr_expecting_GP58_10_OR_30            // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2         // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2         // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnCheckInitDispense
+
+checkOkToInitDone:
+    SGP     GB_CurrentState, GPbank_2, RUNNING_INIT
+
+returnCheckInitDispense:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkOkToDispense:
+
+    CSUB    calcAndCheckMachineCalibrated
+    SGP     GB_errors_wrong_PC_command, GPbank_2, FALSE
+    GGP     GB_CurrentState, GPbank_2                      // current state to A
+    COMP    WAITING_DISPENSE
+    JC      EQ, okToDispenseDone                           // if EQ, continue
+
+ // this not is the time for DispenseDose
+    GGP     GB_errors_wrong_PC_command, GPbank_2           // load  error word
+    CALC    OR, BitEr_expecting_WAITING_DISPENSE           // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2           // and write again
+    STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      returnCheckOkDispense
+
+okToDispenseDone:    
+    SGP     GB_CurrentState, GPbank_2, RUNNING_DISPENSE
+returnCheckOkDispense:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkPippeteTipLegalNum:
+
+ // check pippette was chosen
+   GGP     GB_CurrentPipette, GPbank_2         // load current pipette
+   COMP    P1000                               // P1000?
+   JC      EQ, checkPipetteTipP1000                  
+   GGP     GB_CurrentPipette, GPbank_2      
+   COMP    P100                                // P100?
+   JC      NE, errorPipette                    // no, error
+                                              
+checkTipP100:
+   GGP     GB_tipP100isLoaded, GPbank_2        // if the tip is loaded, do not check next tip #
+   COMP    TRUE
+   JC      EQ, returnPippeteBottle
+   GGP     GB_nextTipP100, GPbank_2
+   COMP    0
+   JC      LT, errorTip                    
+   COMP    3   
+   JC      EQ, errorTip                    
+   COMP    6   
+   JC      GT, errorTip                    
+   JA      returnPippeteTip
+ 
+checkPipetteTipP1000:
+   GGP     GB_tipP1000isLoaded, GPbank_2       // if the tip is loaded, do not check next tip #
+   COMP    TRUE
+   JC      EQ, returnPippeteBottle
+   GGP     GB_nextTipP1000, GPbank_2
+   COMP    0
+   JC      LT, errorTip                    
+   COMP    3   
+   JC      EQ, errorTip                    
+   COMP    6   
+   JC      GT, errorTip                    
+
+returnPippeteTip:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+checkPippeteBottleLegalNum:
+
+ // check pippette was loaded
+   GGP     GB_tipP1000isLoaded, GPbank_2         // P1000 is loaded?
+   COMP    TRUE
+   JC      EQ, checkBottleP1000
+   GGP     GB_tipP100isLoaded, GPbank_2
+   COMP    FALSE
+   JC      EQ, errorPipette               // no error
+
+   // checkBottleP100:
+   GGP     GB_activeBottle, GPbank_2           // load the bottle # (1-18)
+   COMP    MIN_BOTTLE_P100                   
+   JC      LT, errorBottle                     // yes, exit , no. report error and stop
+   // checkMaxBottleP100:
+   GGP     GB_activeBottle, GPbank_2           // load the bottle # (1-18)
+   COMP    MAX_BOTTLE_P100                   
+   JC      GT, errorBottle                     // yes, exit
+   JA      returnPippeteBottle
+ 
+checkBottleP1000:
+   GGP     GB_activeBottle, GPbank_2           // load the bottle # (1-18)
+   COMP    MIN_BOTTLE_P1000                   
+   JC      LT, errorBottle                     // yes, exit , no. report error and stop
+   // checkMaxBottleP1000:
+   GGP     GB_activeBottle, GPbank_2           // load the bottle # (1-18)
+   COMP    MAX_BOTTLE_P1000                   
+   JC      GT, errorBottle                     // yes, exit
+
+returnPippeteBottle:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+errorPipette:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_pipetteNotDefined         // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+    RSUB
+
+errorNotAtWaste:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_errorNotAtWaste           // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+errorTip:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_wrongTip                  // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+errorBottle:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_bottleNotDefined          // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkDispenseVolumeSingle:
+
+    GGP     GB_CurrentPipette, GPbank_2
+    COMP    P1000
+    JC      EQ, checkP1000volume
+    GGP     GB_CurrentPipette, GPbank_2
+    COMP    P100
+    JC      NE, errorPipette                     // jump, Abort there
+
+checkP100volume:
+    GGP     GB_microLtoDispenseSingle, GPbank_2  // get the dispense volume
+    COMP    MAXIMUM_DISPENSE_P100_uL             // more than maximum permitted?
+    JC      GT, drawVolumeExeeds                 // no, report error and stop
+
+ // check if too little
+    GGP     GB_microLtoDispenseSingle, GPbank_2  // load the draw volume [uL] into A
+    COMP    MINIMUM_DISPENSE_P100_uL                   
+    JC      LT, drawVolumeExeeds                 // no, report error and stop
+    JA      returnDispenseVolume                 // yes, exit
+                                                 // no. report error and stop 
+checkP1000volume:
+    GGP     GB_microLtoDispenseSingle, GPbank_2  // get the dispense volume
+    COMP    MAXIMUM_DISPENSE_P1000_uL            // more than maximum permitted?
+    JC      GT, drawVolumeExeeds                 // no, report error and stop
+
+ // check if too little
+    GGP     GB_microLtoDispenseSingle, GPbank_2  // load the draw volume [uL] into A
+    COMP    MINIMUM_DISPENSE_P1000_uL                   
+    JC      GE, returnDispenseVolume             // yes, exit
+                                                 // no. report error and stop 
+drawVolumeExeeds:
+    GGP     GB_errors_control, GPbank_2          // load error word
+    CALC    OR, BitEr_volumeExceedsLimits        // add the error bit
+    AGP     GB_errors_control, GPbank_2          // and write again
+    STGP    GB_errors_control, GPbank_2          // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+
+returnDispenseVolume:
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Name: VERIFY_READY_DISPENSE     
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+VERIFY_READY_DISPENSE:    //  FUNC_
+
+    SGP     GB_readyToDispense, GPbank_2, FALSE         // not ready to draw (assume)  
+
+// ... These checking are for the case that the user can correct and continue
+
+    GGP     GB_any_Error, GPbank_2                      // get any error status
+    COMP    ANY_ERROR_EXISTS                             // exists?
+    JC      NE, returnVerify
+ // errors
+    CSUB    setAnyErrorYellow
+    SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
+    RSUB
+returnVerify:
+    SGP     GB_readyToDispense, GPbank_2, TRUE               // ready to draw  
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+incrementCycles:
+    CALCV   ADD, GB_cyclesTotal, 1                   // cycles so far into A
+    STGP    GB_cyclesTotal, GPbank_2            // store it in EEPROM
+    RSUB 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Operating robot
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SEND_Z_P100_P1000_TO_START:
+   // first send motors to START position
+   SGP     GB_motorIsMoving, GPbank_2, TRUE
+   CALC    LOAD, Z_MOTOR_START           
+   MVPA    ABS, M_Zmotor                         // move, wait later
+   CALC    LOAD, P100_START           
+   MVPA    ABS, M_p100                          // move, wait later
+   CALC    LOAD, P1000_START           
+   MVPA    ABS, M_p1000                         // move, wait later
+
+   CSUB    waitZMotor
+   CSUB    waitP100
+   CSUB    waitP1000
+   SGP     GB_motorIsMoving, GPbank_2, FALSE
+
+RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SEND_Z_TO_HOME:
+   // send Z motor to START position
+   SGP     GB_motorIsMoving, GPbank_2, TRUE
+   CALC    LOAD, Z_MOTOR_BELOW_HOME           
+   MVPA    ABS, M_Zmotor                         // move, wait later
+   CSUB    waitZMotor
+   CSUB    homeZMotor
+
+RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+calcDiffCurrentP100P1000:
+
+// if P1000 is current, set the differences or clear
+   GGP     GB_CurrentPipette, GPbank_2
+   COMP    P1000
+   JC      EQ, calcP1000DiffCurrent
+   GGP     GB_CurrentPipette, GPbank_2
+   COMP    P100
+   JC      NE, errorPipette                     // jump, Abort there
+
+// clrDiffCurrentForP100:  // will be added to the target address
+   CALCV   LOAD, GB_currentDifferenceX, 0
+   CALCV   LOAD, GB_currentDifferenceY, 0
+   CALCV   LOAD, GB_currentDifferenceZ, 0
+   JA      doneCalcDiffCurrent
+
+calcP1000DiffCurrent:  // will be added to the target address
+   CALCVV  LOAD, GB_currentDifferenceX, GB_P100toP1000X
+   CALCVV  LOAD, GB_currentDifferenceY, GB_P100toP1000Y
+   CALCVV  LOAD, GB_currentDifferenceZ, GB_P100toP1000Z
+
+doneCalcDiffCurrent:
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+calcDiffLoadedP100P1000:
+
+// if P1000 is loaded, set the differences or clear
+   GGP     GB_tipP1000isLoaded, GPbank_2         // P1000 is loaded?
+   COMP    TRUE
+   JC      EQ, calcP1000diffLoaded
+   GGP     GB_tipP100isLoaded, GPbank_2
+   COMP    TRUE
+   JC      NE, errorPipette                     // jump, Abort there  // no need, no tips on pipettes
+
+// clrDiffLoadedForP100:                    // will be added to the target address
+   CALCV   LOAD, GB_currentDifferenceX, 0
+   CALCV   LOAD, GB_currentDifferenceY, 0
+   CALCV   LOAD, GB_currentDifferenceZ, 0
+   JA      doneCalcDiffLoaded
+
+calcP1000diffLoaded:  // will be added to the target address
+   CALCVV  LOAD, GB_currentDifferenceX, GB_P100toP1000X
+   CALCVV  LOAD, GB_currentDifferenceY, GB_P100toP1000Y
+   CALCVV  LOAD, GB_currentDifferenceZ, GB_P100toP1000Z
+
+doneCalcDiffLoaded:
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+MOVE_TO_BOTTLE:   //  FUNC_64
+
+   CSUB    checkPippeteBottleLegalNum          // left culumn is only for P100
+   CSUB    calcAndCheckMachineCalibrated
+   SGP     GB_MovingToBottle, GPbank_2, TRUE     // eliminate interupptions
+   CALC    LOAD, Z_MOTOR_START           
+   CSUB    moveZMotorABSwait                   // move and wait for Z
+   CSUB    calcDiffLoadedP100P1000
+
+   CALCVV  LOAD, GB_activeBottleMinus1, GB_activeBottle    // GB_activeBottleMinus1  = GB_activeBottle
+   CALCV   SUB, GB_activeBottleMinus1, 1                   // GB_activeBottleMinus1 -= 1  to calculate locations 0-17
+
+// calculate the row /columns spaces between bottles
+
+// now location numbers:
+// 00011    00111    01011    01111                4 8 12 16
+// 00010    00110    01010    01110                3 7 11 15
+// 00001    00101    01001    01101    10001       2 6 10 14 18
+// 00000    00100    01000    01100    10000       1 5  9 13 17
+
+   GGP    GB_activeBottleMinus1, GPbank_2 // numbers 0-17
+   CALC   AND, %00011100                  // erase first 2 bits
+   CALC   DIV, 4                          // rotate right x 2, keep the columns #
+   CALC   SUB, 3                          // difference from bottle 16
+   AGP    GB_nDeltaX, GPbank_2            // keep the number of spaces in X directions
+   
+   GGP    GB_activeBottleMinus1, GPbank_2 // numbers 0-17
+   CALC   AND, %00000011                  // keep first 2 bits
+   CALC   SUB, 3                          // difference from bottle 16
+   AGP    GB_nDeltaY, GPbank_2            // keep the number of spaces in Y directions
+   
+// move X direction
+
+   GGP    GB_nDeltaX, GPbank_2            // load X spaces (negative to the left)
+   CALCAV MUL, GB_deltaXmovingX           // A = multiply by the steps between spaces in X
+   CALCX  LOAD                            // keep in X
+   GGP    GB_nDeltaY, GPbank_2            // load X spaces (negative to the left)
+   CALCAV MUL, GB_deltaXmovingY           // A = multiply by the steps between spaces in Y
+   CALCX  ADD                             // A = total X movement, for X spacing + Y spacing
+   CALCAV ADD, GB_P100XposOnBottle_16     // A += location of bottle 16
+   CALCAV ADD, GB_currentDifferenceX      // A += difference for P1000 if needed
+   MVPA   ABS, M_Xmotor                   // move, wait later
+
+// move Y direction
+
+   GGP    GB_nDeltaX, GPbank_2            // load Y spaces (negative to the bottom)
+   CALCAV MUL, GB_deltaYmovingX           // A = multiply by the steps between spaces in X
+   CALCX  LOAD                            // keep in X
+   GGP    GB_nDeltaY, GPbank_2            // load X spaces (negative to the left)
+   CALCAV MUL, GB_deltaYmovingY           // A = multiply by the steps between spaces in Y
+   CALCX  ADD                             // A = total X movement, for X spacing + Y spacing
+   CALCAV ADD, GB_P100YposOnBottle_16     // A += location of bottle 16
+   CALCAV ADD, GB_currentDifferenceY      // A += difference for P1000 if needed
+   MVPA   ABS, M_Ymotor                   // move, wait later
+
+   CSUB   waitXMotor                      // wait for both
+   CSUB   waitYMotor
+   
+   GGP    GB_nDeltaX, GPbank_2            // load Y spaces (negative to the bottom)
+   CALCAV MUL, GB_deltaZmovingX           // A = multiply by the steps between spaces in X
+   CALCX  LOAD                            // keep in X
+   GGP    GB_nDeltaY, GPbank_2            // load X spaces (negative to the left)
+   CALCAV MUL, GB_deltaZmovingY           // A = multiply by the steps between spaces in Y
+   CALCX  ADD                             // A = total X movement, for X spacing + Y spacing
+   CALCAV ADD, GB_P100ZposOnBottle_16     // A += location of bottle 16
+   CALCAV ADD, GB_currentDifferenceZ      // A += difference for P1000 if needed
+   CSUB   moveZMotorABSwait               // move and wait for Z
+   SGP    GB_MovingToBottle, GPbank_2, FALSE     // eliminate interupptions
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+LOAD_NEXT_TIP:   //  FUNC_68
+
+   SGP     GB_nextTipInProcess, GPbank_2, TRUE
+   CSUB    calcAndCheckMachineCalibrated
+   CSUB    checkPippeteTipLegalNum             // tips = 0,1,2, 4,5,6
+   CSUB    SEND_Z_P100_P1000_TO_START
+   CSUB    calcDiffCurrentP100P1000
+
+// calculate the next tip location
+
+// now location numbers:
+// 100  101  110    4 5 6
+// 000  001  010    0 1 2
+
+   GGP     GB_CurrentPipette, GPbank_2          // P1000 requested?
+   COMP    P1000
+   JC      EQ, calcP1000Tip
+   GGP     GB_CurrentPipette, GPbank_2
+   COMP    P100
+   JC      NE, errorPipette                    // jump, Abort there
+
+//calcP100Tip:                                 // no, run P100
+   GGP     GB_tipP1000isLoaded, GPbank_2       // two tips loaded was tested before
+   COMP    TRUE
+   JC      NE, checkP100                       // tip P1000 is not loaded, no need to drop
+   CSUB    MOVE_TO_WASTE                       // need to drop tip P1000 (should no happen)
+   CSUB    DROP_TIP_TO_WASTE
+checkP100:   
+   GGP     GB_tipP100isLoaded, GPbank_2       // two tips loaded was tested before
+   COMP    TRUE
+   JC      NE, loadP100                       // tip P1000 is not loaded, no need to drop
+   CSUB    MOVE_TO_WASTE                      // need to drop tip P1000 (should no happen)
+   CSUB    MOVE_P100PlungerDropTip            // this happens only in calibration mode, so to not add tip
+   CSUB   SEND_Z_P100_P1000_TO_START
+loadP100:
+   // check tips available    
+   GGP    GB_nextTipP100, GPbank_2        // numbers 0-6     (skipping 3)
+   COMP   6
+   JC     GT, errorTip                   // if 6, no tips available
+   
+   GGP    GB_nextTipP100, GPbank_2        // numbers 0-6     (skipping 3)
+   CALC   AND, %00000011                  // keep first 2 bits
+   AGP    GB_nDeltaTipX, GPbank_2         // keep the number of space in X directions
+   
+   GGP    GB_nextTipP100, GPbank_2        // numbers 0-6     (skipping 3)
+   CALC   AND, %00000100                  // erase first 2 bits
+   CALC   DIV, 4                          // rotate right x 2, keep the columns #
+   AGP    GB_nDeltaTipY, GPbank_2         // keep the number of space in X directions
+   
+// move X direction
+   GGP    GB_nDeltaTipX , GPbank_2        // load X spaces (negative to the left)
+   CALC   MUL, deltaXtipSteps             // A = multiply by the steps between spaces in X
+   CALCAV ADD, GB_P100XposOnTip_1         // A += location of Tip 0
+   MVPA   ABS, M_Xmotor                   // move, wait later
+
+// move Y direction
+   GGP    GB_nDeltaTipY , GPbank_2        // load X spaces (negative to the left)
+   CALC   MUL, deltaYtipStepsP100         // A = multiply by the steps between spaces in X
+   CALCAV ADD, GB_P100YposOnTip_1         // A += location of Tip 0
+   MVPA   ABS, M_Ymotor                   // move, wait later
+
+   CSUB   waitXMotor                      // wait for both
+   CSUB   waitYMotor
+   
+// move Z direction - 3 times
+   GGP    GB_P100ZposOnTip_1 , GPbank_2   // load Z hight
+   CALC   SUB, ZmotorMicroStepsAtTip      // reduce before slowing down
+   CSUB   moveZMotorABSwait               // wait for Z
+
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SLOW_SPEED_Zmotor // Set slow positioning speed
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_SLOW_Zmotor            // Set absolute max. current
+
+// move twice in / out
+   GGP    GB_P100ZposOnTip_1 , GPbank_2   // 1'st down
+   CSUB   moveZMotorABSwait               // wait for Z down
+   GGP    GB_P100ZposOnTip_1 , GPbank_2   // load Z hight
+   CALC   SUB, ZmotorMicroStepsAtTip      // reduce before slowing down
+   CSUB   moveZMotorABSwait               // wait for Z Up
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SPEED_Zmotor // Set maximum positioning speed
+//   GGP    GB_P100ZposOnTip_1 , GPbank_2   // 
+//   CSUB   moveZMotorABSwait               // wait for Z
+   GGP    GB_P100ZposOnTip_1 , GPbank_2       // 
+   CALC   ADD, ZmotorMicroStepsMoreAtTipP100  // go downfaster and further to squeeze
+   CSUB   moveZMotorABSwait                   // wait for Z
+
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW      // wait 1 s
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_Zmotor            // Set absolute max. current
+   SGP    GB_tipP100isLoaded, GPbank_2, TRUE
+
+   JA     doneCalcTip
+
+calcP1000Tip:  // will be added to the target address
+
+   SGP    GB_calibrateBulkDepthNow, GPbank_2, TRUE   // after replacement to a new P1000, perform bulk depth calibration
+   GGP    GB_tipP100isLoaded, GPbank_2
+   COMP   TRUE
+   JC     NE, checkP1000                     // tip P100 is not loaded, no need to drop
+   CSUB   MOVE_TO_WASTE                      // need to drop tip P100  (should no happen)
+   CSUB   DROP_TIP_TO_WASTE
+checkP1000:
+   GGP    GB_tipP1000isLoaded, GPbank_2
+   COMP   TRUE
+   JC     NE, loadP1000                       // tip P100 is not loaded, no need to drop
+   CSUB   MOVE_TO_WASTE                       // need to drop tip P100  (should no happen)
+   CSUB   MOVE_P1000PlungerDropTip            // this happens only in calibration mode, so to not add tip
+   CSUB   SEND_Z_P100_P1000_TO_START
+loadP1000:
+   // check tips available    
+   GGP    GB_nextTipP1000, GPbank_2       // numbers 0-6     (skipping 3)
+   COMP   6
+   JC     GT, errorTip                    // if 6, no tips available
+   
+   GGP    GB_nextTipP1000, GPbank_2       // numbers 0-6     (skipping 3)
+   CALC   AND, %00000011                  // keep first 2 bits
+   AGP    GB_nDeltaTipX, GPbank_2         // keep the number of space in X directions
+   
+   GGP    GB_nextTipP1000, GPbank_2       // numbers 0-6     (skipping 3)
+   CALC   AND, %00000100                  // erase first 2 bits
+   CALC   DIV, 4                          // rotate right x 2, keep the columns #
+   AGP    GB_nDeltaTipY, GPbank_2         // keep the number of space in X directions
+   
+// move X direction
+   GGP    GB_nDeltaTipX , GPbank_2        // load X spaces (negative to the left)
+   CALC   MUL, deltaXtipSteps             // A = multiply by the steps between spaces in X
+   CALCAV ADD, GB_P1000XposOnTip_7         // A += location of Tip 0
+   MVPA   ABS, M_Xmotor                   // move, wait later
+
+// move Y direction
+   GGP    GB_nDeltaTipY , GPbank_2        // load X spaces (negative to the left)
+   CALC   MUL, deltaYtipStepsP1000        // A = multiply by the steps between spaces in X
+   CALCAV ADD, GB_P1000YposOnTip_7        // A += location of Tip 0
+   MVPA   ABS, M_Ymotor                   // move, wait later
+
+   CSUB   waitXMotor                      // wait for both
+   CSUB   waitYMotor
+   
+// move Z direction
+   GGP    GB_P1000ZposOnTip_7 , GPbank_2  // load Z hight
+   CALC   SUB, ZmotorMicroStepsAtTip      // reduce before slowing down
+   CSUB   moveZMotorABSwait               // wait for Z
+
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SLOW_SPEED_Zmotor // Set slow positioning speed
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_SLOW_Zmotor            // Set absolute max. current
+
+// move twice in / out
+   GGP    GB_P1000ZposOnTip_7 , GPbank_2  // 1'st down
+   CSUB   moveZMotorABSwait               // wait for Z down
+   GGP    GB_P1000ZposOnTip_7 , GPbank_2  // load Z hight
+   CALC   SUB, ZmotorMicroStepsAtTip      // reduce before slowing down
+   CSUB   moveZMotorABSwait               // wait for Z Up
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SPEED_Zmotor // Set maximum positioning speed
+//   GGP    GB_P1000ZposOnTip_7 , GPbank_2  // 
+//   CSUB   moveZMotorABSwait               // wait for Z
+   GGP    GB_P1000ZposOnTip_7 , GPbank_2       // 
+   CALC   ADD, ZmotorMicroStepsMoreAtTipP1000  // go down faster and further to squeeze
+   CSUB   moveZMotorABSwait                    // wait for Z
+
+   WAIT    TICKS, 0, WAIT_TICKS_DRAW      // wait 1 s
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_Zmotor            // Set absolute max. current
+   SGP    GB_tipP1000isLoaded, GPbank_2, TRUE
+
+doneCalcTip:
+   CSUB    SEND_Z_TO_HOME
+   SGP     GB_nextTipInProcess, GPbank_2, FALSE
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+MOVE_TO_BULK:   //  FUNC_70
+
+   CSUB   calcAndCheckMachineCalibrated
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_Zmotor             // Set max current
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SPEED_Zmotor  // Set max speed
+
+   GGP    GB_tipP1000isLoaded, GPbank_2    // for the Z movement of bulk: P1000 is loaded?
+   COMP   TRUE
+   JC     EQ, P1000ToTop
+   GGP    GB_tipP100isLoaded, GPbank_2     // P100 is loaded?
+   COMP   TRUE
+   JC     NE, errorPipette                 // jump, Abort there  // no need, no tips on pipettes
+
+//P100ToTop:
+   GGP    GB_P100PlungerTop, GPbank_2      // move up to top of plunger
+   MVPA   ABS, M_p100                      // move, wait later
+   JA     continueMoveZ
+
+P1000ToTop:
+   GGP    GB_P1000PlungerTop, GPbank_2     // move up to top of plunger
+   MVPA   ABS, M_p1000                     // move, wait later
+
+continueMoveZ:
+   CALC   LOAD, Z_MOTOR_START           
+   CSUB   moveZMotorABSwait                // move and wait for Z
+// move_XY:
+   GGP    GB_tipP1000isLoaded, GPbank_2    // for the X/Y movement of bulk: P1000 is loaded?
+   COMP   TRUE
+   JC     EQ, move_XY_p1000
+   GGP    GB_tipP100isLoaded, GPbank_2     // P100 is loaded?
+   COMP   TRUE
+   JC     NE, errorPipette                 // jump, Abort there  // no need, no tips on pipettes
+// move_XY_p100:
+   GGP    GB_P100XposOnBulk, GPbank_2      // load X spaces (negative to the left)
+   MVPA   ABS, M_Xmotor                    // move, wait later
+   GGP    GB_P100YposOnBulk, GPbank_2      // load X spaces (negative to the left)
+   MVPA   ABS, M_Ymotor                    // move, wait later
+   JA     wait_XY
+move_XY_p1000:
+   GGP    GB_P1000XposOnBulk, GPbank_2      // load X spaces (negative to the left)
+   MVPA   ABS, M_Xmotor                    // move, wait later
+   GGP    GB_P1000YposOnBulk, GPbank_2      // load X spaces (negative to the left)
+   MVPA   ABS, M_Ymotor                    // move, wait later
+wait_XY:
+   CSUB   waitXMotor                       // wait for both
+   CSUB   waitYMotor
+   CSUB   waitP100                         // wait P100
+   CSUB   waitP1000                        // wait P1000
+
+   GGP    GB_tipP1000isLoaded, GPbank_2    // for the Z movement of bulk: P1000 is loaded?
+   COMP   TRUE
+   JC     EQ, runP1000Zbulk
+   GGP    GB_tipP100isLoaded, GPbank_2     // P100 is loaded?
+   COMP   TRUE
+   JC     NE, errorPipette                 // jump, Abort there  // no need, no tips on pipettes
+
+// runP100Zbulk: // 2020-11-29 first get above bulk, then plunger bottom
+   GGP    GB_P100ZposOnBulk , GPbank_2     // load Z for Bulk P100
+   CALC   SUB, HEIGHT_ABOVE_P100           // goto position for bottom of plunger
+   CSUB   moveZMotorABSwait                // move and wait for Z
+   GGP    GB_P100PlungerBottom, GPbank_2   // move bottom of plunger
+   CSUB   moveP100ABSwait                  // move and wait P100
+   GGP    GB_P100ZposOnBulk , GPbank_2     // load Z for Bulk P100
+   CSUB   moveZMotorABSwait                // move and wait for Z
+   JA     endMoveToBulk
+
+runP1000Zbulk:
+   GGP    GB_calibrateBulkDepthNow, GPbank_2          // need to calibrate?
+   COMP   TRUE
+   JC     NE, doneCalibrateTip
+// *****************************
+   CSUB   CALIBRATE_TIP1000_BULK            // calibrate for tiny space after p1000 tip loading
+// *****************************
+
+doneCalibrateTip:
+   GGP    GB_P1000ZposOnBulkRun, GPbank_2     // load calibrated Z for Bulk P1000
+   COMP   0
+   JC     EQ, errorNoP1000ZposOnBulkRun       // bottom position not defined, error
+   GGP    GB_P1000ZposOnBulk , GPbank_2       // load Z for Bulk P100
+   CALC   SUB, HEIGHT_ABOVE_P1000             // goto position for bottom of plunger
+   CSUB   moveZMotorABSwait                   // move and wait for Z
+   GGP    GB_P1000PlungerBottom, GPbank_2     // move bottom of plunger befor in liquid
+   CSUB   moveP1000ABSwait                    // move and wait P1000
+   GGP    GB_P1000ZposOnBulkRun, GPbank_2     // load calibrated Z for Bulk P1000
+   CSUB   moveZMotorABSwait                   // move and wait for Z
+
+endMoveToBulk:
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+errorNoP1000ZposOnBulkRun:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load control error word
+    CALC    OR, BitEr_noP1000ZposOnBulkRun      // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write it
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+    RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CALIBRATE_TIP1000_BULK:
+   GGP    GB_P1000ZposOnBulk, GPbank_2                                  // load Z for Bulk P1000
+   CSUB   moveZMotorABSwait                                             // move and wait for Z
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_CALIB_Zmotor             // Set max current
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_CALIB_SPEED_Zmotor  // Set max speed
+   CALC   LOAD, Z_MOVE_BULK                                             // move down, touch botton, and slip steps
+   MVPA   REL, M_Zmotor
+   WAIT   TICKS, 0, WAIT_TICKS_BULK
+//   now stopped at the BULK. this will be temporary the starting point                                        // after time  out continue
+   SAP    AP_TargetPosition, M_Zmotor, 0                          //set Target position [µsteps] to 0
+   SAP    AP_ActualPosition, M_Zmotor, 0                          //set Actual position [µsteps] to 0
+   SAP    AP_MaxCurrent, M_Zmotor, MAX_CURRENT_Zmotor             // Set max current
+   SAP    AP_MaxPositioningSpeed, M_Zmotor, MAX_POS_SPEED_Zmotor  // Set max speed
+   GGP    GB_P1000ZposOnBulk, GPbank_2     // load the original calibrated height, that is shorter than the "RUN" location
+   CALC   MUL, -1
+   CSUB   moveZMotorABSwait
+
+   CSUB   homeZMotor
+
+// calculate the close position to BULK bottom
+// now the z-axis is at the top, which was original 0
+// the AP_LastRefPosition position is the distance from the full bottom to the top
+// so the real distance till the location will be that distance minus ZmotorMicroStepsMoreAtBulk
+
+   SGP    GB_P1000ZposOnBulkRun, GPbank_2, 0      // clear the position
+   GAP    AP_LastRefPosition, M_Zmotor            // distance befoe clearing position is the distance from bottom to top sensor
+   CALCVA SUB, GB_P1000ZposOnBulkRun              // substruct the negative location from new param
+   CALC   LOAD, ZmotorMicroStepsLessAtBulk
+   CALCV  SUB, GB_P1000ZposOnBulkRun, ZmotorMicroStepsLessAtBulk  // now the right P1000 depth is there
+
+// find Z-home again
+//   CSUB  homeZMotor
+
+   SGP    GB_calibrateBulkDepthNow, GPbank_2, FALSE  // reset the calibration request after the calibration of tip depth in BULK
+   RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+MOVE_TO_TIP_CHECK:   //  FUNC_122
+
+   CSUB   calcAndCheckMachineCalibrated
+   SGP    GB_MovingToBottle, GPbank_2, TRUE     // eliminate interupptions
+
+   CALC   LOAD, Z_MOTOR_START           
+   CSUB   moveZMotorABSwait                // move and wait for Z
+   CSUB   calcDiffLoadedP100P1000
+
+   GGP    GB_P100YposOnTip, GPbank_2       // load Y spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceY       // A += difference for P1000 if needed
+   MVPA   ABS, M_Ymotor                    // move, wait later
+
+   GGP    GB_P100XposOnTip, GPbank_2       // load X spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceX       // A += difference for P1000 if needed
+   MVPA   ABS, M_Xmotor                    // move, wait later
+
+   CSUB   waitXMotor                       // wait for all
+   CSUB   waitYMotor                       // wait for all
+
+   GGP    GB_P100ZposOnTip, GPbank_2       // load Z spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceZ       // A += difference for P1000 if needed
+   CSUB   moveZMotorABSwait                // move and wait for Z
+
+// now check if the TIP is loaded, only if GB_CurrentState = RUNNING_DISPENSE
+ 
+   GGP    GB_CurrentState, GPbank_2        // check if RUNNING
+   COMP   RUNNING_DISPENSE 
+   JC     NE, endMoveToTipCheck            // if NE, do not check tip
+   // RUNNING, so check tip
+   GAP    AP_LeftLimitSwitchState, M_Tip   // get Left limit switch status
+   COMP   TIP_EXISTS                       // is the tip in the pipette?
+   JC     EQ, endMoveToTipCheck            // yes, continue
+   // no tip report error:
+   CSUB   errorNoTIP
+
+endMoveToTipCheck:
+   SGP    GB_MovingToBottle, GPbank_2, FALSE     // eliminate interupptions
+   RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+errorNoTIP:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load control error word
+    CALC    OR, BitEr_noTIPdeteced              // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write it
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_DROP_POSITION_TIP:
+
+   SGP     GB_CmdInProcess, GPbank_2, TRUE     // eliminate interupptions
+   CSUB    MOVE_TO_WASTE                       
+   CSUB    DROP_TIP_TO_WASTE
+   CSUB    MOVE_ALL_TO_START
+   SGP     GB_CmdInProcess, GPbank_2, FALSE     // eliminate interupptions
+   RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+MOVE_TO_WASTE:   //  FUNC_72
+
+   CSUB    calcAndCheckMachineCalibrated
+   CSUB    SEND_Z_P100_P1000_TO_START
+   CSUB    calcDiffLoadedP100P1000
+
+   GGP    GB_P100XposOnWaste , GPbank_2   // load X spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceX      // A += difference for P1000 if needed
+   MVPA   ABS, M_Xmotor                   // move, wait later
+
+   GGP    GB_P100YposOnWaste, GPbank_2    // load X spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceY      // A += difference for P1000 if needed
+   MVPA   ABS, M_Ymotor                   // move, wait later
+
+   CSUB   waitXMotor                      // wait for both
+   CSUB   waitYMotor
+
+   GGP    GB_P100ZposOnWaste , GPbank_2   // load X spaces (negative to the left)
+   CALCAV ADD, GB_currentDifferenceZ      // A += difference for P1000 if needed
+   MVPA   ABS, M_Zmotor                   // move, wait later
+   CSUB   waitZMotor                           // wait for Z
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+DROP_TIP_TO_WASTE:   //  FUNC_82  // according to loaded tip, drop the tip into waste
+
+   CSUB    calcAndCheckMachineCalibrated
+   CSUB    checkAtWastePosition
+   // look for tips loaded
+   GGP     GB_tipP1000isLoaded, GPbank_2         // P1000 is loaded?
+   COMP    TRUE
+   JC      EQ, dropP1000Tip
+   GGP     GB_tipP100isLoaded, GPbank_2
+   COMP    TRUE
+   JC      NE, doneDropTip                       // no need, no tips on pipettes
+
+// dropP100Tip:  
+   CSUB   MOVE_P100PlungerDropTip
+   GGP    GB_nextTipP100, GPbank_2                // increment GB_nextTipP100. if eq to 3, increment one more
+incrementTipP100:
+   CALC   ADD, 1                                  // this will create the pattern of tips: 0 1 2 4 5 6
+   COMP   3                                       // if 3, increment to 4
+   JC     EQ, incrementTipP100                    // if it reaches 6, will not be enabled in LOAD_NEXT_TIP
+   AGP    GB_nextTipP100, GPbank_2                // increment GB_nextTipP100. if eq to 3, increment one more
+   SGP    GB_tipP100isLoaded, GPbank_2, FALSE     // no tip om pipette
+   JA     doneDropTip
+
+dropP1000Tip:
+   CSUB   MOVE_P1000PlungerDropTip
+   GGP    GB_nextTipP1000, GPbank_2               // increment GB_nextTipP100. if eq to 3, increment one more
+incrementTipP1000:
+   CALC   ADD, 1                                  // this will create the pattern of tips: 0 1 2  4 5 6
+   COMP   3                                       // if 3, increment to 4
+   JC     EQ, incrementTipP1000                   // if it reaches 6, will not be enabled in LOAD_NEXT_TIP
+   AGP    GB_nextTipP1000, GPbank_2               // increment GB_nextTipP100. if eq to 3, increment one more
+   SGP    GB_tipP1000isLoaded, GPbank_2, FALSE    // no tip om pipette
+   JA     doneDropTip
+
+doneDropTip:
+   CSUB   SEND_Z_P100_P1000_TO_START
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkAtWastePosition:
+   GGP     GB_tipP1000isLoaded, GPbank_2       // P1000 is loaded?
+   COMP    TRUE
+   JC      EQ, atWasteP1000
+   GGP     GB_tipP100isLoaded, GPbank_2
+   COMP    TRUE
+   JC      NE, returnAtWaste                   // no need, no tips on pipettes
+
+atWasteP100:  
+   GAP    AP_ActualPosition, M_Xmotor               // get x position
+   CALCAV SUB, GB_P100XposOnWaste
+   JC     NZ, errorNotAtWaste
+   JA     returnAtWaste
+
+atWasteP1000:
+   GAP    AP_ActualPosition, M_Xmotor               // get x position
+   CALCAV SUB, GB_P1000XposOnWaste
+   JC     NZ, errorNotAtWaste
+
+returnAtWaste:
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//      SET and STORE GLOBAL VARIABLES
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SET_BOTTLE_4:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnBottle_4, GPbank_2
+    STGP   GB_P100XposOnBottle_4, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P100YposOnBottle_4, GPbank_2
+    STGP   GB_P100YposOnBottle_4, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P100ZposOnBottle_4, GPbank_2
+    STGP   GB_P100ZposOnBottle_4, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SET_BOTTLE_13:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnBottle_13, GPbank_2
+    STGP   GB_P100XposOnBottle_13, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P100YposOnBottle_13, GPbank_2
+    STGP   GB_P100YposOnBottle_13, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P100ZposOnBottle_13, GPbank_2
+    STGP   GB_P100ZposOnBottle_13, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SET_BOTTLE_16_P100:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnBottle_16, GPbank_2
+    STGP   GB_P100XposOnBottle_16, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P100YposOnBottle_16, GPbank_2
+    STGP   GB_P100YposOnBottle_16, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P100ZposOnBottle_16, GPbank_2
+    STGP   GB_P100ZposOnBottle_16, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_BOTTLE_16_P1000:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P1000XposOnBottle_16, GPbank_2
+    STGP   GB_P1000XposOnBottle_16, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P1000YposOnBottle_16, GPbank_2
+    STGP   GB_P1000YposOnBottle_16, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P1000ZposOnBottle_16, GPbank_2
+    STGP   GB_P1000ZposOnBottle_16, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_BULK_P100:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnBulk, GPbank_2
+    STGP   GB_P100XposOnBulk, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get y position
+    AGP    GB_P100YposOnBulk, GPbank_2
+    STGP   GB_P100YposOnBulk, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get z position
+    AGP    GB_P100ZposOnBulk, GPbank_2
+    STGP   GB_P100ZposOnBulk, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_BULK_P1000:   // func 108 
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P1000XposOnBulk, GPbank_2
+    STGP   GB_P1000XposOnBulk, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get y position
+    AGP    GB_P1000YposOnBulk, GPbank_2
+    STGP   GB_P1000YposOnBulk, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get z position
+    AGP    GB_P1000ZposOnBulk, GPbank_2
+    STGP   GB_P1000ZposOnBulk, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_TIP_CHECK_P100:  // func 120
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnTip, GPbank_2
+    STGP   GB_P100XposOnTip, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get y position
+    AGP    GB_P100YposOnTip, GPbank_2
+    STGP   GB_P100YposOnTip, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get z position
+    AGP    GB_P100ZposOnTip, GPbank_2
+    STGP   GB_P100ZposOnTip, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_TIP_1_P100:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P100XposOnTip_1, GPbank_2
+    STGP   GB_P100XposOnTip_1, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P100YposOnTip_1, GPbank_2
+    STGP   GB_P100YposOnTip_1, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P100ZposOnTip_1, GPbank_2
+    STGP   GB_P100ZposOnTip_1, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_TIP_7_P1000:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_Xmotor               // get x position
+    AGP    GB_P1000XposOnTip_7, GPbank_2
+    STGP   GB_P1000XposOnTip_7, GPbank_2
+    GAP    AP_ActualPosition, M_Ymotor               // get x position
+    AGP    GB_P1000YposOnTip_7, GPbank_2
+    STGP   GB_P1000YposOnTip_7, GPbank_2
+    GAP    AP_ActualPosition, M_Zmotor               // get x position
+    AGP    GB_P1000ZposOnTip_7, GPbank_2
+    STGP   GB_P1000ZposOnTip_7, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P100PlungerTop:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p100               // get position
+    AGP    GB_P100PlungerTop, GPbank_2
+    STGP   GB_P100PlungerTop, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P100PlungerTop:
+
+    CSUB   checkHomingDone
+    GGP    GB_P100PlungerTop, GPbank_2
+    CSUB   moveP100ABSwait
+    CSUB   homeP100Motor                     // each time at top, go through home
+    GGP    GB_P100PlungerTop, GPbank_2
+    CSUB   moveP100ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P100PlungerBottom:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p100               // get position
+    AGP    GB_P100PlungerBottom, GPbank_2
+    STGP   GB_P100PlungerBottom, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P100PlungerBottom:
+
+    CSUB   checkHomingDone
+    GGP    GB_P100PlungerBottom, GPbank_2
+    CSUB   moveP100ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P100PlungerBlowout:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p100               // get position
+    AGP    GB_P100PlungerBlowout, GPbank_2
+    STGP   GB_P100PlungerBlowout, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P100PlungerBlowout:
+
+    CSUB   checkHomingDone
+    GGP    GB_P100PlungerBlowout, GPbank_2
+    CSUB   moveP100ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P100PlungerDropTip:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p100               // get position
+    AGP    GB_P100PlungerDropTip, GPbank_2
+    STGP   GB_P100PlungerDropTip, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P100PlungerDropTip:
+
+    CSUB   MOVE_P100PlungerBlowout
+    CSUB   checkHomingDone
+    SAP    AP_MaxPositioningSpeed, M_p100, MAX_POS_SLOW_SPEED_p100motor   // Set slow positioning speed
+    GGP    GB_P100PlungerDropTip, GPbank_2
+    CSUB   moveP100ABSwait
+    SAP    AP_MaxPositioningSpeed, M_p100, MAX_POS_SPEED_P100motor   // Set maximum positioning speed
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P1000PlungerTop:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p1000               // get position
+    AGP    GB_P1000PlungerTop, GPbank_2
+    STGP   GB_P1000PlungerTop, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P1000PlungerTop:
+
+    CSUB   checkHomingDone
+    GGP    GB_P1000PlungerTop, GPbank_2
+    CSUB   moveP1000ABSwait
+    CSUB   homeP1000Motor                     // each time at top, go through home
+    GGP    GB_P1000PlungerTop, GPbank_2
+    CSUB   moveP1000ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P1000PlungerBottom:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p1000               // get position
+    AGP    GB_P1000PlungerBottom, GPbank_2
+    STGP   GB_P1000PlungerBottom, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P1000PlungerBottom:
+
+    CSUB   checkHomingDone
+    GGP    GB_P1000PlungerBottom, GPbank_2
+    CSUB   moveP1000ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P1000PlungerBlowout:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p1000               // get position
+    AGP    GB_P1000PlungerBlowout, GPbank_2
+    STGP   GB_P1000PlungerBlowout, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P1000PlungerBlowout:
+
+    CSUB   checkHomingDone
+    GGP    GB_P1000PlungerBlowout, GPbank_2
+    CSUB   moveP1000ABSwait
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SET_P1000PlungerDropTip:
+
+    CSUB   checkHomingDone
+
+    GAP    AP_ActualPosition, M_p1000               // get position
+    AGP    GB_P1000PlungerDropTip, GPbank_2
+    STGP   GB_P1000PlungerDropTip, GPbank_2
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MOVE_P1000PlungerDropTip:
+
+    CSUB   MOVE_P1000PlungerBlowout
+    CSUB   checkHomingDone
+    SAP    AP_MaxPositioningSpeed, M_p1000, MAX_POS_SLOW_SPEED_p1000motor   // Set slow positioning speed
+    GGP    GB_P1000PlungerDropTip, GPbank_2
+    CSUB   moveP1000ABSwait
+    SAP    AP_MaxPositioningSpeed, M_p1000, MAX_POS_SPEED_P1000motor   // Set maximum positioning speed
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CALC_ALL:
+
+   SGP     GB_CalcAllDone, GPbank_2, FALSE
+   CSUB    CALC_XYZ_DELTAS
+   CSUB    CALC_WASTE_POSITION
+   SGP     GB_CalcAllDone, GPbank_2, TRUE
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CALC_XYZ_DELTAS:   //  FUNC_60   // calculate the correction when moving from one bottle to the other
+
+   // check for 0 in positions
+   CSUB    CheckBottlesBulkMeasured
+
+   // calc GB_deltaXmovingY 
+   GGP     GB_P100XposOnBottle_16, GPbank_2        // A = GB_P100XposOnBottle_16
+   CALCAV  SUB, GB_P100XposOnBottle_13             // A = GB_P100XposOnBottle_16 - GB_P100XposOnBottle_13
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaXmovingY, GPbank_2              // save
+
+   // calc GB_deltaYmovingY 
+   GGP     GB_P100YposOnBottle_16, GPbank_2        // A = GB_P100YposOnBottle_16
+   CALCAV  SUB, GB_P100YposOnBottle_13             // A = GB_P100YposOnBottle_16 - GB_P100YposOnBottle_13
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaYmovingY, GPbank_2              // save
+
+   // calc GB_deltaZmovingY 
+   GGP     GB_P100ZposOnBottle_16, GPbank_2        // A = GB_P100ZposOnBottle_16
+   CALCAV  SUB, GB_P100ZposOnBottle_13             // A = GB_P100ZposOnBottle_16 - GB_P100ZposOnBottle_13
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaZmovingY, GPbank_2              // save
+
+   // calc GB_deltaXmovingX 
+   GGP     GB_P100XposOnBottle_16, GPbank_2        // A = GB_P100XposOnBottle_16
+   CALCAV  SUB, GB_P100XposOnBottle_4              // A = GB_P100XposOnBottle_16 - GB_P100XposOnBottle_4
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaXmovingX, GPbank_2              // save
+
+   // calc GB_deltaYmovingX 
+   GGP     GB_P100YposOnBottle_16, GPbank_2        // A = GB_P100YposOnBottle_16
+   CALCAV  SUB, GB_P100YposOnBottle_4              // A = GB_P100YposOnBottle_16 - GB_P100YposOnBottle_4
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaYmovingX, GPbank_2              // save
+
+   // calc GB_deltaZmovingX 
+   GGP     GB_P100ZposOnBottle_16, GPbank_2        // A = GB_P100ZposOnBottle_16
+   CALCAV  SUB, GB_P100ZposOnBottle_4              // A = GB_P100ZposOnBottle_16 - GB_P100ZposOnBottle_4
+   CALC    DIV, 3                                  // A = A/3
+   AGP     GB_deltaZmovingX, GPbank_2              // save
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CALC_WASTE_POSITION:   //  FUNC_62
+
+   // check for 0 in positions
+   CSUB    CheckBottlesBulkMeasured
+
+// calculate P100 to P1000
+   CALCVV  LOAD, GB_P100toP1000X, GB_P1000XposOnBottle_16   // GB_P100toP1000X  = GB_P1000XposOnBottle_16
+   CALCVV  SUB, GB_P100toP1000X, GB_P100XposOnBottle_16     // GB_P100toP1000X -= GB_P100XposOnBottle_16
+   CALCVV  LOAD, GB_P100toP1000Y, GB_P1000YposOnBottle_16   // GB_P100toP1000Y  = GB_P1000YposOnBottle_16
+   CALCVV  SUB, GB_P100toP1000Y, GB_P100YposOnBottle_16     // GB_P100toP1000Y -= GB_P100YposOnBottle_16
+   CALCVV  LOAD, GB_P100toP1000Z, GB_P1000ZposOnBottle_16   // GB_P100toP1000Z  = GB_P1000ZposOnBottle_16
+   CALCVV  SUB, GB_P100toP1000Z, GB_P100ZposOnBottle_16     // GB_P100toP1000Z -= GB_P100ZposOnBottle_16
+
+//  calculate P100 waste positions
+// *******************************
+   // calc GB_P100XposOnWaste 
+   
+   CALCVV  LOAD, GB_P100XposOnWaste, GB_P100XposOnBulk        // GB_P100XposOnWaste  = GB_P100XposOnBulk
+   CALC    LOAD, WASTE_MINUS_BULK_X                           // this is in micormeter
+   CALC    MUL, XmotorMicroStepsPerMM                         // usteps * 1000
+   CALC    DIV, 1000                                          // now in uSteps
+   CALCVA  ADD, GB_P100XposOnWaste                            // GB_P100XposOnWaste += WASTE_BULK_X [steps]
+
+   // calc GB_P100YposOnWaste 
+   CALCVV  LOAD, GB_P100YposOnWaste, GB_P100YposOnBulk        // GB_P100YposOnWaste  = GB_P100YposOnBulk
+   CALC    LOAD, WASTE_MINUS_BULK_Y                           // this is in micormeter
+   CALC    MUL, YmotorMicroStepsPerMM                         // usteps * 1000
+   CALC    DIV, 1000                                          // now in uSteps
+   CALCVA  ADD, GB_P100YposOnWaste                            // GB_P100YposOnWaste += WASTE_BULK_Y [steps]
+
+   // calc GB_P100ZposOnWaste 
+   CALCVV  LOAD, GB_P100ZposOnWaste, GB_P100ZposOnBulk        // GB_P100ZposOnWaste  = GB_P100ZposOnBulk
+   CALC    LOAD, WASTE_MINUS_BULK_Z                           // this is in micormeter
+   CALC    MUL, ZmotorMicroStepsPerMM                         // usteps * 1000
+   CALC    DIV, 1000                                          // now in uSteps
+   CALCVA  ADD, GB_P100ZposOnWaste                            // GB_P100ZposOnWaste += WASTE_BULK_Z [steps]
+
+//  calculate P1000 waste positions
+// ********************************
+   // calc GB_P1000XposOnWaste 
+   CALCVV  LOAD, GB_P1000XposOnWaste, GB_P100XposOnWaste       // GB_P1000XposOnWaste  = GB_P100XposOnWaste
+   CALCVV  ADD, GB_P1000XposOnWaste, GB_P100toP1000X           // GB_P1000XposOnWaste += GB_P1000XposOnBottle_16
+
+   // calc GB_P1000YposOnWaste 
+   CALCVV  LOAD, GB_P1000YposOnWaste, GB_P100YposOnWaste       // GB_P1000YposOnWaste  = GB_P100XposOnWaste
+   CALCVV  ADD, GB_P1000YposOnWaste, GB_P100toP1000Y           // GB_P1000YposOnWaste += GB_P1000YposOnBottle_16
+
+   // calc GB_P1000ZposOnWaste 
+   CALCVV  LOAD, GB_P1000ZposOnWaste, GB_P100ZposOnWaste       // GB_P1000ZposOnWaste  = GB_P100XposOnWaste
+   CALCVV  ADD, GB_P1000ZposOnWaste, GB_P100toP1000Z           // GB_P1000ZposOnWaste += GB_P1000ZposOnBottle_16
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+errorCalibration:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_calibration               // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+   RSUB
+
+//*********************************
+errorHomingNotDone:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_homingNotDone             // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+   RSUB
+
+//*********************************
+checkHomingDone:
+   GGP     GB_HomingDone, GPbank_2               //  
+   COMP    0
+   JC      ZE, errorHomingNotDone
+   RSUB
+
+//*********************************
+calcAndCheckMachineCalibrated:
+   SGP     GB_machineIsCalibrated, GPbank_2, FALSE        //
+   CSUB    CALC_ALL
+   CSUB    checkHomingDone
+   CSUB    CheckBottlesBulkMeasured
+   CSUB    checkMachineCalculated
+   CSUB    checkTwoPipettesLoaded
+   SGP     GB_machineIsCalibrated, GPbank_2, TRUE        //
+   RSUB
+
+//*********************************
+checkTwoPipettesLoaded:
+   GGP     GB_tipP1000isLoaded, GPbank_2         // P1000 is loaded?
+   COMP    FALSE
+   JC      EQ, exitCheckTwoPipette
+   GGP     GB_tipP100isLoaded, GPbank_2
+   COMP    FALSE
+   JC      EQ, exitCheckTwoPipette               // no error, no 
+
+errorCheckTwoPipette:
+    CSUB    setAnyError
+    GGP     GB_errors_control, GPbank_2         // load piston error word
+    CALC    OR, BitEr_bothPipettesLoaded        // add the error bit
+    AGP     GB_errors_control, GPbank_2         // and write again
+    STGP    GB_errors_control, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+exitCheckTwoPipette:
+   RSUB
+
+//*********************************
+CheckBottlesBulkMeasured:
+
+   CSUB    checkHomingDone
+
+   GGP     GB_P100XposOnBulk, GPbank_2           //  X(4)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100YposOnBulk, GPbank_2           //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100ZposOnBulk, GPbank_2           //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000XposOnBulk, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000YposOnBulk, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000ZposOnBulk, GPbank_2          //  X(13)  only Z
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100XposOnBottle_4, GPbank_2       //  X(4)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100YposOnBottle_4, GPbank_2       //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100ZposOnBottle_4, GPbank_2       //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100XposOnBottle_13, GPbank_2      //  X(4)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100YposOnBottle_13, GPbank_2      //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100ZposOnBottle_13, GPbank_2           //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100XposOnBottle_16, GPbank_2      //  X(4)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100YposOnBottle_16, GPbank_2      //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100ZposOnBottle_16, GPbank_2           //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000XposOnBottle_16, GPbank_2     //  X(4)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000YposOnBottle_16, GPbank_2     //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000ZposOnBottle_16, GPbank_2           //  X(13)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+checkMachineCalculated:
+   GGP     GB_P100XposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100YposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100ZposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000XposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000YposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P1000ZposOnWaste, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_deltaYmovingY, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_deltaXmovingX, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100toP1000X, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_P100toP1000Z, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   GGP     GB_CalcAllDone, GPbank_2     //  X(16)
+   COMP    0
+   JC      ZE, errorCalibration
+
+   RSUB
+
+//*********************************
+//*********************************
+// Subroutines HOME
+//*********************************
+//*********************************
+
+FIND_HOMES:   //  FUNC_2
+
+    CSUB    ClearRunningErrors
+    SGP     GB_HomingDone, GPbank_2, FALSE  // clear homing done  
+    SGP     GB_CmdInProcess, GPbank_2, TRUE     // eliminate interupptions
+
+    CSUB    startHomeZMotor               // Z and plungers holders first to clear the way for x, y
+    CSUB    startHomeP100Motor
+    CSUB    startHomeP1000Motor
+    CSUB    waitHomeZMotor
+
+    CSUB    startHomeXMotor                 
+    CSUB    startHomeYMotor
+    CSUB    waitHomeXMotor       // otherwize the cable can be stuck on the control box
+    CSUB    waitHomeYMotor
+    CSUB    waitHomeP100
+    CSUB    waitHomeP1000
+    SGP     GB_HomingDone, GPbank_2, TRUE         // home done
+
+    CSUB    MOVE_ALL_TO_START
+
+//    SGP     GB_nextTipP100, GPbank_2, 0           // assume all the tips are in place and not loaded
+//    SGP     GB_nextTipP1000, GPbank_2, 0          // assume all the tips are in place and not loaded
+//    SGP     GB_tipP100isLoaded, GPbank_2, FALSE   // assume no tip on pipette
+//    SGP     GB_tipP1000isLoaded, GPbank_2, FALSE  // assume no tip on pipette
+
+    SGP     GB_CmdInProcess, GPbank_2, FALSE     // eliminate interupptions
+    SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
+    RSUB
+
+//*********************************
+MOVE_ALL_TO_START:
+    CSUB    SEND_Z_P100_P1000_TO_START
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+
+    CALC    LOAD, X_MOTOR_START
+    MVPA    ABS, M_Xmotor                         // move, wait later
+    CALC    LOAD, Y_MOTOR_START
+    MVPA    ABS, M_Ymotor                         // move, wait later
+
+    CSUB    waitXMotor
+    CSUB    waitYMotor
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+
+    RSUB
+
+//*********************************
+//*********************************
+
+homeXMotor:                           // only to home sensor
+    CSUB      startHomeXMotor
+    CSUB      waitXMotorRfs
+    RSUB
+
+startHomeXMotor:
+    SGP       GB_motorIsMoving, GPbank_2, TRUE
+    SAP       AP_MaxCurrent, M_Xmotor, MAX_CURRENT_Xmotor            // Set absolute max. current
+    SAP       AP_RefSearchMode, M_Xmotor, APV_RefLeftSwitch  
+    RFS       START, M_Xmotor                                 // Start reference search
+    RSUB
+
+waitHomeXMotor:                      // wait home sensor and position
+    CSUB      waitXMotorRfs
+    RSUB
+
+positionXMotor:                      // wait home sensor and position
+    CALC      LOAD, X_MOTOR_START
+    CSUB      moveXMotorABSwait         // move, wait and error if delay
+    RSUB
+
+//*********************************
+
+homeYMotor:                           // only to home sensor
+    CSUB      startHomeYMotor
+    CSUB      waitYMotorRfs
+    RSUB
+
+startHomeYMotor:
+    SGP      GB_motorIsMoving, GPbank_2, TRUE
+    SAP      AP_MaxCurrent, M_Ymotor, MAX_CURRENT_Ymotor            // Set absolute max. current
+    SAP      AP_RefSearchMode, M_Ymotor, APV_RefLeftSwitch  
+    RFS      START, M_Ymotor                                        // Start reference search
+    RSUB
+
+waitHomeYMotor:                         // wait home sensor and position
+    CSUB     waitYMotorRfs
+    RSUB
+
+positionYMotor:                         // wait home sensor and position
+    CALC     LOAD, Y_MOTOR_START
+    CSUB     moveYMotorABSwait         // move, wait and error if delay
+    RSUB
+
+//*********************************
+
+homeZMotor:                           // only to home sensor
+    CSUB    startHomeZMotor
+    CSUB    waitZMotorRfs
+    RSUB
+
+startHomeZMotor:
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    SAP     AP_MaxCurrent, M_Zmotor, MAX_CURRENT_Zmotor            // Set absolute max. current
+    SAP     AP_RefSearchMode, M_ZMotor, APV_RefLeftSwitch  
+    RFS     START, M_ZMotor                                        // Start reference search
+    RSUB
+
+waitHomeZMotor:                      // wait home sensor and position
+    CSUB    waitZMotorRfs
+    RSUB
+
+positionZMotor:                      // wait home sensor and position
+    CALC    LOAD, Z_MOTOR_START
+    CSUB    moveZMotorABSwait       // move, wait and error if delay
+    RSUB
+
+//*********************************
+
+homeP100Motor:                           // only to home sensor
+    CSUB    startHomeP100Motor
+    CSUB    waitP100Rfs
+    RSUB
+
+startHomeP100Motor:
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    SAP     AP_MaxCurrent, M_p100, MAX_CURRENT_p100motor      // Set absolute max. current
+    SAP     AP_RefSearchMode, M_p100, APV_RefLeftSwitch  
+    RFS     START, M_p100                                     // Start reference search
+    RSUB
+
+waitHomeP100:                      // wait home sensor and position
+    CSUB    waitP100Rfs
+    RSUB
+
+positionP100:                      // wait home sensor and position
+    CALC    LOAD, P100_START
+    CSUB    moveP100ABSwait         // move, wait and error if delay
+    RSUB
+
+//*********************************
+
+homeP1000Motor:                           // only to home sensor
+    CSUB    startHomeP1000Motor
+    CSUB    waitP1000Rfs
+    RSUB
+
+startHomeP1000Motor:
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    SAP     AP_MaxCurrent, M_p1000, MAX_CURRENT_p1000motor       // Set absolute max. current
+    SAP     AP_RefSearchMode, M_p1000, APV_RefLeftSwitch  
+    RFS     START, M_p1000                                       // Start reference search
+    RSUB
+
+waitHomeP1000:                      // wait home sensor and position
+    CSUB    waitP1000Rfs
+    RSUB
+
+positionP1000:                      // wait home sensor and position
+    CALC    LOAD, P1000_START
+    CSUB    moveP1000ABSwait         // move, wait and error if delay
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ZMotorTOerr:  
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_Zmotor, GPbank_2         // load piston error word
+    CALC    OR, BitEr_TimeOut                    // add the error bit
+    AGP     GB_errors_M_Zmotor, GPbank_2         // and write again
+    STGP    GB_errors_M_Zmotor, GPbank_2         // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+XMotorTOerr:   
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_Xmotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                   // add the error bit
+    AGP     GB_errors_M_Xmotor, GPbank_2        // and write again
+    STGP    GB_errors_M_Xmotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+YMotorTOerr:  
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_Ymotor, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                   // add the error bit
+    AGP     GB_errors_M_Ymotor, GPbank_2        // and write again
+    STGP    GB_errors_M_Ymotor, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+P100MotorTOerr:   
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_p100, GPbank_2           // load piston error word
+    CALC    OR, BitEr_TimeOut                    // add the error bit
+    AGP     GB_errors_M_p100, GPbank_2           // and write again
+    STGP    GB_errors_M_p100, GPbank_2           // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+P1000MotorTOerr:
+
+    CSUB    setAnyError
+    GGP     GB_errors_M_p1000, GPbank_2        // load piston error word
+    CALC    OR, BitEr_TimeOut                  // add the error bit
+    AGP     GB_errors_M_p1000, GPbank_2        // and write again
+    STGP    GB_errors_M_p1000, GPbank_2        // and store it
+    SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
+    STGP    GB_CurrentState, GPbank_2
+    JA      ABORT_NoReport
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Manual Axis movements 
+//  Use carefully, only in direct mode
+//  The movement consists of the following commands.
+//  The global parameter GB_UnitsToMoveManual (address 60)  holds the micro-meters 
+//  or mili-degrees to go. GB_moveManualBackwards holds the direction.
+//  Before sending the next movement look if GB_motorIsMoving   (GB_16) is clear
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+XMotorManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
+    CALC    MUL, XMotorMicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CSUB    moveXMotorRELwait
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveXMotorABSwait:    // 
+
+    MVPA    ABS, M_Xmotor                         // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitXMotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveXMotorRELwait:    // 
+
+    MVPA    REL, M_Xmotor                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitXmotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitXMotor:    // 
+
+    SGP     GB_motorIsMoving  , GPbank_2, TRUE
+    WAIT    POS, M_Xmotor, WAIT_TICKS                  // wait till reaches location or 10 seconds
+    JC      ETO, XMotorTOerr                          // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitXMotorRfs:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    RFS, M_Xmotor, WAIT_TICKS           // wait end of reference search 15 seconds
+    JC      ETO, XMotorTOerr                          // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+YMotorManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
+    CALC    MUL, YMotorMicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CSUB    moveYMotorRELwait
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveYMotorABSwait:    // 
+
+    MVPA    ABS, M_Ymotor                         // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitYMotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveYMotorRELwait:    // 
+
+    MVPA    REL, M_Ymotor                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitYmotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitYMotor:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    POS, M_Ymotor, WAIT_TICKS            // wait till reaches location or 10 seconds
+    JC      ETO, YMotorTOerr                     // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitYMotorRfs:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    RFS, M_Ymotor, WAIT_TICKS           // wait end of reference search 15 seconds
+    JC      ETO, YMotorTOerr                    // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ZMotorManual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
+    CALC    MUL, ZMotorMicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CSUB    moveZMotorRELwait
+    RSUB    
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveZMotorABSwait:    // 
+
+    MVPA    ABS, M_Zmotor                         // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitZMotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveZMotorRELwait:    // 
+
+    MVPA    REL, M_Zmotor                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitZmotor
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitZMotor:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    POS, M_Zmotor, WAIT_TICKS            // wait till reaches location or 10 seconds
+    JC      ETO, ZMotorTOerr                     // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitZMotorRfs:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    RFS, M_Zmotor, WAIT_TICKS              // wait end of reference search 10 seconds
+    JC      ETO, ZMotorTOerr                       // timeout occured
+    SGP     GB_motorIsMoving  , GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+P100Manual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
+    CALC    MUL, P100MicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CSUB    moveP100RELwait
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP100REL_uLwait:    // 
+
+    CALCAV  MUL, GB_P100MicroStepPer100microL          
+    CALC    DIV, 100                                                        // now in uSteps
+    CSUB    moveP100RELwait
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP100ABSwait:    // 
+
+    MVPA    ABS, M_p100                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitP100
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP100RELwait:    // 
+
+    MVPA    REL, M_p100                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitP100
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitP100:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    POS, M_p100, WAIT_TICKS              // wait till reaches location or 10 seconds
+    JC      ETO, P100MotorTOerr                  // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitP100Rfs:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    RFS, M_p100, WAIT_TICKS             // wait end of reference search 15 seconds
+    JC      ETO, P100MotorTOerr                      // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+P1000Manual:    // 
+
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
+    CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
+    CALC    MUL, P1000MicroStepsPerMM              
+    CALC    DIV, 1000                                   // now in uSteps
+    CSUB    moveP1000RELwait
+    RSUB    
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP1000REL_uLwait:    // 
+
+    CALCAV  MUL, GB_P1000MicroStepPer100microL          
+    CALC    DIV, 100                                                        // now in uSteps
+    CSUB    moveP1000RELwait
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP1000ABSwait:    // 
+
+    MVPA    ABS, M_p1000                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitP1000
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+moveP1000RELwait:    // 
+
+    MVPA    REL, M_p1000                        // move, wait later
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    CSUB    waitP1000
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitP1000:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    POS, M_p1000, WAIT_TICKS          // wait till reaches location or 10 seconds
+    JC      ETO, P1000MotorTOerr                   // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+waitP1000Rfs:    // 
+
+    SGP     GB_motorIsMoving, GPbank_2, TRUE
+    WAIT    RFS, M_p1000, WAIT_TICKS     // wait end of reference search 15 seconds
+    JC      ETO, P1000MotorTOerr                   // timeout occured
+    SGP     GB_motorIsMoving, GPbank_2, FALSE
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  calibration functions  
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SEND_MOTOR_TO_HOME:
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_Zmotor
+    JC      EQ, calibMotorZMotor
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_Xmotor
+    JC      EQ, calibMotorXMotor
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_Ymotor
+    JC      EQ, calibMotorCap
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_p100
+    JC      EQ, calibMotorP100
+
+    GGP     GB_motorNumForHome, GPbank_2               // the motor number to send to home
+    COMP    M_p1000
+    JC      EQ, calibMotorP1000
+
+    JA     returnSendMotorToHome
+
+calibMotorZMotor:
+    CSUB   homeZMotor
+    JA     returnSendMotorToHome
+
+calibMotorXMotor:
+    CSUB   homeXMotor
+    JA     returnSendMotorToHome
+
+calibMotorCap:
+    CSUB   homeYMotor
+    JA     returnSendMotorToHome
+
+calibMotorP100:
+    CSUB   homeP100Motor
+    JA     returnSendMotorToHome
+
+calibMotorP1000:
+    CSUB   HomeP1000Motor
+
+returnSendMotorToHome:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setStateSTOPPED_ON_ERROR:
+
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    CSUB    setAnyError
+    RSUB
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setStateSTOPPED_ON_ERROR_Yellow:
+
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    STGP    GB_CurrentState, GPbank_2
+    CSUB    setAnyErrorYellow
+    RSUB
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setAnyError:
+
+    SGP     GB_any_Error, GPbank_2, TRUE                 // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    RED_ON
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setAnyErrorYellow:
+
+    SGP     GB_any_Error, GPbank_2, TRUE                 // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    YELLOW_ON
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+clrAnyError:
+
+    SGP     GB_any_Error, GPbank_2, FALSE                  // signal error: general
+    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    CSUB    GREEN_ON
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+

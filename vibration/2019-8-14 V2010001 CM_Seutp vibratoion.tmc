@@ -1,0 +1,155 @@
+// Vibration test
+// Eli Leshem
+
+
+//**************************************************
+#Include CM_TMCLParam.tmc              // TMCL Parameters
+//**************************************************
+
+//***********
+// Defines
+//***********
+
+CURRENT_VERSION      =  2010001     // 2 is for CM
+
+//**********
+// OUTPUTS
+//**********
+
+Out_Dir     = 0    // direction of  move
+Out_Pwm     = 1    // enable output
+
+
+//********************************
+// User variables map (bank 2)
+//********************************
+
+GB_currentVersion           =   0    // Current SW version
+GB_1                        =   1
+GB_2                        =   2
+GB_3                        =   3
+GB_4                        =   4
+GB_5                        =   5
+GB_RobotSerialNumber        =   6    // (1030006)  2 = CM, 01= HW ver,  0001= machine #)
+GB_7                        =   7
+GB_8                        =   8
+GB_9                        =   9
+GB_10                       =  10 
+GB_PwmDutyCycleMS           =  11   // [ms]
+GB_PwmPeriodMS              =  12   // [ms]
+GB_13                       =  13
+GB_14                       =  14
+GB_15                       =  15
+GB_16                       =  16
+GB_17                       =  17
+
+
+
+
+GB_InterruptCount           =  255    // temorary variable 5
+
+//******************
+// CODE STARTS HERE
+//******************
+
+// subroutines initialize from PC  // "starting address":
+
+FUNC_0:    CSUB FIRST_RUN        //  will run on power ON
+           JA   BACK_GROUND_PROCESS
+FUNC_2:    CSUB dummy_sub       //  Will test all axis and sensors
+           JA   BACK_GROUND_PROCESS
+FUNC_4:    JA   dummy_sub //  resets all errors to start. JA because of the RST function that clears stack any way
+           JA   BACK_GROUND_PROCESS
+FUNC_6:    CSUB dummy_sub   //  Run the initial setup, detect if there is a initial volume in the system
+           JA   BACK_GROUND_PROCESS
+FUNC_8:    CSUB dummy_sub        //  Draw the requested activity
+           JA   BACK_GROUND_PROCESS
+FUNC_10:   CSUB dummy_sub       //  ok, put the syringe in PIG
+           JA   BACK_GROUND_PROCESS
+func_12:   CSUB dummy_sub            //  stop all motors and program
+           JA   BACK_GROUND_PROCESS
+func_14:   CSUB dummy_sub //  checks if the vial' syrine and pig are ready to draw
+           JA   BACK_GROUND_PROCESS
+FUNC_16:   CSUB BACK_GROUND_PROCESS  //  Initialize parameters.
+           JA   BACK_GROUND_PROCESS
+func_18:   CSUB dummy_sub
+           JA   BACK_GROUND_PROCESS
+FUNC_20:   CSUB initInterrups        // will initialize interrupr vector and periods
+           JA   BACK_GROUND_PROCESS
+
+//*******************************
+dummy_sub:                  // for dummy subroutines
+   RSUB
+
+//******************************************
+// run this whenever no function is running
+// this will enable the interrupts
+//******************************************
+
+BACK_GROUND_PROCESS:
+    JA      BACK_GROUND_PROCESS
+   
+//**********************************
+// Name: FIRST_RUN after power ON
+//**********************************
+
+FIRST_RUN:
+    CSUB    initInterrups
+    RSUB
+
+
+//**********************************
+
+
+//**********************
+// Interupt definition 
+//**********************
+
+initInterrups:
+
+// for direction cycle of PWM
+    VECT   TI_TIMER0, Timer0Irq
+    GGP    GB_PwmPeriodMS, GPbank_2             // A holds period time in MS
+    AGP    TI_TIMER0, GPbank_3                  // set period interrupt
+    EI     TI_TIMER0  
+
+ // for duty cycle of PWM  (time ON)
+    VECT   TI_TIMER1, Timer1Irq
+    GGP    GB_PwmDutyCycleMS, GPbank_2          // A holds duty cycle MS
+    AGP    TI_TIMER1, GPbank_3                  // set period interrupt
+//    EI     TI_TIMER1                
+
+ // enable global
+    EI      TI_GLOBAL  
+    RSUB
+
+//*******************************************
+
+Timer1Irq:   // duty cycle of PWM  (time ON)
+
+//    CSUB   incrementInterruptsCount
+    DI     TI_TIMER1                      
+    SIO    Out_Pwm, GPbank_2, 1           // switch OUT0 high
+    RETI
+
+//*******************************************
+Timer0Irq:    // for direction cycle of PWM
+
+    CSUB   incrementInterruptsCount
+
+    GIO    Out_Dir, InBankOuput_2
+    JC     NZ, clearOutDir
+    SIO    Out_Dir, GPbank_2, 1           // switch direction low
+    JA     returnIrq0
+clearOutDir:
+    SIO    Out_Dir, GPbank_2, 0           // switch direction high
+returnIrq0:
+    SIO    Out_Pwm, GPbank_2, 0           // output ON
+    EI     TI_TIMER1         
+    RETI
+
+//*******************************************
+incrementInterruptsCount:
+    CALCV   ADD, GB_InterruptCount, 1                   // add 1 to accumulator
+    RSUB
+//*******************************************
