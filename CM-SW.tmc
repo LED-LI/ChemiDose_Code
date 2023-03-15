@@ -170,13 +170,13 @@ setTestParams:   //  98
     SGP    GB_microLtoWithdraw_1,GPbank_2, 0000
     SGP    GB_microLtoWithdraw_2,GPbank_2, 2000
     SGP    GB_microLtoWithdraw_3,GPbank_2, 0000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,05000
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
     SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
-    SGP    GB_vialSize_microL_1,GPbank_2, 15000
-    SGP    GB_vialSize_microL_2,GPbank_2, 15000
-    SGP    GB_vialSize_microL_3,GPbank_2, 15000
+    SGP    GB_vialSize_microL_1,GPbank_2,  5000
+    SGP    GB_vialSize_microL_2,GPbank_2,  5000
+    SGP    GB_vialSize_microL_3,GPbank_2,  5000
     SGP    GB_vialSize_microL_4,GPbank_2, 15000
     SGP    GB_vialSize_microL_5,GPbank_2, 15000
     SGP    GB_vialSize_microL_6,GPbank_2, 15000
@@ -186,19 +186,20 @@ setTestParams:   //  98
     SGP    GB_microLtoFill_2,GPbank_2, 00000000 /////L.E.D///// DO NOT CHANGE FROM 0 !!!!!
     SGP    GB_microLtoFill_3,GPbank_2, 00000000//////L.E.D////  DO NOT CHANGE FROM 0 !!!!!
   //// L.E.D ////  DO NOT CHANGE FROM 0 !!!!! ///////L.E.D///   DO NOT CHANGE FROM 0 !!!!!
-    SGP    GB_microLtoFill_4,GPbank_2,    00000
+  
+    SGP    GB_microLtoFill_4,GPbank_2,    10000
     SGP    GB_microLtoFill_5,GPbank_2,    00000
     SGP    GB_microLtoFill_6,GPbank_2,    00000
 
     SGP    GB_vibrationLocation,GPbank_2, Bit_vibrateDown        // determens the location of the vibration
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
-    SGP     GB_skipCheckVial456,GPbank_2, clr
+    SGP     GB_skipCheckVial456,GPbank_2, set
     SGP     GB_skipCheckBag,GPbank_2, clr
 
    //// SGP    GB_HeadRotateHomePos,GPbank_2,  16240        // 16240 is the default for the syringe pointing left // arbitrary setting for debugging //// L.E.D ////
 
-    SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
+    SGP    GB_vibrationTime_4, GPbank_2, 05               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
