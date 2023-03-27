@@ -351,6 +351,7 @@ adjustDrawVolume:
 
 initVerticalMotor:
     MST     M_verticalMotor                                             // Motor stop
+    SGP     GB_EndSwitchPlarity, GPbank_0, normalPolarity0to5           // set normal polarity for limit switches of all motors
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
