@@ -1,9 +1,9 @@
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Name:        CM_Init.tmc
-//
-// Description: CM software
-//
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+ Name:        CM_Init.tmc                              +
+//+                                                       +
+//+ Description: CM software                              +
+//+                                                       +
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Changes: 
 //    1. V2010001 initial SW
 //    2. V2010002 After rework for separate DIR for capHolder. swappes out3 and out
@@ -16,10 +16,24 @@
 //    9. 2022-09-29 homing, capHolder
 //   10. 2022-10-05 reference from first vial linear and bump
 //   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
+//   15. 2022-11-23 vibrate vial 4
+//   16. 2022-11-24 fix error after vibrate vials
+//   17. 2022-11-27 vibrate success with RFS issue   BUMP_DOWN_REL
+//   18. 2022-11-28 BUMP_DOWN_REL 330 -> 300
+//   19. 2022-11-29 fix turning with large draw volume
+//   20. 2022-11-30 creating boundaries for the syringe movement in space acording to its volume
+//   21. 2022-12-01 debuging syringe parimiters
+//   22. 2022-12-04 canceling PushPull50PerCent
+//   23. 2022-12-05 defined as our reference
+//   24. 2023-04-16 returning back to last reference (before "optimizing") and writing everything again
+//   25. 2023-04-30 removed STGP for GB_currentVersion + moved global parameters from 0-55 to higher numbers
 //
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2022-11-05-CM-Init.tmc
+// This file:  2023-04-30-CM-Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return
@@ -29,7 +43,7 @@
 ABORT:
     SGP     GB_CurrentState, GPbank_2, ABORTED
     GGP     GB_errors_syringe_bag, GPbank_2          // load  error word
-    CALC    OR, BitEr_machineAborted                    // add the error bit
+    CALC    OR, BitEr_machineAborted                 // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2          // and write again
     STGP    GB_errors_syringe_bag, GPbank_2          // and store it
 
@@ -40,7 +54,7 @@ ABORT_NoReport:
     MST     M_armMotor                                  // Stop
     MST     M_pistonMotor                               // Stop fill syringe
     MST     M_headRotateMotor                           // Stop move
-    MST     M_disposeMotor                           // Stop move
+    MST     M_disposeMotor                              // Stop move
     SIO     Out_PulseCapHolder, OutBank_2, 0            // disable capHolder motor
     SIO     Out_CAPHolderDIR_Down, OutBank_2, 0         // reset DIR for capHolderMotor
     SIO     Out_VibrateDIR, OutBank_2, 1                // reset DIR for 2 vibrators
@@ -60,9 +74,7 @@ ABORT_NoReport:
 FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
 
     SGP     GB_currentVersion, GPbank_2, CURRENT_VERSION        // Write version number
-    STGP    GB_currentVersion, GPbank_2                         // Write version number
-    //SGP     GB_RobotSerialNumber, GPbank_2, ROBOT_SERIAL_NUMBER // Write serial number -> will be set by calibration on GB_6
-    //STGP    GB_RobotSerialNumber, GPbank_2                      // Write serial number
+    // STGP    GB_currentVersion, GPbank_2                         // Write version number
     SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
     SGP     GB_CoordinateStorage, GPbank_0, 0                   // 0=RAM only; 1=always also in EEPROM
     SGP     GB_DoNotRestoreUserVars, GPbank_0, 0                // 0=restore;  1=Do not restore at startup
@@ -71,23 +83,8 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
     RST     continueClearErrors             
 
 continueClearErrors:    // stack is now empty
-
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    WAIT TICKS, 0, 50
-    CSUB YELLOW_ON
-    WAIT TICKS, 0, 50
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-
-    CSUB    INIT_MOTORS
-    CSUB    ClearErrorsRAM
-    
-
+    // CSUB    INIT_MOTORS
+    // CSUB    ClearErrorsRAM
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -95,7 +92,7 @@ continueClearErrors:    // stack is now empty
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 INIT_MOTORS:       // func 16  Init user variables
 
-    SGP     GB_InitDone, GPbank_2, clr
+    // SGP     GB_InitDone, GPbank_2, clr
     CSUB    LEDS_OFF
     CSUB    initSyringes
     CSUB    initNeedles
@@ -109,11 +106,15 @@ INIT_MOTORS:       // func 16  Init user variables
     CSUB    StopVibrate
     CSUB    initVibrator_4
     CSUB    initVibrator_56
+
     CSUB    screenAllVials
+    SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs
+    WAIT    TICKS, 0, 100/10                         // 100 ms
+
  //   CSUB    initInterrups
     SIO     Out_Multiplexer, OutBank_2, 0
     SGP     GB_HomingDone, GPbank_2, clr
-    SGP     GB_InitDone, GPbank_2, set                       // init done
+    // SGP     GB_InitDone, GPbank_2, set                       // init done
     SGP     GB_MotorIsMoving, GPbank_2, clr                    //  16
     RSUB
 
@@ -149,7 +150,7 @@ syringe_3:
     JA      returnInitSyringes
 syringe_4:
     GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_4                                     // is it syringe_4?
+    COMP    DPS_LureLock_20                                     // is it syringe_4?
     JC      NE, syringe_5                                 // no, exit
     SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_4
     SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_4
@@ -236,11 +237,11 @@ returnInitSyringes:    // save in EEPROM
 
 initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge and volume
 
- // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME
+ // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME_25M_22G
  // The flow with same pressure relates to the 1/length and internal dia^2
 
 
-    SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME  // init initially to 2 seconds
+    SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME_25M_22G  // init initially to 2 seconds
 
  // calculate drawWaitTime according to length, compare to 25 mm
     GGP     GB_NeedleLength, GPbank_2
@@ -249,7 +250,7 @@ initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge 
     SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
 checkTooLong:
     GGP     GB_NeedleLength, GPbank_2
-    COMP    38
+    COMP    40
     JC      LE, calcWithLength                             // too high
     SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
 calcWithLength:
@@ -265,15 +266,26 @@ calcWithLength:
 // Gauge inner  relative   relative  multiply    dwell 
 //       dia    to 22      square                time
 // 				
-// 20    0.603  1.460      2.132      46.9       0.938
-// 20    0.514  1.245      1.549      64.6       1.291
-// 22    0.413  1.000      1.000     100         2.000
+// 14    1.600  3.874     15.009     006.7       0.133
+// 16    1.194  2.891      8.358     012.0       0.239
+// 18    0.838  2.029      4.117     024.3       0.486
+// 20    0.603  1.460      2.132     046.9       0.938
+// 21    0.514  1.245      1.549     064.6       1.291
+// 22    0.413  1.000      1.000     100.0       2.000
 // 23    0.337  0.816      0.666     150.2       3.004
 // 24    0.311  0.753      0.567     176.4       3.527
 //
 // ///////////////////////////////////////
     
-// check Gauge, compare 18
+// check Gauge, compare 16
+    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    COMP    16
+    JC      NE, compare18
+    CALCV   MUL, GB_DrawWaitTime, 100
+    CALCV   DIV, GB_DrawWaitTime, 836                      // 
+    JA      adjustDrawVolume
+
+compare18:   // check Gauge, compare 18
     GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
     COMP    18
     JC      NE, compare21
@@ -281,30 +293,40 @@ calcWithLength:
     CALCV   DIV, GB_DrawWaitTime, 412                      // (1/2.03)^2
     JA      adjustDrawVolume
 
+compare20:   // check Gauge, compare 20
+    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    COMP    20
+    JC      NE, compare21
+    CALCV   MUL, GB_DrawWaitTime, 100
+    CALCV   DIV, GB_DrawWaitTime, 146                      // (1/1.24)^2
+    JA      adjustDrawVolume
+
 compare21:   // check Gauge, compare 21
     GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
     COMP    21
     JC      NE, compare22
     CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 153                      // (1/1.24)^2
+    CALCV   DIV, GB_DrawWaitTime, 154                      // (1/1.24)^2
     JA      adjustDrawVolume
 
 compare22:  // check Gauge, compare 22
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
     COMP    22
     JC      EQ, adjustDrawVolume
 
 compare23:  // check Gauge, compare 23
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
     COMP    23
     JC      NE, adjustDrawVolume
     CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 67                       // * (1/0.816)^2
+    CALCV   DIV, GB_DrawWaitTime, 67                                    // * (1/0.816)^2
 
  // calculate drawWaitTime according to draw volume, compare to 1mL
 adjustDrawVolume:
-    CALCVV  MUL, GB_DrawWaitTime, GB_microLbagToFill        // adjust wait time according to draw volume
-    CALCV   DIV, GB_DrawWaitTime, DEFAULT_DRAW_VOLUME
+ //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
+    // CALCVV  MUL,  GB_DrawWaitTime, GB_microLbagToFill                   // adjust wait time according to draw volume
+    // CALCV   DIV,  GB_DrawWaitTime, DEFAULT_DRAW_VOLUME
+ //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -313,10 +335,14 @@ adjustDrawVolume:
 
 initVerticalMotor:
     MST     M_verticalMotor                                             // Motor stop
-    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5          //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
+    // SGP     GB_EndSwitchPlarity, GPbank_0, normalPolarity0to5            // set normal polarity for limit switches of all motors
+    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity0to2           // set reverse polarity for limit switches of 0-2 motors and normal Polarity 3-5
+    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5           // set normal polarity for limit switches of 0-2 motors and reverse Polarity 3-5
+    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity0to5           // set reverse polarity for limit switches of all motors
+    // SGP     GB_EndSwitchPlarity, GPbank_0, 1
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
     SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT               // Set maximum acceleration
     SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT            // Set absolute max. current
     SAP     AP_StandbyCurrent, M_verticalMotor, STBY_CURRENT_VERT       // Set standby current (the current limit two seconds after the motor has stopped)
@@ -368,17 +394,17 @@ initArmMotor:
     SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM   // speed for search
     SAP     AP_RefSwitchSpeed, M_armMotor, SWITCH_SPEED_ARM   // speed for final search
     SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM           // Set maximum acceleration
-    SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM        // Set absolute max. current
-    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM       // Set standby current (the current limit two seconds after the motor has stopped)
-    SAP     AP_BoostCurrent, M_armMotor, 255                  // while acceleration of decelaration
-    SAP     AP_RightLimitSwitchDisable, M_armMotor, set       // disable right limit switch for REF
-    SAP     AP_LeftLimitSwitchDisable, M_armMotor, set        // Disable left limit switch
-    SAP     AP_MicrostepResolution, M_armMotor, microsteps_16 // Set microstep resolution to 16 microsteps
-    SAP     AP_StepInterpolEnable, M_armMotor, set            // on 16 microsteps only
-    SAP     AP_RampDivisor, M_armMotor, 3                     // Set ramp divisor
-    SAP     AP_PulseDivisor, M_armMotor, 3                    // Set pulse divisor
-    SAP     AP_SoftStopFlag, M_armMotor, set                  // Soft stop (using deceleration ramp) when a stop switch is hit
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM               // Set maximum acceleration
+    SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM            // Set absolute max. current 
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM //_HIGH   // Set standby current (the current limit two seconds after the motor has stopped) //  //// L.E.D //// STBY_CUR_ARM_HIGH  //// L.E.D ////
+    SAP     AP_BoostCurrent, M_armMotor, 255                      // while acceleration of decelaration
+    SAP     AP_RightLimitSwitchDisable, M_armMotor, set           // disable right limit switch for REF
+    SAP     AP_LeftLimitSwitchDisable, M_armMotor, set            // Disable left limit switch
+    SAP     AP_MicrostepResolution, M_armMotor, microsteps_16     // Set microstep resolution to 16 microsteps
+    SAP     AP_StepInterpolEnable, M_armMotor, set                // on 16 microsteps only
+    SAP     AP_RampDivisor, M_armMotor, 3                         // Set ramp divisor
+    SAP     AP_PulseDivisor, M_armMotor, 3                        // Set pulse divisor
+    SAP     AP_SoftStopFlag, M_armMotor, set                      // Soft stop (using deceleration ramp) when a stop switch is hit
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -388,9 +414,9 @@ initArmMotor:
 
 initPistonMotor:
     MST     M_pistonMotor                                         // Motor stop
-//  SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5    // set in motor 5. reverse polarity for motors 3-5
+    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5    // set in motor 5. reverse polarity for motors 3-5
     SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST   // speed for search
-    SAP     AP_RefSwitchSpeed, M_pistonMotor, SWITCH_SPEED_PIST   // speed for final search
+    SAP     AP_RefSwitchSpeed, M_pistonMotor, SWITCH_SPEED_PIST // _MED // speed for final search  //// L.E.D //// MAX_POS_SPEED_PIST_MED  //// L.E.D ////
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
     SAP     AP_MaxAcceleration, M_pistonMotor,  ACC_PIST          // Set maximum acceleration
     SAP     AP_MaxCurrent, M_pistonMotor, MAX_CURRENT_PIST        // Set absolute max. current
@@ -421,8 +447,8 @@ initHeadRotateMotor:
 //    SGP     GB_limitNeedleBentMicroS, GPbank_2, limitNeedleBentMicroS   // just to see on line
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT      // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT      // speed for final search
-    SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT             // Set maximum acceleration
+    SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_ROT // was : MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
+    SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT             // Set maximum acceleration //     SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT         // Set maximum acceleration  //// L.E.D //// 
     SAP     AP_MaxCurrent, M_headRotateMotor, MAX_CURRENT_ROT           // Set absolute max. current
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE       // Set standby current (the current limit two seconds after the motor has stopped)
     SAP     AP_BoostCurrent, M_headRotateMotor, 255                     // while acceleration of decelaration

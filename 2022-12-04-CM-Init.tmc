@@ -1,9 +1,9 @@
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Name:        CM_Init.tmc
-//
-// Description: CM software
-//
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+ Name:        CM_Init.tmc                              +
+//+                                                       +
+//+ Description: CM software                              +
+//+                                                       +
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Changes: 
 //    1. V2010001 initial SW
 //    2. V2010002 After rework for separate DIR for capHolder. swappes out3 and out
@@ -16,10 +16,21 @@
 //    9. 2022-09-29 homing, capHolder
 //   10. 2022-10-05 reference from first vial linear and bump
 //   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
+//   15. 2022-11-23 vibrate vial 4
+//   16. 2022-11-24 fix error after vibrate vials
+//   17. 2022-11-27 vibrate success with RFS issue   BUMP_DOWN_REL
+//   18. 2022-11-28 BUMP_DOWN_REL 330 -> 300
+//   19. 2022-11-29 fix turning with large draw volume
+//   20. 2022-11-30 creating boundaries for the syringe movement in space acording to its volume
+//   21. 2022-12-01 debuging syringe parimiters
+//   21. 2022-12-04 
 //
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2022-11-05-CM-Init.tmc
+// This file:  2022-12-04-CM-Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return
@@ -71,23 +82,8 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
     RST     continueClearErrors             
 
 continueClearErrors:    // stack is now empty
-
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    WAIT TICKS, 0, 50
-    CSUB YELLOW_ON
-    WAIT TICKS, 0, 50
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-
     CSUB    INIT_MOTORS
     CSUB    ClearErrorsRAM
-    
-
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -149,7 +145,7 @@ syringe_3:
     JA      returnInitSyringes
 syringe_4:
     GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_4                                     // is it syringe_4?
+    COMP    DPS_LureLock_20                                     // is it syringe_4?
     JC      NE, syringe_5                                 // no, exit
     SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_4
     SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_4
@@ -236,11 +232,11 @@ returnInitSyringes:    // save in EEPROM
 
 initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge and volume
 
- // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME
+ // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME_25M_22G
  // The flow with same pressure relates to the 1/length and internal dia^2
 
 
-    SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME  // init initially to 2 seconds
+    SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME_25M_22G  // init initially to 2 seconds
 
  // calculate drawWaitTime according to length, compare to 25 mm
     GGP     GB_NeedleLength, GPbank_2
@@ -249,7 +245,7 @@ initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge 
     SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
 checkTooLong:
     GGP     GB_NeedleLength, GPbank_2
-    COMP    38
+    COMP    40
     JC      LE, calcWithLength                             // too high
     SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
 calcWithLength:
@@ -313,7 +309,6 @@ adjustDrawVolume:
 
 initVerticalMotor:
     MST     M_verticalMotor                                             // Motor stop
-    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5          //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_ROT // Set maximum positioning speed

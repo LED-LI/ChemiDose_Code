@@ -16,17 +16,21 @@
 //    9. 2022-09-29 homing, capHolder
 //   10. 2022-10-05 reference from first vial linear and bump
 //   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
+//   14. 2022-11-23 vibrate vial 4
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //************
 // Includes
 //************
-// This file:  2022-11-05-CM-SW.tmc
+// This file:  2022-11-23-CM-SW.tmc
 
 #Include CM_TMCLParam.tmc              // TMCL Parameters
-#Include 2022-11-05-CM-Defines.tmc     // CM   definitions
-#Include 2022-11-05-CM-Init.tmc        // CM   initialization
+#Include 2022-11-23-CM-Defines.tmc     // CM   definitions
+#Include 2022-11-23-CM-Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC
@@ -105,13 +109,14 @@ INIT_CM:   // func 6
 
 // clear errors and check for syringe
     CSUB    ClearRunningErrors
+    CSUB    screenAllVials             // put all vials state into data Base
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM  //   5
     SGP     GB_initialVolume, GPbank_2, clr             //  15
     CSUB    checkOkToInitDrawDoze            // check if in right state,         sets STOPPED_ON_ERROR state
-    CSUB    checkNoSyringe                   // check syringe exists,            sets STOPPED_ON_ERROR state
-    CSUB    checkDrawer                      // check if closed and not full and door closed
+    //CSUB    checkNoSyringe                   // check syringe exists,            sets STOPPED_ON_ERROR state
+    //CSUB    checkDrawer                      // check if closed and not full and door closed
 /////* add after fix of sensor */   CSUB    checkOverFlow         // check if closed and not full and door closed
-    CSUB    checkDoorOpen                    // sliding door has to be closed
+    //CSUB    checkDoorOpen                    // sliding door has to be closed
     GGP     GB_any_Error, GPbank_2           // get any error status
     COMP    ANY_ERROR_EXISTS                 // exists?
     JC      EQ, returnInitDraw               // error, return (keeps STATE WAITING_INIT_CM)
@@ -132,29 +137,31 @@ returnInitDraw:
 setTestParams:   //  98
 
     SGP    GB_BagSize_microL,GPbank_2, 500000
-    SGP    GB_microLtoWithdraw_1,GPbank_2, 0
-    SGP    GB_microLtoWithdraw_2,GPbank_2, 5000
+    SGP    GB_microLtoWithdraw_1,GPbank_2, 2000
+    SGP    GB_microLtoWithdraw_2,GPbank_2, 0
     SGP    GB_microLtoWithdraw_3,GPbank_2, 0
-    SGP    GB_microLtoWithdraw_4,GPbank_2, 0
+    SGP    GB_microLtoWithdraw_4,GPbank_2, 2000
     SGP    GB_microLtoWithdraw_5,GPbank_2, 0
     SGP    GB_microLtoWithdraw_6,GPbank_2, 0
 
-    SGP    GB_vialSize_microL_1,GPbank_2, 0
+    SGP    GB_vialSize_microL_1,GPbank_2, 5000
     SGP    GB_vialSize_microL_2,GPbank_2, 5000
-    SGP    GB_vialSize_microL_3,GPbank_2, 0
-    SGP    GB_vialSize_microL_4,GPbank_2, 0
-    SGP    GB_vialSize_microL_5,GPbank_2, 0
-    SGP    GB_vialSize_microL_6,GPbank_2, 0
+    SGP    GB_vialSize_microL_3,GPbank_2, 5000
+    SGP    GB_vialSize_microL_4,GPbank_2, 3000
+    SGP    GB_vialSize_microL_5,GPbank_2, 5000 
+    SGP    GB_vialSize_microL_6,GPbank_2, 5000
 
-    SGP    GB_vibrationTime_4,GPbank_2, 0
+    SGP    GB_vibrationTime_4,GPbank_2, 4
     SGP    GB_vibrationTime_56,GPbank_2, 0
     SGP    GB_vibrationHz,GPbank_2, 25
     SGP    GB_vibrStrengthPercentCalc,GPbank_2, 40
+    SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40
+
 
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Summary: draw אdraw the required amount from each vial and move to the bag
+// Summary: draw the required amount from each vial and move to the bag
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 DRAW_DOSE:  // func 8
@@ -172,7 +179,7 @@ DRAW_DOSE:  // func 8
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      NE, noErrorFound           // yes, return with WAITING_DISPENSE state for easy recovery
- // errors found
+// errors found
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current for syringe loading
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH            // Set standby current
     JA      returnDrawDose
@@ -279,23 +286,23 @@ lower_arm:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 fill_a_vial:  
 
-    CSUB    loadCurrentParameters                // for GB_current_Vial
-// ------------------------------------------------------------
+    CSUB    loadCurrentParametersVibrate   // for GB_current_Vial
+    // ------------------------------------------------------------
     // check if need vial 4
     GGP    GB_current_Vial, GPbank_2       // get current vial #
     COMP   5                               // more than 5, i.e. vial 5 or 6?
     JC     GE, check_56_vibration          // yes
+ 
     // check_4_vibration:                  // no, check vibration time for vial 4
     GGP    GB_vibrationTime_4, GPbank_2
     COMP   0
-    JC     EQ, vibrationNotNeeded          // if viration time = 0, do not vibrate or fill 4
+    JC     EQ, ReturnFill_a_vial          // if viration time = 0, do not vibrate or fill 4
     JA     checkwithdrawMicros
 
 check_56_vibration:    
     GGP    GB_vibrationTime_56, GPbank_2   // no, check vibration time for vial 56
-    GGP    GB_vibrationTime_4, GPbank_2
     COMP   0
-    JC     EQ, vibrationNotNeeded          // if viration time = 0, do not vibrate or fill 56
+    JC     EQ, ReturnFill_a_vial          // if viration time = 0, do not vibrate or fill 56
 
 checkwithdrawMicros:
     GGP     GB_microLtoWithdraw_current, GPbank_2    // load withdraw amount
@@ -314,7 +321,15 @@ checkwithdrawMicros:
     // empty the vial
     GGP     GB_PistonHomePos, GPbank_2                                      // load to A
     MVPA    ABS, M_pistonMotor                                              // inject into the vial
-    CSUB    rePositionToStart
+    WAIT    POS, M_pistonMotor, WAIT_TICKS_SHORT                            // wait till reaches location or 2 seconds
+    
+   // exit vial from below
+    CALC    LOAD, TOP_VERTICAL_NEEDLE_DOWN
+    CSUB    moveVertical                               // 10s
+   
+    
+    //this stage is for inserting the vibrated content back into the bag
+    //// CSUB    rePositionFromBottomToStart // maybe not the right place for it ....
 
 ReturnFill_a_vial:
 
@@ -364,7 +379,47 @@ returnDraw654321:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     loadCurrentParameters:   // for GB_current_Vial
 
-    // load current withdraw
+    CSUB    preLoadCurrentParameters
+
+  // calculate vial location
+    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial1     // to the first vial
+    CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
+    COMP    3                                    // more than 3'rd vial? 
+    JC      LE, doNotAdd6
+    CALCV   ADD, GB_currentVialLinearLocation, LINEAR_VIAL3to4SPACE  // ADD the distancce from 3 to 4
+    CALCV   SUB, GB_currentVialLinearLocation, LINEAR_VIALS_SPACE    // SUB the standard distance between vials
+
+doNotAdd6:    
+    CALCAV  LOAD, GB_current_Vial                // load the vial number 0 -> 5 
+    CALC    SUB, 1                               // now vials 0-5
+    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
+    CALCVA  ADD, GB_currentVialLinearLocation        // add to GB_currentVialLinearLocation  
+
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    loadCurrentParametersVibrate:   // for GB_current_Vial
+
+    CSUB    preLoadCurrentParameters
+
+  // calculate vial location
+    CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
+    COMP    3                                    // less than 3 --> error, cannot vibrate
+    JC      LE, returnloadCurrentParametersVibrate
+
+    CALCVV  LOAD, GB_currentVialLinearLocation, GB_SetVial4BottomLinear
+    CALCAV  LOAD, GB_current_Vial                // load the vial number 0 -> 5 
+    CALC    SUB, 4                               // now vials 0-5
+    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
+    CALCVA  ADD, GB_currentVialLinearLocation        // add to GB_currentVialLinearLocation  
+
+returnloadCurrentParametersVibrate:   // for GB_current_Vial
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+preLoadCurrentParameters:
+
     CALC    LOAD, GB_microLtoWithdraw_1 - 1      // copy GB address to A
     CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
     CALCX   LOAD                                 // the address is in X
@@ -385,20 +440,6 @@ returnDraw654321:
     GIV                                          // the content of the vial size is copied into A
     CALCVA  LOAD, GB_vialSize_microL_current     // and loaded into current parameter
 
-    // calculate vial location
-    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial1     // to the first vial
-    CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
-    COMP    3                                    // more than 3'rd vial? 
-    JC      LE, doNotAdd6
-    CALCV   ADD, GB_currentVialLinearLocation, LINEAR_VIAL3to4SPACE  // ADD the distancce from 3 to 4
-    CALCV   SUB, GB_currentVialLinearLocation, LINEAR_VIALS_SPACE    // SUB the standard distance between vials
-
-doNotAdd6:    
-    CALCAV  LOAD, GB_current_Vial                // load the vial number 0 -> 5 
-    CALC    SUB, 1                               // now vials 0-5
-    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
-    CALCVA  ADD, GB_currentVialLinearLocation        // add to GB_currentVialLinearLocation  
-
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -413,14 +454,14 @@ doNotAdd6:
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE   // Set standby here to rotate current normal
    // pull air
     CSUB    startPullAir70                             // pull 70% of the air
- // ---------------------------------------
+   // ---------------------------------------
     CSUB    moveBelowVial
     CSUB    waitPiston
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
     CSUB    insertNeedleIntoVial
-  // pushAir
+   // pushAir
     CSUB    push70air
     CSUB    drawVial
     CSUB    drawVialMoreBack
@@ -436,14 +477,27 @@ ReturnDrawFromVial:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
+    CSUB    PositionHeadRotateMotor
+    CSUB    positionLinearMotor
     CSUB    recapSyringe
+
     // drop vials
-    GGP     GB_DisposeDropVialsPos, GPbank_2
-    CSUB    moveDispose
-    WAIT    TICKS, 0, WAIT_TICKS_CAP                 // wait 10 seconds till all vials rest
+
+   //// GGP     GB_DisposeDropVialsPos, GPbank_2                                // L.E.D
+   //// MVPA    ABS, M_disposeMotor                        // move, wait later  // L.E.D
+
+   //// GGP     GB_DisposeDropVials456Pos, GPbank_2                             // L.E.D
+    MVPA    ABS, M_armMotor                           // move, wait later
+
+   //// CSUB    waitDispose                                                     // L.E.D
+    CSUB    waitArmMotor
+
+    WAIT    TICKS, 0, WAIT_TICKS                      // wait 10 seconds till all vials rest
+
     CSUB    HomeDisposeMotor    
+    CSUB    positionArmMotor    
     // check if overflow
-    CSUB    checkOverFlow
+/////* add after fix of sensor */   CSUB    checkOverFlow         // check if closed and not full and door closed
 
 returnAfterAllVialsDone:
     RSUB
@@ -522,17 +576,17 @@ check3:
 check4:
     GIO     InX_vialIsIn4, InBankDigital_0             // check if Vial is in
     COMP    0
-    JC      EQ, check5
+////    JC      EQ, check5
     CALCV   OR, GB_vialsExist, Bit_vial4
 check5:
     GIO     InX_vialIsIn5, InBankDigital_0             // check if Vial is in
     COMP    0
-    JC      EQ, check6
+////    JC      EQ, check6
     CALCV   OR, GB_vialsExist, Bit_vial5
 check6:
     GIO     InX_vialIsIn6, InBankDigital_0             // check if Vial is in
     COMP    0
-    JC      EQ, checkBag
+////    JC      EQ, checkBag
     CALCV   OR, GB_vialsExist, Bit_vial6
 checkBag:
     GIO     InX_salineBagIsIn, InBankDigital_0             // check if Vial is in
@@ -734,7 +788,7 @@ verify_vial_6:
     // vial is too small?
     CALCAV  SUB, GB_vialSize_microL_6           // A gets the result
     COMP    0
-    JC      LE, vial1InPlace                    // vial is large enough
+    JC      LE, vial6InPlace                    // vial is large enough
     CALCV   OR, GB_errors_Vial_6, BitEr_VialTooSmall
     STGP    GB_errors_Vial_6, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
@@ -773,14 +827,17 @@ startPullAir70:  //  pull 20% of the air
     CALCAV  MUL, GB_airToPullBefore                     // multiply by "20%"
     CALC    DIV, 100                                    // A = 70% in uSteps
     MVPA    REL, M_pistonMotor                          // move, wait later
-    CSUB    waitPiston
+    // CSUB    waitPiston
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 moveBelowVial:   //
 
-    CSUB    findCenterOfNeedleSensor
+    CSUB    HomeHeadRotateMotor                        // Rotate to sensor for home
+    GGP     GB_HeadRotateHomePos, GPbank_2             // load to A
+    CALC    SUB, DEGREES_90                            // substitute to turn upward
+    CSUB    moveRotate                                 // move to location
 // go under current vial
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
@@ -794,16 +851,23 @@ moveBelowVial:   //
 moveAboveVial:   //
 
 // go below Bag to fill syringe
-    CSUB    findCenterOfNeedleSensor
+    CSUB    HomeHeadRotateMotor                        // Rotate to sensor for home
+    GGP     GB_HeadRotateHomePos, GPbank_2             // load to A
+    CALC    SUB, DEGREES_90                            // substitute to turn upward
+    CSUB    moveRotate                                 // move to location
+//    CSUB    findCenterOfNeedleSensor
 
     CSUB    goIntoBag
     CSUB    drawFromBag
     CSUB    rePositionToStart
 
     GGP     GB_HeadRotateHomePos, GPbank_2             // load to A
-    CALC    ADD, DEGREES_90                        // turn down
-    MVPA    ABS, M_headRotateMotor                     // move to location
-    CSUB    waitRotate                                 // 10s
+    CALC    ADD, DEGREES_90                            // turn down
+    CSUB    moveRotate                                 // 10s
+
+    CALC    LOAD, TOP_VERTICAL_NEEDLE_DOWN
+    CSUB    moveVertical                               // 10s
+
 
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     CSUB    moveLinear
@@ -828,14 +892,15 @@ findCenterOfNeedleSensor:
 
     CSUB    HomeHeadRotateMotor                        // Rotate to sensor for home
     GGP     GB_HeadRotateHomePos, GPbank_2             // load to A
-    CALC    SUB, DEGREES_90                            // turn upward
+    CALC    SUB, DEGREES_90                            // substitute to turn upward
     CSUB    moveRotate                                 // move to location
-    GGP     GB_linearCenterOfVial1, GPbank_2             // load Vial1 position
-    CALC    ADD, LINEAR_VIAL1_TO_BAG_RFS                 // start of needle RFS posotion
+    GGP     GB_linearCenterOfVial1, GPbank_2           // load Vial1 position
+    CALC    ADD, LINEAR_VIAL1_TO_BAG_RFS               // start of needle RFS posotion
     CSUB    moveLinear
-    CSUB    homeVerticalMotor                            // move vertical to home position
-    CALC    LOAD, VERTICAL_NEEDLE_RFS                    // load Vial1 position
-    CSUB    moveVertical                                 // move head up to sensor, wait later
+    CSUB    homeVerticalMotor                          // move vertical to home position
+    CALCAV  LOAD, GB_BumpPosVert
+    CALC    ADD, VER_NEEDLE_RFS_BELOW_BUMP             // load Vial1 position
+    CSUB    moveVertical                               // move head up to sensor, wait later
 // first RFS
     SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_BOTTLE      // speed for search
     SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_BOTTLE      // speed for final search
@@ -876,9 +941,9 @@ insertNeedleIntoVial:    //
 insertNeedleIntoVialBelow:    //
 
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
-    //GGP     GB_BumpPosVert, GPbank_2                       // load to A
-    //MVPA    ABS, M_verticalMotor                           // move to location
-    //CSUB    waitVertical
+    GGP     GB_setBumpBottom, GPbank_2                       // load to A
+    MVPA    ABS, M_verticalMotor                           // move to location
+    CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
     MVP     REL, M_verticalMotor, VERTICAL_IN_VIAL_BELOW  // insert needle into vial
     CSUB    waitVertical
@@ -953,12 +1018,14 @@ bumpPlunger:   //
 goIntoBag:   //
 
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
-    GGP     GB_verticalCapPos, GPbank_2                                     // load to A
-    MVPA    ABS, M_verticalMotor                                            // move to location
+    CALCAV  LOAD, GB_BumpPosVert
+    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
+    MVPA    ABS, M_verticalMotor                       // move to location
     CSUB    waitVertical
 
-    GGP     GB_LinearCenterOfBag, GPbank_2                                  // go left under bag position
-    CSUB    moveLinear
+   // GGP     GB_LinearCenterOfBag, GPbank_2           // go left under bag position
+   // CSUB    moveLinear
+    CSUB      findCenterOfNeedleSensor                 // find center of bag
 
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
@@ -967,7 +1034,7 @@ goIntoBag:   //
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL  // Set maximum positioning speed
     MVP     ABS, M_verticalMotor, SYRINGE_IN_BAG_ABS                            // move to location
     CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH     // Set maximum positioning speed
 
    RSUB
 
@@ -992,6 +1059,7 @@ drawFromBag:
     MVPA    REL, M_pistonMotor                         // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
     WAIT    POS, M_pistonMotor, WAIT_TICKS_SHORT      // wait till reaches location or 2 seconds
+    SGP     GB_MotorIsMoving, GPbank_2, clr
 
     //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
     // calculate the volume in the bag
@@ -1004,18 +1072,54 @@ drawFromBag:
 rePositionToStart:   //
 
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
- // move down, out of the bag
-    GGP     GB_verticalCapPos, GPbank_2                                    // load to A
+  // move down, out of the bag
+    CALCAV  LOAD, GB_BumpPosVert
+    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
     MVPA    ABS, M_verticalMotor                                            // move to location
     CSUB    waitVertical
- // move linear and rotate to rotation position
+  // move linear and rotate to rotation position
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
- // rotate to home
-    GGP     GB_HeadRotateHomePos, GPbank_2                   // go back to loading position
-    MVPA    ABS, M_headRotateMotor                           // move, wait later
-    CSUB    waitRotate
     CSUB    inProcessFindHomes
+
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+rePositionFromBottomToStart:   //
+
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
+  //////////////////////////////// rotate at center of hight and point needle up ->
+  ///////////////////////////////// exit vial from bottom to rotation position ->
+    // raise needle - to avoid rotating in vial bellow
+    CALC  LOAD, TOP_VERTICAL_NEEDLE_DOWN
+    CSUB    moveVertical                               // 10s
+    // MVPA    ABS, M_verticalMotor                                            // move to location
+    // CSUB    waitVertical
+    // rotate needle to point to start (left)
+    // CSUB    PositionHeadRotateMotor
+    CSUB    HomeHeadRotateMotor                                          // Rotate to sensor for home
+    // CSUB    homeHeadRotateMotorSlow
+
+    // lower needle - to avoid rotating into vial on top
+                                                                    // todo // !!! CHECK !!!
+    CALC  LOAD, VERTICAL_BACK_TO_CENTER                                   // might be covered
+    CSUB    moveVertical                               // 10s
+    // MVPA    ABS, M_verticalMotor                                            // in other function
+    // CSUB    waitVertical                                                    // of "goIntoBag"
+                                            // CSUB    goIntoBag
+  // rotate needle to point up ->
+    GGP     GB_HeadRotateHomePos, GPbank_2                                  // load to A
+    CALC    SUB, DEGREES_90                                                 // substitute to turn upward
+    CSUB    moveRotate                                                      // move to location
+    
+  // reposition under bag ->
+    CSUB    findCenterOfNeedleSensor
+  
+  // ready to insert content
+
+  // ?? MAYBE in the end ?? //// L.E.D
+    // CSUB    inProcessFindHomes // i dont want to move position to "Homes" after reaching start into bag ////L.E.D
 
     RSUB
 
@@ -1051,7 +1155,7 @@ incrementCycles:   // function 112
 FIND_HOMES:
 
     SGP     GB_HomingDone, GPbank_2, clr            // clear homing done
-    CSUB    checkNoSyringeFH                        // make sure no syringe is in
+    //CSUB    checkNoSyringeFH                        // make sure no syringe is in //// L.E.D
     GGP     GB_any_Error, GPbank_2                  // get any error status
     COMP    ANY_ERROR_EXISTS                        // exists?
     JC      EQ, return_FIND_HOME                    // yes, return
@@ -1074,14 +1178,14 @@ return_FIND_HOME:
 inProcessFindHomes:    // no CAP, no ARM
 
     SGP     GB_HomingDone, GPbank_2, clr            // clear homing done
-    CSUB    startHomePistonMotor
+    //CSUB    startHomePistonMotor
     CSUB    startHomeDisposeMotor
     CSUB    homeLinearMotor                         // Linear and Cap holders first to clear the way for vertical
-    CSUB    positionPistonMotor
+    //CSUB    positionPistonMotor
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
-    CSUB    PositionHeadRotateMotor
-    CSUB    positionLinearMotor
+    //CSUB    PositionHeadRotateMotor
+    //CSUB    positionLinearMotor
     SGP     GB_HomingDone, GPbank_2, set            // home done
 
     RSUB
@@ -1377,7 +1481,7 @@ moveLinear:    //
 waitLinearMotor:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_linearMotor, WAIT_TICKS           // wait till reaches location or 10 seconds
+    WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR    // wait till reaches location or 20 seconds
     JC      ETO, LinearMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -1453,7 +1557,7 @@ moveArmMotor:    //
 waitArmMotor:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_armMotor, WAIT_TICKS            // wait till reaches location or 10 seconds
+    WAIT    POS, M_armMotor, WAIT_TICKS_ARM        // wait till reaches location or 10 seconds
     JC      ETO, armMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2117,4 +2221,11 @@ LEDS_OFF:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Eyals_dummy_sub:
 
+    CSUB holdCap                                              // func_118
+    
+    CSUB recapSyringe                                         // func_90
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -16,10 +16,13 @@
 //    9. 2022-09-29 homing, capHolder
 //   10. 2022-10-05 reference from first vial linear and bump
 //   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2022-11-05-CM-Init.tmc
+// This file:  2022-11-22-CM-Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return
@@ -71,23 +74,8 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
     RST     continueClearErrors             
 
 continueClearErrors:    // stack is now empty
-
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    WAIT TICKS, 0, 50
-    CSUB YELLOW_ON
-    WAIT TICKS, 0, 50
-    CSUB RED_ON
-    WAIT TICKS, 0, 50
-    CSUB GREEN_ON
-    //// L.E.D //// //// L.E.D //// //// L.E.D ////
-
     CSUB    INIT_MOTORS
     CSUB    ClearErrorsRAM
-    
-
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -313,7 +301,6 @@ adjustDrawVolume:
 
 initVerticalMotor:
     MST     M_verticalMotor                                             // Motor stop
-    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5          //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_ROT // Set maximum positioning speed

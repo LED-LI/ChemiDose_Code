@@ -1,9 +1,9 @@
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Name:        CM_Defines.tmc
-//
-// Description: CM software parameters
-//
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+ Name:        CM_Defines.tmc                           +
+//+                                                       +
+//+ Description: CM software parameters                   +
+//+                                                       +
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Changes: 
 //    1. V2010001 initial SW
 //    2. V2010002 After rework for separate DIR for capHolder. swappes out3 and out
@@ -16,12 +16,36 @@
 //    9. 2022-09-29 homing, capHolder
 //   10. 2022-10-05 reference from first vial linear and bump
 //   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
+//   15. 2022-11-23 vibrate vial 4
+//   16. 2022-11-24 fix error after vibrate vials
+//   17. 2022-11-27 vibrate success with RFS issue   BUMP_DOWN_REL
+//   18. 2022-11-28 BUMP_DOWN_REL 330 -> 300
+//   19. 2022-11-29 fix turning with large draw volume
+//   20. 2022-11-30 creating boundaries for the syringe movement in space acording to its volume
+//   21. 2022-12-01 debuging syringe parameters
+//   22. 2022-12-04 canceling PushPull50PerCent
+//   23. 2022-12-05 
+//   24. 2022-12-06 optimizing speed  
+//   25. 2022-12-07 optimizing speed  
+//   26. 2022-12-13 correcting homing
+//   27. 2022-12-14 adding verify vail to fill
+//   28. 2023-01-08 eliminating drips - returned to regular needle + adding showOverride
+//   29. 2023-01-09 Eli is here
+//   30. 2023-01-10 
+//   31. 2023-01-15 adding manualAbsolute and linear to loading by parameter and fixing showOverride
+//   32. 2023-01-16 adding draw321
+//   33. 2023-01-19 correcting movement
+//   34. 2023-02-06
+//   34. 2023-02-07
 //
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2022-11-05-CM-Defines.tmc
+// This file:  2023-02-07-CM-Defines.tmc
 
-CURRENT_VERSION      =  20221105
+CURRENT_VERSION      =  20230207
 
 // GB_RobotSerialNumber:  GB_6  (example: 2030006)  2 = CM, 03 = HW ver,  0006 = machine #)
 
@@ -32,7 +56,7 @@ CURRENT_VERSION      =  20221105
 M_verticalMotor    = 0    // refL                    up down
 M_linearMotor      = 1    // refL, refR              linear movement between vials
 M_armMotor         = 2    // refL                    move vials from top to bottom
-M_pistonMotor      = 3    // refL, syringe           fill syringe
+M_pistonMotor      = 3    // refL, syringe(RefR)     fill syringe
 M_headRotateMotor  = 4    // refL                    rotate head top to bottom
 M_disposeMotor     = 5    // refL                    push vials out from the machine
 M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
@@ -82,22 +106,26 @@ SYRINGE_IN_PLACE      =    1
 ANY_ERROR_EXISTS      =    1
 WAIT_TICKS_200ms      =   20 // [200ms]
 WAIT_TICKS_VERY_SHORT =  100 // [ 1s]
-WAIT_TICKS_SHORT      =  200 // [ 2s]
-WAIT_TICKS_NEEDLE     =  400 // [ 4s]
-WAIT_TICKS_CAP        =  400 // [ 4s]
+WAIT_TICKS_2S         =  200 // [ 2s]
+WAIT_TICKS_4S         =  400 // [ 4s]
+WAIT_TICKS_DISPOSE    =  200 // [ 2s]
+WAIT_TICKS_ARM        = 2000 // [20s]
 WAIT_TICKS            = 1000 // [10s]
+WAIT_TICKS_LINEAR     = 1500 // [15s]
 WAIT_TICKS_LONG       = 1500 // [15s]
+WAIT_TICKS_FILL_VIAL  = 4000 // [40s]
 WAIT_TICKS_DRAW       = 4000 // [40s]
 LED_ON                =    1
 LED_OFF               =    0
-DEF_DRAW_WAIT_TIME    =  200   // default for 25 mm needle length and 22 Gauge = 2[s]
+DEF_DRAW_WAIT_TIME_25M_22G    =  200   // default for 25 mm needle length and 22 Gauge = 2[s]
 DEFAULT_NEEDLE_LENGTH =   25
 DEFAULT_DRAW_VOLUME   = 1000  // 1[ml]
 CAP_SENSOR_BLOCKED    =    0
 MINIMUM_DRAW_VOLUME   =  500  // not less than 0.1 ml
 LAST_VIAL             =    6
+FIRST_VIAL_FILL       =    4
 FIRST_VIAL_VIBRATE    =    4
-OVERFLOW              =    1 // the sesor sees vials in the drawer
+OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
 //CM
@@ -111,11 +139,11 @@ DOOR_IS_CLOSED        =    1
 GB_currentVersion            =   0    // Current SW version
 
 GB_Syringe_Type              =   1    //
-  DEFAULT_SYRINGE_TYPE  =  1
+  DEFAULT_SYRINGE_TYPE  =  4
   BD_Plastipak_20       =  1   
   Nipro_12              =  2   
   BD_Plastipak_10       =  3  
-  Syringe_4             =  4
+  DPS_LureLock_20       =  4
   Syringe_5             =  5
   Syringe_6             =  6
   Syringe_7             =  7
@@ -123,34 +151,34 @@ GB_Syringe_Type              =   1    //
   Syringe_9             =  9
   Syringe_10            = 10
 
-GB_DrawWaitTime         =   2  // = 100 = 1[s]
-GB_InitDone             =   3  // INIT_MOTORS (func 0) done. starts automaticaly
-GB_4                    =   4  // 
+GB_DrawWaitTime         =  2        // = 100 = 1[s]
+GB_InitDone             =  3        // INIT_MOTORS (func 0) done. starts automaticaly
+GB_4                    =  4        //
 
 // SW states
-  GB_CurrentState            =   5  // defines the current state of the process
-  WAITING_INIT_CM       = 10       // this is the state after the power up as well
-  RUNNING_INIT_CM       = 20
-  WAITING_DISPENSE      = 30       // at this state it is possible as well to run INIT_DRAW_DOSE (6)
-  RUNNING_DISPENSE      = 40
-  STATE_50              = 50
-  STATE_60              = 60
-  STOPPED_ON_ERROR      = 70
-  STOPPED_TIME_OUT      = 80
-  ABORTED               = 90
+  GB_CurrentState       =  5        // defines the current state of the process
+       WAITING_INIT_CM       = 10   // this is the state after the power up as well
+       RUNNING_INIT_CM       = 20
+       WAITING_DISPENSE      = 30   // at this state it is possible as well to run INIT_DRAW_DOSE (6)
+       RUNNING_DISPENSE      = 40
+       STATE_50              = 50
+       STATE_60              = 60
+       STOPPED_ON_ERROR      = 70
+       STOPPED_TIME_OUT      = 80
+       ABORTED               = 90
 
 
 GB_RobotSerialNumber       =   6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #)
 
 // the following 3 global parameters will appear at motor 0 (vertical)
 GB_7                       =   7    
-// GB_verticalCapPos     =   8    // syringe loading
-// GB_BumpPosVert             =   9    // needle touches the vial rubber
+// GB_verticalCapPos       =   8   // syringe loading
+// GB_BumpPosVert          =   9   // needle touches the vial 1 rubber at top ~ -8792
 
-GB_needleLength            =  10    // 16, 25, 38 [mm]
-GB_needleGauge             =  11    // 18, 21, 22, 23 [gauge]
+GB_needleLength            =  10    // 16, 25, 40 [mm]
+GB_needleGauge             =  11    // 14, 16, 18, 21, 22, 23 [gauge]
 GB_cyclesTotal             =  12    //
-GB_13                      =  13    //
+// GB_setBumpBottom        =  13    // needle touches the vial 4 rubber at bottom 
 GB_readyToDraw             =  14    // after verifyReady
 GB_initialVolume           =  15    // in syringe
 GB_MotorIsMoving           =  16    //
@@ -161,15 +189,15 @@ GB_HomingDone              =  18    //
 //  prameters from PC to Trinamic:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-GB_UnitsToMoveManual       =  19    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
-GB_20                      =  20    // 
-GB_airToPullBefore         =  21    // 20 in Percentage. Should be reduced when vial is full
-GB_22                      =  22    // 
-// GB_DisposeDropVialsPos     =  23    // 
-GB_24                      =  24    // 
-GB_motorNumForHome         =  25    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder
-GB_26                      =    26    // 
-GB_microLbagToFill         =  27    // microL to withdraw in BAG
+GB_UnitsToMoveManual         =  19    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
+GB_ShowOverride              =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
+GB_airToPullBefore           =  21    // 20 in Percentage. Should be reduced when vial is full
+GB_disposeYN                 =  22    // 
+// GB_DisposeDropVialsPos    =  23    // 
+// GB_DisposeDropVials456Pos =  24    // arm at disposal position for vials 4 5 6 
+GB_motorNumForHome           =  25    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder
+GB_26                        =  26    // 
+GB_microLbagToFill           =  27    // microL to withdraw in BAG
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Errors
@@ -237,7 +265,7 @@ GB_errors_findHome              = 43
 GB_errors_wrong_PC_command      = 44
  // bit errors for parameter 44
     BitEr_expecting_GP5_10_OR_30        =  %00000001 // bit   1
-    BitEr_expecting_WAITING_DISPENSE   =  %00000010 // bit   2
+    BitEr_expecting_WAITING_DISPENSE    =  %00000010 // bit   2
     BitEr_c3                            =  %00000100 // bit   4
     BitEr_vibrateParemeterError         =  %00001000 // bit   8
     BitEr_c5                            =  %00010000 // bit  16
@@ -262,11 +290,11 @@ GB_special_Error                =  45
 // GB_PistonHomePos                = 48   // for empty syringe
 // GB_HeadRotateHomePos            = 49   // center of syringe cap
 // GB-50                           = 50   // at the top
-// GB_51              = 51  // not used
+// GB_SetVial4BottomLinear         = 51   // linear motor
 // GB_headAtBottom                 = 52
 // GB_linearCenterOfVial1          = 53
-// GB_CapLimitSwitchDisable        = 54
-// GB_armAtBottom                  = 55  // 
+// GB_linearLoading                = 54
+// GB_armAtBottom                  = 55    // 
 
 // 55 is the last GB that can also be stored permanently in the EEPROM
 
@@ -293,11 +321,11 @@ microL_per_100mm_3   = 16800  // [uL]
 Syring_Length_3      =107000  // [um]
 LoadingDistance_3    = 95000  // [usteps]
 
-// Syringe_4 = Other_4
-Max_Volume_4         = 0  // [uL]
-microL_per_100mm_4   = 0  // [uL]
-Syring_Length_4      = 0  // [um]
-LoadingDistance_4    = 0  // [usteps]
+// Syringe_4 = DPS_LureLock_20
+Max_Volume_4         =  20000  // [uL]
+microL_per_100mm_4   =  29200  // [uL]
+Syring_Length_4      = 122000  // [um]
+LoadingDistance_4    =  69000  // [usteps]
 
 // Syringe_5 = Other_5
 Max_Volume_5         = 0  // [uL]
@@ -344,73 +372,83 @@ LoadingDistance_10    = 0  // [usteps]
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_0 = M_verticalMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   verticalFeedPerRevolution       =  4877  /// micrometer
-   verticalMicrosteps              =    16  ///
-   verticalStepsPerRev             =   200  ///
+   verticalFeedPerRevolution       =   4877  /// micrometer
+   verticalMicrosteps              =     16  ///
+   verticalStepsPerRev             =    200  ///
    verticalMicroStepsPerRev        = verticalMicrosteps * verticalStepsPerRev  /// = 3200 [uS/rev]
-   verticalMicroStepsPerMM         = 1000 * verticalMicroStepsPerRev / verticalFeedPerRevolution /// = 656.141
-   DECAP_HEIGHT_DELTA              = -5040  // decapheight & needle check relative to loading height
-   VERTICAL_BACK_TO_CENTER         =  -945  // move head down into cap, where we adjust back to center
-//   VERTICAL_FOR_ROTATION           = 14500  /// ABS
-   VERTICAL_NEEDLE_RFS            = -11000  // ABS
-   VERTICAL_IN_VIAL                = -5200  // ABS  -4000  //-3800  // up 175[uS]=1.4[mm]//-3625  //z REL
-   VERTICAL_IN_VIAL_BELOW          =    50  // !!!! correct
-   MAX_CURRENT_VERT                =   200
-   MAX_CURRENT_VERT_HIGH           =   255
-   STBY_CURRENT_VERT               =   100  ///
-   MAX_POS_SPEED_VER_ROT           =  1300  /// needs same speed for vertical and rotation for coordinated move
-   MAX_POS_SPEED_VER_INTO_CAP      =   600  //
-   MAX_POS_SPEED_VER_TO_VIAL       =   300
-   MAX_POS_SPEED_VER_DOWN          =  1200
-   MAX_POS_SPEED_VER_HIGH          =  1000
-   ACC_VERT                        =    10  ///
-   ACC_VERT_HIGH                   =    40
-   SEARCH_SPEED_VERT               =   400  ///
-   SWITCH_SPEED_VERT               =   400  ///
-   SYRINGE_IN_BAG_ABS             = -19700
-   BAG_ENTRY_BELOW_BUMP            =  8000
+   verticalMicroStepsPerMM         =   1000 * verticalMicroStepsPerRev / verticalFeedPerRevolution /// = 656.141
+   VERTICAL_BACK_TO_CENTER         =   -945  // move head down into cap, where we adjust back to center
+//   VERTICAL_FOR_ROTATION         =  14500  /// ABS
+   //VERTICAL_NEEDLE_RFS           =  -7000  // ABS
+   VER_NEEDLE_RFS_BELOW_BUMP       =   4150  // REL
+   //VERTICAL_IN_VIAL_MM           =     -7  // milimeters to penetrate into the vial
+   VERTICAL_IN_VIAL                = -8500 // with atraumatic 38mm needle 
+   // VERTICAL_IN_VIAL                =  -4850  // VERTICAL_IN_VIAL_MM * verticalMicroStepsPerMM  //-7 * 656 = -4592 // -8000  // ABS  -4000  //-3800  // up 175[uS]=1.4[mm]//-3625  //z REL
+   VERTICAL_IN_VIAL_BELOW          =   7070  // !!!! CHECK CORRECTION !!!!
+   MAX_CURRENT_VERT                =    200
+   MAX_CURRENT_VERT_HIGH           =    255
+   STBY_CURRENT_VERT               =    100  ///
+   MAX_POS_SPEED_VER               =   1300
+   MAX_POS_SPEED_VER_INTO_BAG      =    600  //
+   MAX_POS_SPEED_VER_TO_VIAL       =    200
+   MAX_POS_SPEED_VER_DOWN          =   1200
+   MAX_POS_SPEED_VER_HIGH          =   1000
+   ACC_VERT                        =     10  ///
+   ACC_VERT_HIGH                   =     40
+   SEARCH_SPEED_VERT               =    400  ///
+   SWITCH_SPEED_VERT               =    400  ///
+   // SYRINGE_IN_BAG_ABS              = -15000 // with atraumatic 38mm needle 
+   SYRINGE_IN_BAG_ABS              = -14000
+   BAG_ENTRY_BELOW_BUMP            =   8000  // REL
+   TOP_VERTICAL_NEEDLE_DOWN_FULL   =   1100
+   TOP_VERTICAL_NEEDLE_DOWN_EMPTY  = -12000
 
-GB_verticalCapPos             =  8  // syringe loading  380
-GB_BumpPosVert                =  9  // needle touches the vial rubber  ~9100
-GB_needleLengthInMicroSteps   = 60 /// verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
+GB_verticalCapPos                      =   8 // syringe loading  380
+GB_BumpPosVert                         =   9 // needle touches the vial 1 rubber at top ~ -8792
 
-GB_61                         = 61
-GB_62                         = 62
-GB_63                         = 63
-GB_64                         = 64
+GB_setBumpBottom                       =  13 // needle touches the vial 4 rubber at bottom 
+GB_needleLengthInMicroSteps            =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
+
+GB_Calced_Top_Vert_Needle_Down_Allowed =  61 // GB_61 = 61
+GB_62                           = 62
+GB_63                           = 63
+GB_64                           = 64
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_1 = M_linearMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   linearFeedPerRevolution      = 25400 // micrometer  
-   linearMicrosteps             =    16 //
-   linearStepsPerRev            =   200 //
-   linearMicroStepsPerRev       = linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
-   linearMicrostepsPerMM        = 1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
-   MAX_CURRENT_LINEAR           =   128 //
-   MAX_CURRENT_LINEAR_HIGH      =   200
-   STBY_CURRENT_LINEAR          =    25 //
-   STBY_CURRENT_LINEAR_HIGH     =   150
-   MAX_POS_SPEED_LINEAR         =   500 //
-   ACC_LINEAR                   =    10 //
-   SEARCH_SPEED_LINEAR_HOME     =   200 // 
-   SWITCH_SPEED_LINEAR_HOME     =   200
-   SEARCH_SPEED_LINEAR_BOTTLE   =   100 //
-   SWITCH_SPEED_LINEAR_BOTTLE   =    50 //
-   //LINEAR_NEEDLE_RFS            = -7000 //  ABS from here starts search
-   //LINEAR_ROTATE_POS            =  2500
-   LINEAR_VIALS_SPACE           =    50 * linearMicrostepsPerMM       // MicroSteps 6300
-   LINEAR_VIAL3to4SPACE         =    56 * linearMicrostepsPerMM       // MicroSteps 7056
-   LINEAR_VIAL1_TO_LOADING      = -10080
+   linearFeedPerRevolution      =  25400 // micrometer  
+   linearMicrosteps             =     16 //
+   linearStepsPerRev            =    200 //
+   linearMicroStepsPerRev       =  linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
+   linearMicrostepsPerMM        =   1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
+   MAX_CURRENT_LINEAR           =    128 //
+   MAX_CURRENT_LINEAR_HIGH      =    200
+   STBY_CURRENT_LINEAR          =     25 //
+   STBY_CURRENT_LINEAR_HIGH     =    150
+   MAX_POS_SPEED_LINEAR         =    500 //
+   ACC_LINEAR                   =     12      //
+   SEARCH_SPEED_LINEAR_HOME     =    400      // 50
+   SWITCH_SPEED_LINEAR_HOME     =    200
+   SEARCH_SPEED_LINEAR_BOTTLE   =    200      // 100
+   SWITCH_SPEED_LINEAR_BOTTLE   =    150      //
+   //LINEAR_NEEDLE_RFS          =  -7000      //  ABS from here starts search
+   //LINEAR_ROTATE_POS          =   2500
+   LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
+   LINEAR_VIAL3to4SPACE         =     55 * linearMicrostepsPerMM       // MicroSteps 7056
+   LINEAR_VIAL1_TO_LOADING      = -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
    LINEAR_VIAL1_TO_BAG_RFS      = -10000      // appr 6.35 mm from center of bag
-   
-GB_linearCenterOfVial1          =    53      // 
 
-GB_currentVialLinearLocation    =    65
-GB_LinearCenterOfBag            =    66
-GB_67                           =    67
-GB_68                           =    68
-GB_69                           =    69
+GB_SetVial4BottomLinear         =     51   
+GB_linearCenterOfVial1          =     53      // 
+GB_linearLoading                =     54      // 
+
+ 
+GB_currentVialLinearLocation    =     65
+GB_LinearCenterOfBag            =     66
+GB_67                           =     67
+GB_68                           =     68
+GB_69                           =     69
 
 // ++++++++++++++++++++++++++++++++
 // Motor_2 = M_armMotor
@@ -427,6 +465,7 @@ GB_69                           =    69
    STBY_CUR_ARM              =    80  // 100  //  25 
    STBY_CUR_ARM_HIGH         =   200
    MAX_POS_SPEED_ARM         =   200  // 400 
+   ARM_DISPOSE_SPEED         =   400
    ACC_ARM                   =     2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
    SWITCH_SPEED_ARM          =    50 
@@ -435,15 +474,17 @@ GB_69                           =    69
    WAIT_ARM_REF              =    70  // 0.7s 
    MAX_CURRENT_ARM           =   200 
    ARM_DROP_FROM_VIAL        =  -100
-//   limitUMbentNeedleArm      =  3000  // 2000 // [um]
-//   limitArmBentMicroS        = armMicroStepsPerMM * limitUMbentNeedleArm / 1000  /// 3.00 [mm] // 2.00 [mm] = 81 us
+//   limitUMbentNeedleArm    =  3000  // 2000 // [um]
+//   limitArmBentMicroS      = armMicroStepsPerMM * limitUMbentNeedleArm / 1000  /// 3.00 [mm] // 2.00 [mm] = 81 us
+
+GB_DisposeDropVials456Pos    =    24           // arm at disposal position for vials 4 5 6 
 
 GB_ArmVialPosition           =    47           // arm holder is above the syringe  -460
 GB_armAtBottom               =    55           //  15546  Arm at bottom just below syring
 
 GB_armMicroStepsPerMM        =    70           // 31
-//GB_limitarmBentMicroS        =    71 
-//GB_NeedleArmError            =    72          // error of needle at calholder position
+//GB_limitarmBentMicroS      =    71 
+//GB_NeedleArmError          =    72          // error of needle at calholder position
 GB_73                        =    73
 GB_74                        =    74
 
@@ -456,18 +497,21 @@ GB_74                        =    74
    pistonMicroStepsPerRev        = pistonMicrosteps * pistonStepsPerRev  // = 3200 [uS/rev]
    pistonMicroStepsPerMM         =  1000 * pistonMicroStepsPerRev / pistonFeedPerRevolution // = 656.141
 
-   BUMP_DOWN_REL                 =   330 // (done) 0.15 mL
+   BUMP_DOWN_REL                 =   200 // 300 //(done) 0.15 mL
    PISTON_BACKLASH               =     0 // (done) will be added to the "70%" push back = 60[uL]
-   PISTON_MORE                   =   300 // (done) to the draw and then pushed back    = 400[uL]
+   PISTON_MORE                   =     0  // 300 // (done) to the draw and then pushed back    = 400[uL]
    STBY_CURRENT_PIST             =    25 
-   MAX_POS_SPEED_PIST            =   800 
+   MAX_POS_SPEED_PIST_FAST       =   800 
+   MAX_POS_SPEED_PIST            =   600 
+   MAX_POS_SPEED_PIST_MED        =   400
    MAX_POS_SPEED_PIST_SLOW       =   100
+   MAX_POS_SPEED_PIST_VERY_SLOW  =    50
    ACC_PIST                      =   200 
    SEARCH_SPEED_PIST             =   800 
    SWITCH_SPEED_PIST             =    40 
-   MAX_CURRENT_PIST              =   128 
+   MAX_CURRENT_PIST              =   200 // 128
 
-GB_PistonHomePos                 =    48         // for empty syringe 345
+GB_PistonHomePos                 =    48         // for empty syringe 345 [0]
 // GB_microL_per_100mm_current   =   161       // 6522
 
 GB_75                            =    75
@@ -495,19 +539,20 @@ GB_79                            =    79
    STBY_CUR_ROTATE_LOW           =     10 // after ABORT
    STBY_CUR_ROTATE               =    100 /// normal
    STBY_CUR_ROTATE_HIGH          =    200 // while syringe loading
-// MAX_POS_SPEED_VER_ROT         =   1300 /// needs same speed for vertical and rotation for coordinated move
+   MAX_POS_SPEED_ROT             =   1300
+   MAX_POS_SPEED_ROT_FAST        =   1000
    SEARCH_SPEED_ROT              =    400 ///
    SWITCH_SPEED_ROT              =     50 ///
    SEARCH_SPEED_ROT_SLOW         =    100
    SWITCH_SPEED_ROT_SLOW         =     50 // 20
-   WAIT_NEEDLE_REF               =     90 // 0.8 [S]
+   WAIT_NEEDLE_REF               =     30 // 0.3 [S]
    MAX_CURRENT_ROT               =    128 ///
    DEGREES_90                    =  rotateMicroStepsPerRev / 4    // 16000
    DEGREES_180                   =  rotateMicroStepsPerRev / 2    // 32000
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
 
-GB_HeadRotateHomePos             = 49          // center of cap  16232
+GB_HeadRotateHomePos             = 49          // center of cap  16240
 GB_headAtBottom                  = 52
 
 GB_80                            = 80
@@ -526,11 +571,11 @@ GB_84                            = 84
    disposeMicroStepsPerMM         = 1000 * disposeMicroStepsPerRev / disposeFeedPerRevolution // = 400
 
    STBY_CURRENT_DISPOSE           =    25 ///
-   MAX_POS_SPEED_DISPOSE          =   600 ///
+   MAX_POS_SPEED_DISPOSE          =   300 ///
    BOTTLE_FALL_DISPOSE            =  5000
    ACC_DISPOSE                    =   300 ///
    SEARCH_SPEED_DISPOSE           =   100 ///
-   SWITCH_SPEED_DISPOSE           =    20 ///
+   SWITCH_SPEED_DISPOSE           =   100 ///
    MAX_CURRENT_DISPOSE            =   128 ///
 
 GB_51                 = 51  // not used
@@ -548,9 +593,8 @@ GB_DisposeDropVialsPos            = 23
    CAP_HOLDER_AT_HOME               =     0
    CAP_WAIT_LOOPS                   =  5000
    DISABLE_SENSOR                   =     1
-   CAP_LOCK_STEPS                   =  5500   // um to move down to lock
+   CAP_LOCK_STEPS                   =  6000   // um to move down to lock
 
-GB_CapLimitSwitchDisable    = 54  
 GB_CapHolderHolds           = 86  //  "1" = holds,    "0" = open
 GB_CapHolderPulses          = 87
 GB_slowCapHolder            = 88
@@ -568,6 +612,15 @@ GB_microLtoWithdraw_3        =  93
 GB_microLtoWithdraw_4        =  94
 GB_microLtoWithdraw_5        =  95
 GB_microLtoWithdraw_6        =  96
+
+// TODO
+//GB_currentVolume_microL_1        =  TBD
+//GB_currentVolume_microL_2        =  TBD
+//GB_currentVolume_microL_3        =  TBD
+//GB_currentVolume_microL_4        =  TBD
+//GB_currentVolume_microL_5        =  TBD
+//GB_currentVolume_microL_6        =  TBD
+
 
 GB_CmdInProcess              =  97
 GB_98                        =  98
@@ -595,8 +648,8 @@ GB_rotateVialsDown           = 111
     Bit_vibrate4      =  %00010000 // bit  16
     Bit_vibrate5      =  %00100000 // bit  32
 
-GB_112                       = 112
-GB_113                       = 113
+GB_vibration4IsNeeded        = 112
+GB_vibration56IsNeeded       = 113
 
 // vibration time for vials [seconds]
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -604,7 +657,14 @@ GB_vibrationTime_4           = 114
 GB_vibrationTime_4_calc      = 115
 GB_vibrationTime_56          = 116
 GB_vibrationTime_56_calc     = 117
-GB_118                       = 118
+
+GB_vibrationLocation         = 118
+    Bit_vibrateUp        =  %00000001 // bit   1
+    Bit_vibrateDown      =  %00000010 // bit   2
+    Bit_vibrateHalfway   =  %00000100 // bit   4
+    Bit_vibrateLocation3 =  %00001000 // bit   8
+    Bit_vibrateLocation4 =  %00010000 // bit  16
+    Bit_vibrateLocation5 =  %00100000 // bit  32
 
 // vibration strength for vials 4,56 -  1 / 2 / 3 / 4 / 5
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -622,15 +682,40 @@ GB_126                       = 126
 GB_vibrationIsNeeded         = 127
 GB_128                       = 128
 
+
+// microLtoFill values
+GB_microLtoFill_current     =  130
+GB_microLtoFill_1           =  131 //// L.E.D //// for possible future use
+GB_microLtoFill_2           =  132 //// L.E.D //// for possible future use
+GB_microLtoFill_3           =  133 //// L.E.D //// for possible future use
+GB_microLtoFill_4           =  134
+GB_microLtoFill_5           =  135
+GB_microLtoFill_6           =  136
+
+//GB_microLtoFill_1           =  131 //// L.E.D //// for possible future use
+//GB_microLtoFill_2           =  132 //// L.E.D //// for possible future use
+//GB_microLtoFill_3           =  133 //// L.E.D //// for possible future use
+//GB_microLtoFill_4           =  134
+//GB_microLtoFill_5           =  135
+//GB_microLtoFill_6           =  136
+
+GB_FillingIsNeeded           = 140
+GB_Filling1IsNeeded          = 141 //// L.E.D //// for possible future use
+GB_Filling2IsNeeded          = 142 //// L.E.D //// for possible future use
+GB_Filling3IsNeeded          = 143 //// L.E.D //// for possible future use
+GB_Filling4IsNeeded          = 144
+GB_Filling5IsNeeded          = 145
+GB_Filling6IsNeeded          = 146
+
 // current syringe
 GB_Max_Volume_current        = 160
 GB_microL_per_100mm_current  = 161
 GB_Syring_Length_current     = 162
-GB_163                       = 163
+GB_readyToFill               = 163
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// bubbles
-GB_numberOfKicksTemp             =  182
+GB_GoToAbsoluteInSteps           =  182
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 GB_numberOfKicks                 =  183    //  10
 GB_rotateBubblesUM               =  184    // 750 = 0.75mm
 GB_pistonBubblesPullMicroL       =  185    // 300 * microL = 0.3ml
@@ -674,7 +759,14 @@ GB_vialsExist                =  218
     Bit_vial6      =  %00100000 // bit  32
     Bit_bag        =  %01000000 // bit  64
 
-GB_InterruptCount                =  255    // temorary variable 5
+
+GB_foundCenterOfNeedle                  =   252
+GB_DrawFromVialWaitTime                 =   253
+GB_vialsToDrawFromCounter               =   254    // temorary variable
+
+   MINIMUM_VIAL_WITHDRAW_VOLUME  =  100
+
+GB_InterruptCount                       =  255    // temorary variable 5
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -687,7 +779,7 @@ FUNC_0:    CSUB FIRST_RUN         //v  will run on power ON
            JA     backGroundProcess
 FUNC_2:    CSUB Draw_654321       // for testing
            JA     backGroundProcess
-FUNC_4:    CSUB dummy_sub  
+FUNC_4:    CSUB Eyals_dummy_sub  
            JA     backGroundProcess
 FUNC_6:    CSUB INIT_CM           //  Run the initial setup, detect if there is a initial volume in the system
            JA     backGroundProcess
@@ -754,11 +846,11 @@ func_64:   CSUB dummy_sub
            JA     backGroundProcess
 func_66:   CSUB checkSyrPoppedOut
            JA     backGroundProcess
-func_68:   CSUB dummy_sub
-           JA     backGroundProcess
 
 // for FUNC_8   (DRAW_DOSE)
 
+func_68:   CSUB moveAboveVialFromCenter
+           JA     backGroundProcess
 func_70:   CSUB checkDrawVolume
            JA     backGroundProcess
 func_72:   CSUB startPullAir70
@@ -773,7 +865,7 @@ func_80:   CSUB push70air
            JA     backGroundProcess
 func_82:   CSUB drawVial
            JA     backGroundProcess
-func_84:   CSUB ClearRunningErrors    //v
+func_84:   CSUB ClearRunningErrors
            JA     backGroundProcess
 func_86:   CSUB moveSlowlyBottom
            JA     backGroundProcess
@@ -797,9 +889,9 @@ func_104:  CSUB homePistonMotor
            JA     backGroundProcess
 func_106:  CSUB positionPistonMotor
            JA     backGroundProcess
-func_108:  CSUB dummy_sub
+func_108:  CSUB ejectSyringeFromTopVial
            JA     backGroundProcess
-func_110:  CSUB dummy_sub
+func_110:  CSUB ejectSyringeFromBottomVial
            JA     backGroundProcess
 func_112:  CSUB dummy_sub
            JA     backGroundProcess
@@ -841,23 +933,23 @@ func_142:  CSUB PistonManual
            JA     backGroundProcess
 func_144:  CSUB RotationManual
            JA     backGroundProcess
-func_146:  CSUB dummy_sub
+func_146:  CSUB VerticalManualAbsolute
            JA     backGroundProcess
-func_148:  CSUB dummy_sub
+func_148:  CSUB LinearMotorManualAbsolute
            JA     backGroundProcess
-func_150:  CSUB dummy_sub
+func_150:  CSUB armMotorManualAbsolute
            JA     backGroundProcess
-func_152:  CSUB dummy_sub
+func_152:  CSUB PistonManualAbsolute
+           JA     backGroundProcess
+func_160:  CSUB RotationManualAbsolute
+           JA     backGroundProcess
+func_162:  CSUB DisposeManualAbsolute
            JA     backGroundProcess
 func_154:  CSUB DisposeManual
            JA     backGroundProcess
 func_156:  CSUB CapHolderManual
            JA     backGroundProcess
 func_158:  CSUB testCapHolder
-           JA     backGroundProcess
-func_160:  CSUB dummy_sub
-           JA     backGroundProcess
-func_162:  CSUB dummy_sub
            JA     backGroundProcess
 func_164:  CSUB dummy_sub
            JA     backGroundProcess
