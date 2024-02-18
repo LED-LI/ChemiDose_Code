@@ -124,6 +124,7 @@ AVP_ReverseHomePolarity  = 128 // Add to reverse the polarity of the home switch
 // Definitions of global paramters
 //*******************************************
 GB_RS485BaudRate         =  65 //
+  baud_rate_9600    =  0
   baud_rate_57600   =  5
 GB_SerialAddress         =  66 //
 GB_ASCIImode             =  67 //
