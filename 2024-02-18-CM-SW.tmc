@@ -641,13 +641,17 @@ pullPush10mL:
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pull10mL:
-    CALC    LOAD,  10000                                            // open syringe by 10 mL
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
+    CALC    LOAD,  10000                                                // open syringe by 10 mL
     CSUB    movePiston_REL_uL
+    CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push10mL:
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed to MED
     CALC    LOAD, -10000                                            // close syringe by 10 mL
     CSUB    movePiston_REL_uL
+    CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -657,13 +661,17 @@ pullPush5mL:
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pull5mL:
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
     CALC    LOAD,  5000                                            // open syringe by 5 mL
     CSUB    movePiston_REL_uL
+    CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push5mL:
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed to MED
     CALC    LOAD, -5000                                            // close syringe by 5 mL
     CSUB    movePiston_REL_uL
+    CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
