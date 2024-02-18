@@ -589,12 +589,14 @@ emptySyringe:      // empty syringe //// L.E.D ////
     CSUB    pullPush5mL
     CSUB    pullPush5mL
     CSUB    pullPush5mL
+    CSUB    push5mL
     JA      returnemptySyringeToFillVial
 
 depressurunder10mL:
     CSUB    pullPush5mL
     CSUB    pullPush10mL
     CSUB    pullPush5mL
+    CSUB    push5mL
     // // // // // // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
     // // // // // // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
     // // // // // // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
@@ -2360,6 +2362,7 @@ movePiston_REL_uL:    //
     CALCAV  MUL, GB_pistonMicroStepPer100microL             // A = A* [uSteps*100]
     CALC    DIV, 100                                        // now in uSteps
     CSUB    movePiston_REL
+    CSUB    waitAfterDraw
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2367,7 +2370,7 @@ movePiston_REL_uL:    //
 waitPiston:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_pistonMotor, WAIT_TICKS              // wait till reaches location or 10 seconds
+    WAIT    POS, M_pistonMotor, WAIT_TICKS_DRAW              // wait till reaches location or 10 seconds
     JC      ETO, pistonMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
