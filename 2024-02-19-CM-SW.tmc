@@ -34,17 +34,18 @@
 //   27. 2024-01-01 added dropVials to func_10
 //   28. 2024-02-13 changed baud rate from 57600 to 9600
 //   29. 2024-02-18 reversing fill vial procedure - was: first fill then pull air - now is: pull air then fill (emptySyringeToFillVial) + (fix all of MAX_POS_SPEED_PIST) + created limits to pistons movement + disabled volume tests 
+//   30. 2024-02-19 returning draw_321
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //************
 // Includes
 //************
-// This file:  2024-02-18-CM-SW.tmc
+// This file:  2024-02-19-CM-SW.tmc
 
 #Include CM_TMCLParam.tmc              // TMCL Parameters
-#Include 2024-02-18-CM-Defines.tmc     // CM   definitions
-#Include 2024-02-18-CM-Init.tmc        // CM   initialization
+#Include 2024-02-19-CM-Defines.tmc     // CM   definitions
+#Include 2024-02-19-CM-Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC
@@ -252,18 +253,18 @@ drawNextVial:
     CSUB    Draw_654321                               // loop on all vials
 
 decrementCurrentVial:
-    // GGP     GB_vibrationIsNeeded, GPbank_2
-    // COMP    set
-    // JC      EQ, loopTill3RDVialOnly
+    GGP     GB_vibrationIsNeeded, GPbank_2
+    COMP    set
+    JC      EQ, loopTill3RDVialOnly
     
     DJNZ    GB_current_Vial, drawNextVial        // done all vials?
     JA      continueAfterDraw
 
-// loopTill3RDVialOnly:
-    // CALCV   SUB, GB_current_Vial, 1
-    // GGP     GB_current_Vial, GPBank_2
-    // COMP    3                                    // done vials 4 5 and 6 (only) ?
-    // JC      GT, drawNextVial
+loopTill3RDVialOnly:
+    CALCV   SUB, GB_current_Vial, 1
+    GGP     GB_current_Vial, GPBank_2
+    COMP    3                                    // done vials 4 5 and 6 (only) ?
+    JC      GT, drawNextVial
 continueAfterDraw:
     
 
@@ -336,7 +337,7 @@ checkVibrate_456:
     CSUB    Vibrate              // run the vibration. Returns immediately
 // ----------------------        // vibration is stopped by timer interrupts
 
-    // CSUB    draw_321
+    CSUB    draw_321
 
     CSUB    waitDoneVibrate  
 
