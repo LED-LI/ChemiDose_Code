@@ -647,14 +647,16 @@ pull10mL:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
     CALC    LOAD,  10000                                                // open syringe by 10 mL
     CSUB    movePiston_REL_uL
-    CSUB    waitPistonDraw
+    CSUB    waitPiston
+    // CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push10mL:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed to MED
     CALC    LOAD, -10000                                            // close syringe by 10 mL
     CSUB    movePiston_REL_uL
-    CSUB    waitPistonDraw
+    CSUB    waitPiston
+    // CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -667,14 +669,16 @@ pull5mL:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
     CALC    LOAD,  5000                                            // open syringe by 5 mL
     CSUB    movePiston_REL_uL
-    CSUB    waitPistonDraw
+    CSUB    waitPiston
+    // CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push5mL:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed to MED
     CALC    LOAD, -5000                                            // close syringe by 5 mL
     CSUB    movePiston_REL_uL
-    CSUB    waitPistonDraw
+    CSUB    waitPiston
+    // CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1620,6 +1624,10 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
    // CSUB    moveLinear
     CSUB      findCenterOfNeedleSensor                 // find center of bag
 
+    // DI     TI_TIMER0     
+    // DI     TI_TIMER1 
+    // DI     TI_TIMER2 
+
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
     CSUB    moveVertical                               // move head up to sensor, wait later
@@ -1628,6 +1636,10 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     MVP     ABS, M_verticalMotor, SYRINGE_IN_BAG_ABS                            // move to location
     CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH     // Set maximum positioning speed
+
+    // EI     TI_TIMER0     
+    // EI     TI_TIMER1 
+    // EI     TI_TIMER2 
 
    RSUB
 
@@ -2363,7 +2375,6 @@ movePiston_REL_uL:    //
     CALCAV  MUL, GB_pistonMicroStepPer100microL             // A = A* [uSteps*100]
     CALC    DIV, 100                                        // now in uSteps
     CSUB    movePiston_REL
-    CSUB    waitAfterDraw
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
