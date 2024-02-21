@@ -549,8 +549,8 @@ initInterrups:
 Timer0Irq:   // duty cycle of PWM  (time ON)
 
     DI     TI_TIMER0     // enable the timer for cycle (duty cycle enabled at interrupt)
-    // SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
-    // SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
+    SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
+    SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
     RETI
 
 //*******************************************
@@ -571,12 +571,12 @@ checkVibr4Finished:
     GGP    GB_vibrationTime_4_calc, GPbank_2      // 4 finished?
     COMP   0
     JC     LE, checkVibr56Finished                // yes, test vibr 5
-    // SIO    Out_enaVibrate_4, GPbank_2, 0          // set ON vibr 4
+    SIO    Out_enaVibrate_4, GPbank_2, 0          // set ON vibr 4
 checkVibr56Finished:
     GGP    GB_vibrationTime_56_calc, GPbank_2     // 56 finished?
     COMP   0
     JC     LE, returnIrq1                         // yes, continue
-    // SIO    Out_enaVibrate_56, GPbank_2, 0         // set ON vibr 56
+    SIO    Out_enaVibrate_56, GPbank_2, 0         // set ON vibr 56
 
 returnIrq1:
     GGP    GB_PwmDutyCycleMS, GPbank_2            // "vibration strength" need to re-initialize the timer each cycle
