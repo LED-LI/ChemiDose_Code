@@ -576,8 +576,8 @@ emptySyringeFast:      // empty syringe FAST //// L.E.D ////
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
 
-    GAP     AP_ActualPosition, M_pistonMotor            // get current position of piston
-    COMP    SYRINGE_IN_BAG_ABS                    // testing if syring is where it needs to be in order to empty the syringe
+    GAP     AP_ActualPosition, M_verticalMotor          // get current position of piston
+    COMP    SYRINGE_IN_BAG_ABS                          // testing if syring is where it needs to be in order to empty the syringe
     JC      EQ, resumeEmptySyringeToBag                 // close enough
 //syringeNotInBag:
     GGP     GB_errors_syringe_bag, GPbank_2                  // load Ver002 error word
