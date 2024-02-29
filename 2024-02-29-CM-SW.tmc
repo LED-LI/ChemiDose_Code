@@ -37,7 +37,7 @@
 //   30. 2024-02-19 returning draw_321
 //   31. 2024-02-22 
 //   32. 2024-02-26 testing if the Syringe is In the Bag
-//   33. 2024-02-29 troubleshooting draw_321
+//   33. 2024-02-29 troubleshooting draw_321 - adjust syringeNotInBag test parameters
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -577,8 +577,8 @@ emptySyringeFast:      // empty syringe FAST //// L.E.D ////
 emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
 
     GAP     AP_ActualPosition, M_pistonMotor            // get current position of piston
-    COMP    (SYRINGE_IN_BAG_ABS*2/3)                    // testing if syring is where it needs to be in order to empty the syringe
-    JC      LE, resumeEmptySyringeToBag                 // close enough
+    COMP    SYRINGE_IN_BAG_ABS                    // testing if syring is where it needs to be in order to empty the syringe
+    JC      EQ, resumeEmptySyringeToBag                 // close enough
 //syringeNotInBag:
     GGP     GB_errors_syringe_bag, GPbank_2                  // load Ver002 error word
     CALC    OR, BitEr_SyringeNotInBag                   // add the error bit
