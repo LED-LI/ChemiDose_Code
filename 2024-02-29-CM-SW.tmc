@@ -580,6 +580,11 @@ emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
     COMP    SYRINGE_IN_BAG_ABS                          // testing if syring is where it needs to be in order to empty the syringe
     JC      EQ, resumeEmptySyringeToBag                 // close enough
 //syringeNotInBag:
+    // // idea for trying a second time incase of an error
+    // CSUB    vertical home 
+    // CSUB goIntoBag
+    // CSUB emptySyringeToBag
+    // // need to add a counter - to avoid endless loop 
     GGP     GB_errors_syringe_bag, GPbank_2                  // load Ver002 error word
     CALC    OR, BitEr_SyringeNotInBag                   // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
