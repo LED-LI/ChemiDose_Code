@@ -970,7 +970,7 @@ func_160:  CSUB CapHolderManual
            JA     backGroundProcess
 func_162:  CSUB testCapHolder
            JA     backGroundProcess
-func_164:  CSUB dummy_sub
+func_164:  CSUB draw_321 // dummy_sub
            JA     backGroundProcess
 func_166:  CSUB dummy_sub
            JA     backGroundProcess

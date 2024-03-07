@@ -164,6 +164,8 @@ returnInitDraw:
 
 setTestParams:   //  98
 
+    SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
+
     SGP    GB_BagSize_microL,GPbank_2, 500000
     SGP    GB_microLtoWithdraw_1,GPbank_2,00000
     SGP    GB_microLtoWithdraw_2,GPbank_2,00000
@@ -742,13 +744,13 @@ draw_321:
     COMP    set
     JC      NE, skipDraw_321
 
-    SGP     GB_current_Vial, GPbank_2, 3         // starting with vial 3 while vibrating 456
-drawNextVial_321:
    // attempt to avoid the BOOM sound when homing linear
     SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME // Set maximum positioning speed
     CALC    LOAD, -100
     CSUB    moveLinear
 
+    SGP     GB_current_Vial, GPbank_2, 3         // starting with vial 3 while vibrating 456
+drawNextVial_321:
     CALC    LOAD, GB_microLtoWithdraw_1 - 1      // copy GB address minus 1 to A
     CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
     CALCX   LOAD                                 // the address is in X
@@ -887,6 +889,7 @@ preLoadCurrentParameters:
 
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE   // Set standby here to rotate current normal //  //// L.E.D ////      SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH   // Set standby here to rotate current high //// L.E.D ////
    // pull air
+
     CSUB    startPullAir70                             // pull 70% of the air
    // --------------------------------------- //// L.E.D //// switched palces of lines 455 & 457
     CSUB    moveBelowVial
@@ -1308,7 +1311,7 @@ deCap:    // GB_74
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-startPullAir70:  //  pull 20% of the air
+startPullAir70:  //  pull 70% of the air
 
     GGP     GB_pistonMicroStepPer100microL, GPbank_2                   // load to A
     CALCAV  MUL, GB_microLtoWithdraw_current                           // A <multiply by the "20%"
@@ -1570,8 +1573,8 @@ drawVial:    // just pull to required volume
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
 
-    MVP     REL, M_pistonMotor, PISTON_MORE             // move more
-    CSUB    waitPiston 
+    // MVP     REL, M_pistonMotor, PISTON_MORE             // move more
+    // CSUB    waitPiston 
     CSUB    waitAfterDraw  //     CSUB    waitAfterVialDraw 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED    // return positioning speed to default
@@ -1587,11 +1590,13 @@ returnDrawVial:
 drawVialMoreBack:    // just pull to required volume
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW // MAX_POS_SPEED_PIST // Set maximum positioning speed
-  // always push for later bump
-    MVP     REL, M_pistonMotor, -BUMP_DOWN_REL          // re-push to compensate the "bump"
-    CSUB    waitPiston
-    MVP     REL, M_pistonMotor, -PISTON_MORE            // push back the 300[uL]
-    CSUB    waitPiston
+// always push for later bump
+    // MVP     REL, M_pistonMotor, -BUMP_DOWN_REL          // re-push to compensate the "bump"
+    // CSUB    waitPiston
+    CALC    LOAD, -BUMP_DOWN_REL
+    CSUB    movePiston_REL
+    // MVP     REL, M_pistonMotor, -PISTON_MORE            // push back the 300[uL]
+    // CSUB    waitPiston
 // returnMoreBack:
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed
     RSUB
