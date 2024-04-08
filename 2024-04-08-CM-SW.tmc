@@ -1667,6 +1667,7 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     // DI     TI_TIMER0     
     // DI     TI_TIMER1 
     // DI     TI_TIMER2 
+    // DI     TI_GLOBAL 
 
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
@@ -1680,6 +1681,7 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     // EI     TI_TIMER0     
     // EI     TI_TIMER1 
     // EI     TI_TIMER2 
+    // EI     TI_GLOBAL 
 
    RSUB
 
