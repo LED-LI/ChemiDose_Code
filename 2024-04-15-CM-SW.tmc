@@ -913,7 +913,13 @@ preLoadCurrentParameters:
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
+
+    CSUB    pauseVibrate
+
     CSUB    insertNeedleIntoVial
+
+    CSUB    resumeVibrate
+
    // pushAir
     CSUB    push70air 
     CSUB    drawVial
