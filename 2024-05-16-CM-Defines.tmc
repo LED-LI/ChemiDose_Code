@@ -40,6 +40,9 @@
 //   33. 2024-02-29 troubleshooting draw_321
 //   34. 2024-03-03 .......
 //   35. 2024-03-28 .......
+//   36. 2024-04-08 .......
+//   36. 2024-04-15 .......
+//   36. 2024-05-16 .......
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -679,7 +682,8 @@ GB_vibrationCycleMS          = 124   // calculation to ms
 GB_vibrationHz               = 125   // data input
 GB_126                       = 126
 GB_vibrationIsNeeded         = 127
-GB_128                       = 128
+GB_vibrationTime_4_tmp       = 128
+GB_vibrationTime_56_tmp      = 129
 
 
 // microLtoFill values

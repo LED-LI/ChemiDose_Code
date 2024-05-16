@@ -40,6 +40,9 @@
 //   33. 2024-02-29 troubleshooting draw_321 - adjust syringeNotInBag test parameters
 //   34. 2024-03-03 .......
 //   35. 2024-03-28 .......
+//   36. 2024-04-08 .......
+//   37. 2024-04-15 .......
+//   37. 2024-05-16 .......
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -354,14 +357,27 @@ returnfillandVibrate_456:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// pauseVibrate:
+pauseVibrate:
 
-    // CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_calc  
     // CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_calc 
-    // CSUB    StopVibrate
+    // CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_calc  
+    CALCVV  LOAD, GB_vibrationTime_4_tmp, GB_vibrationTime_4_calc  
+    CALCVV  LOAD, GB_vibrationTime_56_tmp, GB_vibrationTime_56_calc 
+    CALCV   LOAD, GB_vibrationTime_4, 0
+    CALCV   LOAD, GB_vibrationTime_4_calc, 0
+    CALCV   LOAD, GB_vibrationTime_56, 0
+    CALCV   LOAD, GB_vibrationTime_56_calc, 0
+    CSUB    StopVibrate
     
-    // RSUB
+    RSUB
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+resumeVibrate:
 
+    CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_t 
+    CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_tmp
+    CSUB    Vibrate
+    
+    RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 waitDoneVibrate:
 
@@ -898,16 +914,26 @@ preLoadCurrentParameters:
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
+
+    CSUB    pauseVibrate
+
     CSUB    insertNeedleIntoVial
+
+    CSUB    resumeVibrate
+
    // pushAir
     CSUB    push70air 
     CSUB    drawVial
     CSUB    drawVialMoreBack
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
-    // CSUB    pauseVibrate
+    
+    CSUB    pauseVibrate
+    
     CSUB    goIntoBag
     CSUB    emptySyringeToBag
+    
+    CSUB    resumeVibrate
     // // // // // // // calculate the volume in the bag
     // // // // // // CALCVV  ADD, GB_microLinBAG, GB_microLtoWithdraw_current                // add to total in bag
 
@@ -1666,6 +1692,7 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     // DI     TI_TIMER0     
     // DI     TI_TIMER1 
     // DI     TI_TIMER2 
+    // DI     TI_GLOBAL 
 
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
@@ -1679,6 +1706,7 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     // EI     TI_TIMER0     
     // EI     TI_TIMER1 
     // EI     TI_TIMER2 
+    // EI     TI_GLOBAL 
 
    RSUB
 
