@@ -373,7 +373,7 @@ pauseVibrate:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 resumeVibrate:
 
-    CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_t 
+    CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_tmp
     CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_tmp
     CSUB    Vibrate
     
@@ -931,6 +931,11 @@ preLoadCurrentParameters:
     CSUB    pauseVibrate
     
     CSUB    goIntoBag
+    
+    /////
+    CSUB    checkSyringeContent
+    /////
+    
     CSUB    emptySyringeToBag
     
     CSUB    resumeVibrate
@@ -943,6 +948,53 @@ preLoadCurrentParameters:
 
 ReturnDrawFromVial:
     RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+checkSyringeContent: // func_166
+    
+    SIO     Out_Multiplexer, OutBank_2, 0               // change relays to watch inputs
+    WAIT    TICKS, 0, 100/10                            // 100 ms
+    
+// first test for liquid presence and only after check if volume is correct
+    // read liquid presence sensor - test that no air is at the edge of the syringe
+    GIO     In_liquidPresence, InBankAnalog_1           // 0 ... 4095
+    CALCVA  LOAD, GB_liquidPresence
+    // test if is in state 0 , 1  or 2  (liquidPresence_state 0=no liquid, 1=yes liquid, 2=sensor blocked) (analog ranges/threshold that defines states 0 1 or 2 will be in M_pistonMotor(Motor_3) parameters)
+    COMP    NO_LIQUID_DETECTED                          // too much light sensed
+    JC      GT, SyringeContent_Error
+    COMP    DETECTOR_BLOCKED                            // no light sensed
+    JC      LT, SyringeContent_Error 
+    // if reached here -> liquid detected correctly
+    
+    
+    // read thumbRest distance sensor - double chech piston location compared to the withdrawn amount from the current vial 
+    GIO    In_thumbRestDistance, InBankAnalog_1         // 0 ... 4095 // in_0 = U10
+    CALCVA LOAD, GB_thumbRestDistance
+    //test higher than X_MIN and lower than Y_MAX (analog ranges/threshold that defines X_MIN and Y_MAX will be in M_pistonMotor(Motor_3) parameters)
+    COMP    X_MIN
+    JC      LT, SyringeVolume_Error                     // error
+    COMP    Y_MAX
+    JC      GT, SyringeVolume_Error                     // error
+    // TBD = test location compared to content amount = (GB_thumbRestDistance - X_MIN)/(Y_MAX-X_MIN)*100 // percentage of piston location 
+    
+    JA return_SyringeContent
+    
+SyringeContent_Error: // Syringe content detection error
+    GGP     GB_errors_syringe_bag, GPbank_2             // load error word
+    CALC    OR, BitEr_SyringeContent_Error              // add the error bit
+    AGP     GB_errors_syringe_bag, GPbank_2             // and write again
+    CSUB    setStateSTOPPED_ON_ERROR 
+    JA      ABORT_NoReport
+
+SyringeVolume_Error: // Syringe Volume incorrect
+    GGP     GB_errors_syringe_bag, GPbank_2             // load error word
+    CALC    OR, BitEr_SyringeVolume_Error               // add the error bit
+    AGP     GB_errors_syringe_bag, GPbank_2             // and write again
+    CSUB    setStateSTOPPED_ON_ERROR
+    JA      ABORT_NoReport
+    
+return_SyringeContent:
+    RSUB 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 

@@ -66,14 +66,23 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 //Definitions of Inputs
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-In_capHolderHome       = 0 // U10 
-In_pwrDrawer           = 1 // U38 
+// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance
+// In_pwrDrawer           = 1 // U38 /////////////////////////////data input is vacant
+// In_NeedleDetected      = 2 // U11
+// In_3                   = 3 // U36 // will turn to be In_slidingDoor - was U45 - will be J36
+// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence
+// In_drawerOverflow      = 5 // U15
+// In_drawerClose         = 6 // U14
+// In_7                   = 7 // U25 // will turn to be In_capHolderHome - was U10 - will be J25
+
+In_thumbRestDistance   = 0 // U10
+In_pwrDrawer           = 1 // U38
 In_NeedleDetected      = 2 // U11
-In_3                   = 3 // U36
-In_slidingDoor         = 4 // U45
+In_slidingDoor         = 3 // U36
+In_liquidPresence      = 4 // U45
 In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
-In_7                   = 7 // U25
+In_capHolderHome       = 7 // U25
 
 // bottles sensors via relay multiplexers
 
@@ -84,7 +93,7 @@ InX_vialIsIn3            = 3 // U37
 InX_vialIsIn4            = 4 // U47
 InX_vialIsIn5            = 5 // U48
 InX_vialIsIn6            = 6 // U33
-InX_mux7                 = 7 // U30
+InX_mux7                 = 7 // U30 // input is vacant
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of Outputs
@@ -196,15 +205,15 @@ GB_27                        =  27
 
 GB_errors_syringe_bag   =  28
  // bit errors for parameter 28
-    BitEr_bagIsMissing        = %00000000001 // bit    1  
-    BitEr_syringePoppedOut    = %00000000010 // bit    2  syringe popped out during cycle
-    BitEr_volumeExceedsBag    = %00000000100 // bit    4  
-    BitEr_SyringeIsIn         = %00000001000 // bit    8  FIND_HOMES error or INIT_DRAW_DOSE, Syringe is in the system
-    BitEr_SyringeMissing      = %00000010000 // bit   16  DRAW_DOSE error, missing the syringe
-    BitEr_machineAborted      = %00000100000 // bit   32
-    BitEr_SyringeNotInBag     = %00001000000 // bit   64
-    BitEr_g8                  = %00010000000 // bit  128
-    BitEr_g9                  = %00100000000 // bit  256
+    BitEr_bagIsMissing          = %00000000001 // bit    1  
+    BitEr_syringePoppedOut      = %00000000010 // bit    2  syringe popped out during cycle
+    BitEr_volumeExceedsBag      = %00000000100 // bit    4  
+    BitEr_SyringeIsIn           = %00000001000 // bit    8  FIND_HOMES error or INIT_DRAW_DOSE, Syringe is in the system
+    BitEr_SyringeMissing        = %00000010000 // bit   16  DRAW_DOSE error, missing the syringe
+    BitEr_machineAborted        = %00000100000 // bit   32
+    BitEr_SyringeNotInBag       = %00001000000 // bit   64
+    BitEr_SyringeVolume_Error   = %00010000000 // bit  128
+    BitEr_SyringeContent_Error  = %00100000000 // bit  256
  
 GB_any_Error               =  29    // any error occured
 
@@ -502,13 +511,17 @@ GB_74                        =    74
    SWITCH_SPEED_PIST             =    40 
    MAX_CURRENT_PIST              =   200        // 128
    MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
+   X_MIN                         =  2048
+   Y_MAX                         =  4095
+   DETECTOR_BLOCKED              =   200 // [the value that is displayed on the sensor] // under this value light didnt pass => sensor is blocked   
+   NO_LIQUID_DETECTED            = 10000 // [the value that is displayed on the sensor] // over this value light passed - not through liquid => no liquid present
 GB_PistonHomePos                 =    48        // for empty syringe 345 [0] => need to redesign - adujstment to new syringe holder and diferent syringes 
 // GB_microL_per_100mm_current   =   161        // 6522
 
 GB_DrawWaitTime                  =    75
 GB_pistonMicroStepPer100microL   =    76 // 10000 * pistonMicroStepsPerMM / GB_microL_per_100mm_current = 224
-GB_77                            =    77 //
-GB_78                            =    78
+GB_thumbRestDistance             =    77 // In_thumbRestDistance
+GB_liquidPresence                =    78 // In_liquidPresence
 GB_79                            =    79
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -976,9 +989,9 @@ func_160:  CSUB CapHolderManual
            JA     backGroundProcess
 func_162:  CSUB testCapHolder
            JA     backGroundProcess
-func_164:  CSUB draw_321 // dummy_sub
+func_164:  CSUB draw_321 // 
            JA     backGroundProcess
-func_166:  CSUB dummy_sub
+func_166:  CSUB checkSyringeContent
            JA     backGroundProcess
 func_168:  CSUB dummy_sub
            JA     backGroundProcess
