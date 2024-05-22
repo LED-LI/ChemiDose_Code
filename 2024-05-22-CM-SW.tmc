@@ -140,6 +140,8 @@ continue_init_cm:
     CSUB    ClearRunningErrors
     SGP     GB_CmdInProcess, GPbank_2, set                //   //// L.E.D ////
 
+    CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
+
     CSUB    screenAllVials             // put all vials state into data Base
     SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs  //// L.E.D ////
     WAIT    TICKS, 0, 100/10                         // 100 ms  //// L.E.D ////
@@ -936,7 +938,7 @@ preLoadCurrentParameters:
     CSUB    goIntoBag
     
     /////
-    CSUB    checkSyringeContent
+    // CSUB    checkSyringeContent
     /////
     
     CSUB    emptySyringeToBag
