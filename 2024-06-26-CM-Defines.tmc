@@ -45,12 +45,14 @@
 //   38. 2024-05-16 created code for BANNER sensors
 //   39. 2024-05-22 corrected VER_NEEDLE_RFS_BELOW_BUMP from 4150 to 5500
 //TBD40. 2024-05-23 mesured and inputed BANNER sensors endpoints values
+//   41. 2024-06-25 returned CAP_AT_HOME to 0 and commented out the early release of the cap holder
+//   42. 2024-06-26 returned the early release of the cap holder in the init func after fixing sensor
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2024-05-22-CM-Defines.tmc
+// This file:  2024-06-26-CM-Defines.tmc
 
-CURRENT_VERSION      =  20240522
+CURRENT_VERSION      =  20240626
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -290,10 +292,10 @@ GB_special_Error                =  45
 // GB_RecapPositionlinear          = 46   // to hold the cap for recap
 // GB_ArmVialPosition              = 47   // cap holder is under the syringe
 // GB_PistonHomePos                = 48   // for empty syringe
-// GB_HeadRotateHomePos            = 49   // center of syringe cap
-// GB-50                           = 50   // at the top
+// GB_HeadRotateHomePos            = 49   // center of syringe cap (pointing left)
+// GB_HeadRotateAtTop              = 50   // syringe pointing up
 // GB_SetVial4BottomLinear         = 51   // linear motor
-// GB_headAtBottom                 = 52
+// GB_headAtBottom                 = 52   // syringe pointing down
 // GB_linearCenterOfVial1          = 53
 // GB_linearLoading                = 54  //// GB_CapLimitSwitchDisable        = 54 /// ???  //// L.E.D ////
 // GB_armAtBottom                  = 55    // 
@@ -405,6 +407,7 @@ LoadingDistance_10    = 0  // [usteps]
    BAG_ENTRY_BELOW_BUMP            =   8000  // REL
    TOP_VERTICAL_NEEDLE_DOWN_FULL   =   1100 // 1500
    TOP_VERTICAL_NEEDLE_DOWN_EMPTY  = -12000
+   DITANCE_TO_AVOID_BRONZE_BLOCKS  =   2750 // 3000
 
 GB_verticalCapPos                      =   8 // syringe loading  380
 GB_BumpPosVert                         =   9 // needle touches the vial 1 rubber at top ~ -8792
@@ -558,8 +561,9 @@ GB_79                            =    79
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
 
-GB_HeadRotateHomePos             = 49          // center of cap  16232 // 16240
-GB_headAtBottom                  = 52
+GB_HeadRotateHomePos             = 49     // center of syringe cap (pointing left) 
+GB_HeadRotateAtTop               = 50   // syringe pointing up
+GB_headAtBottom                  = 52   // syringe pointing down
 
 GB_80                            = 80
 GB_rotateMicroStepsPerMM         = 81 

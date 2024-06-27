@@ -45,6 +45,7 @@
 //   38. 2024-05-16 created code for BANNER sensors
 //   39. 2024-05-22 corrected VER_NEEDLE_RFS_BELOW_BUMP from 4150 to 5500
 //TBD40. 2024-05-23 mesured and inputed BANNER sensors endpoints values
+//   41. 2024-06-25 returned CAP_AT_HOME to 0 and commented out the early release of the cap holder
 //
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -52,11 +53,11 @@
 //************
 // Includes
 //************
-// This file:  2024-05-22-CM-SW.tmc
+// This file:  2024-06-25-CM-SW.tmc
 
 #Include CM_TMCLParam.tmc              // TMCL Parameters
-#Include 2024-05-22-CM-Defines.tmc     // CM   definitions
-#Include 2024-05-22-CM-Init.tmc        // CM   initialization
+#Include 2024-06-25-CM-Defines.tmc     // CM   definitions
+#Include 2024-06-25-CM-Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC

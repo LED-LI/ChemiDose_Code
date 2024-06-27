@@ -45,6 +45,9 @@
 //   38. 2024-05-16 created code for BANNER sensors
 //   39. 2024-05-22 corrected VER_NEEDLE_RFS_BELOW_BUMP from 4150 to 5500
 //TBD40. 2024-05-23 mesured and inputed BANNER sensors endpoints values
+//   41. 2024-06-25 returned CAP_AT_HOME to 0 and commented out the early release of the cap holder
+//   42. 2024-06-26 returned the early release of the cap holder in the init func after fixing sensor
+//                  returned vibrate func and commented out draw_321 until fixed
 //
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -52,11 +55,11 @@
 //************
 // Includes
 //************
-// This file:  2024-05-22-CM-SW.tmc
+// This file:  2024-06-26-CM-SW.tmc
 
 #Include CM_TMCLParam.tmc              // TMCL Parameters
-#Include 2024-05-22-CM-Defines.tmc     // CM   definitions
-#Include 2024-05-22-CM-Init.tmc        // CM   initialization
+#Include 2024-06-26-CM-Defines.tmc     // CM   definitions
+#Include 2024-06-26-CM-Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC
@@ -140,7 +143,7 @@ continue_init_cm:
     CSUB    ClearRunningErrors
     SGP     GB_CmdInProcess, GPbank_2, set                //   //// L.E.D ////
 
-    // CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
+    CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
 
     CSUB    screenAllVials             // put all vials state into data Base
     SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs  //// L.E.D ////
@@ -176,10 +179,10 @@ setTestParams:   //  98
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
     SGP    GB_BagSize_microL,GPbank_2, 500000
-    SGP    GB_microLtoWithdraw_1,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_1,GPbank_2,03000
     SGP    GB_microLtoWithdraw_2,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_3,GPbank_2,03000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_3,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,02000
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
     SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
@@ -196,11 +199,11 @@ setTestParams:   //  98
     SGP    GB_microLtoFill_3,GPbank_2, 00000000//////L.E.D////  DO NOT CHANGE FROM 0 !!!!!
   //// L.E.D ////  DO NOT CHANGE FROM 0 !!!!! ///////L.E.D///   DO NOT CHANGE FROM 0 !!!!!
   
-    SGP    GB_microLtoFill_4,GPbank_2,    03000
+    SGP    GB_microLtoFill_4,GPbank_2,    02000
     SGP    GB_microLtoFill_5,GPbank_2,    00000
     SGP    GB_microLtoFill_6,GPbank_2,    00000
 
-    SGP    GB_vibrationLocation,GPbank_2, Bit_vibrateDown        // determens the location of the vibration
+    SGP    GB_vibrationLocation,GPbank_2, Bit_vibrateDown        // determens the location of the vibration - DO NOT CHANGE until development continues
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
     SGP     GB_skipCheckVial456,GPbank_2, set
@@ -208,7 +211,7 @@ setTestParams:   //  98
 
    //// SGP    GB_HeadRotateHomePos,GPbank_2,  16240        // 16240 is the default for the syringe pointing left // arbitrary setting for debugging //// L.E.D ////
 
-    SGP    GB_vibrationTime_4, GPbank_2, 20               //// L.E.D
+    SGP    GB_vibrationTime_4, GPbank_2, 10               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
@@ -268,18 +271,24 @@ drawNextVial:
     CSUB    Draw_654321                               // loop on all vials
 
 decrementCurrentVial:
-    GGP     GB_vibrationIsNeeded, GPbank_2
-    COMP    set
-    JC      EQ, loopTill3RDVialOnly
+// ------------------------------------------------------------
+// uncomment after fixing draw_321
+// ------------------------------------------------------------
+    // // // GGP     GB_vibrationIsNeeded, GPbank_2
+    // // // COMP    set
+    // // // JC      EQ, loopTill3RDVialOnly
     
     DJNZ    GB_current_Vial, drawNextVial        // done all vials?
     JA      continueAfterDraw
 
-loopTill3RDVialOnly:
-    CALCV   SUB, GB_current_Vial, 1
-    GGP     GB_current_Vial, GPBank_2
-    COMP    3                                    // done vials 4 5 and 6 (only) ?
-    JC      GT, drawNextVial
+// ------------------------------------------------------------
+// uncomment after fixing draw_321
+// ------------------------------------------------------------
+// // // loopTill3RDVialOnly:
+    // // // CALCV   SUB, GB_current_Vial, 1
+    // // // GGP     GB_current_Vial, GPBank_2
+    // // // COMP    3                                    // done vials 4 5 and 6 (only) ?
+    // // // JC      GT, drawNextVial
 continueAfterDraw:
     
 
@@ -349,41 +358,52 @@ checkVibrate_456:
 ///////////////////////////////// L.E.D ////////////////////// TODO - ADD - where and to vibrate ( up / down / middle / while swinging up and down / shake ?! )
  
 // ------------------------------------------------------------
-    // CSUB    Vibrate              // run the vibration. Returns immediately
+    CSUB    Vibrate              // run the vibration. Returns immediately
 // ----------------------        // vibration is stopped by timer interrupts
 
-    CSUB    draw_321
 
-    // CSUB    waitDoneVibrate  
+// ------------------------------------------------------------
+// uncomment after fixing draw_321
+// ------------------------------------------------------------
+    // CSUB    draw_321 
+
+
+
+    CSUB    waitDoneVibrate  
 
 raiseArmIfOnlyFilledVials:
     CSUB    raise_arm
 returnfillandVibrate_456:
     RSUB
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-pauseVibrate:
 
-    // CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_calc 
-    // CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_calc  
-    CALCVV  LOAD, GB_vibrationTime_4_tmp, GB_vibrationTime_4_calc  
-    CALCVV  LOAD, GB_vibrationTime_56_tmp, GB_vibrationTime_56_calc 
-    CALCV   LOAD, GB_vibrationTime_4, 0
-    CALCV   LOAD, GB_vibrationTime_4_calc, 0
-    CALCV   LOAD, GB_vibrationTime_56, 0
-    CALCV   LOAD, GB_vibrationTime_56_calc, 0
-    CSUB    StopVibrate
-    
-    RSUB
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-resumeVibrate:
 
-    CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_tmp
-    CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_tmp
-    CSUB    Vibrate
+// ------------------------------------------------------------
+// uncomment after fixing draw_321
+// ------------------------------------------------------------
+// // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // pauseVibrate:
+
+    // // // // // CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_calc 
+    // // // // // CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_calc  
+    // // // // CALCVV  LOAD, GB_vibrationTime_4_tmp, GB_vibrationTime_4_calc  
+    // // // // CALCVV  LOAD, GB_vibrationTime_56_tmp, GB_vibrationTime_56_calc 
+    // // // // CALCV   LOAD, GB_vibrationTime_4, 0
+    // // // // CALCV   LOAD, GB_vibrationTime_4_calc, 0
+    // // // // CALCV   LOAD, GB_vibrationTime_56, 0
+    // // // // CALCV   LOAD, GB_vibrationTime_56_calc, 0
+    // // // // CSUB    StopVibrate
     
-    RSUB
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // // // // RSUB
+// // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // resumeVibrate:
+
+    // // // // CALCVV  LOAD, GB_vibrationTime_4, GB_vibrationTime_4_tmp
+    // // // // CALCVV  LOAD, GB_vibrationTime_56, GB_vibrationTime_56_tmp
+    // // // // CSUB    Vibrate
+    
+    // // // // RSUB
+// // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 waitDoneVibrate:
 
     GGP     GB_vibrator4done, GPbank_2
@@ -569,7 +589,7 @@ calcTopVertNeedleDown:
 emptySyringe:      // empty syringe //// L.E.D ////
 
     // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed
-    CSUB    positionPistonMotor
+    CSUB    homePistonMotor
     WAIT    TICKS, 0, WAIT_TICKS_200ms                                          // wait 200ms after emptying syringe - to allow pressure to balance
 
  // // // // // // // // // // // // // // // //// L.E.D ////
@@ -642,16 +662,18 @@ resumeEmptySyringeToBag:
     JC      LE, depressurunder10mL
     CSUB    pullPush5mL
     CSUB    pullPush5mL
-    CSUB    pullPush5mL
-    CSUB    pullPush5mL
-    CSUB    push5mL
+    // CSUB    pullPush5mL
+    // CSUB    pullPush5mL
+    // CSUB    push5mL
+    CSUB    homePistonMotor
     JA      returnemptySyringeToFillVial
 
 depressurunder10mL:
-    CSUB    pullPush5mL
+    // CSUB    pullPush5mL
     CSUB    pullPush10mL
     CSUB    pullPush5mL
-    CSUB    push5mL
+    // CSUB    push5mL
+    CSUB    homePistonMotor
     // // // // // // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
     // // // // // // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
     // // // // // // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
@@ -920,11 +942,11 @@ preLoadCurrentParameters:
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
 
-    CSUB    pauseVibrate
+    // CSUB    pauseVibrate
 
     CSUB    insertNeedleIntoVial
 
-    CSUB    resumeVibrate
+    // CSUB    resumeVibrate
 
    // pushAir
     CSUB    push70air 
@@ -933,7 +955,7 @@ preLoadCurrentParameters:
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
     
-    CSUB    pauseVibrate
+    // CSUB    pauseVibrate
     
     CSUB    goIntoBag
     
@@ -943,7 +965,7 @@ preLoadCurrentParameters:
     
     CSUB    emptySyringeToBag
     
-    CSUB    resumeVibrate
+    // CSUB    resumeVibrate
     // // // // // // // calculate the volume in the bag
     // // // // // // CALCVV  ADD, GB_microLinBAG, GB_microLtoWithdraw_current                // add to total in bag
 
@@ -1618,6 +1640,7 @@ insertNeedleIntoVial:    //
 
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     GGP     GB_BumpPosVert, GPbank_2                       // load to A
+    CALC    ADD, DITANCE_TO_AVOID_BRONZE_BLOCKS            // adding some ditance to avoid bumping into the bronze blocks of vials 456
     MVPA    ABS, M_verticalMotor                           // move to location
     CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
