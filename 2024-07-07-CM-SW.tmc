@@ -76,23 +76,23 @@ ClearRunningErrors:   // func 84
     SGP     GB_any_Error, GPbank_2, clr        // signal error: general
     STGP    GB_any_Error, GPbank_2             // erase any error. The errors were erased already in RAM
                                                // in "ClearErrorsRAM", now store in eeprom if needed
-    STGP    GB_errors_syringe_bag, GPbank_2
-    STGP    GB_errors_M_verticalMotor, GPbank_2
-    STGP    GB_errors_M_linearMotor, GPbank_2
-    STGP    GB_errors_M_armMotor, GPbank_2
-    STGP    GB_errors_M_pistonMotor, GPbank_2
-    STGP    GB_errors_M_headRotateMotor, GPbank_2
-    STGP    GB_errors_M_disposeMotor, GPbank_2
-    STGP    GB_errors_M_capHolderMotor, GPbank_2
-    STGP    GB_errors_Vial_1, GPbank_2
-    STGP    GB_errors_Vial_2, GPbank_2
-    STGP    GB_errors_Vial_3, GPbank_2
-    STGP    GB_errors_Vial_4, GPbank_2
-    STGP    GB_errors_Vial_5, GPbank_2
-    STGP    GB_errors_Vial_6, GPbank_2
-    STGP    GB_errors_findHome, GPbank_2
-    STGP    GB_errors_wrong_PC_command, GPbank_2
-    STGP    GB_special_Error, GPbank_2
+    STGP    GB_errors_syringe_bag, GPbank_2         // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_verticalMotor, GPbank_2     // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_linearMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_armMotor, GPbank_2          // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_pistonMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_headRotateMotor, GPbank_2   // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_disposeMotor, GPbank_2      // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_M_capHolderMotor, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_1, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_2, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_3, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_4, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_5, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_Vial_6, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_findHome, GPbank_2            // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_errors_wrong_PC_command, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    STGP    GB_special_Error, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 endClearRunningErrors:
     SGP     GB_vial1Bit, GPbank_2, 1   //  
@@ -147,7 +147,7 @@ continue_init_cm:
     CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
 
     CSUB    screenAllVials             // put all vials state into data Base
-    SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs  //// L.E.D ////
+    SIO     Out_Multiplexer, OutBank_2, 0            // change relays to watch inputs from watching vials //// L.E.D ////
     WAIT    TICKS, 0, 100/10                         // 100 ms  //// L.E.D ////
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM  //   5
@@ -817,7 +817,7 @@ skipDraw_321:
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Draw_654321:    // check here if this vial is needed
-
+    
     GGP     GB_current_Vial, GPbank_2       // get vial #
     COMP    6
     JC      GT, error_noVial
@@ -978,41 +978,59 @@ ReturnDrawFromVial:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-checkSyringeContent: // func_166
+testLiquidPresence:
+
+    CALCV   LOAD, GB_liquidDetected, clr                // reset indicator for liquid detection
     
-    SIO     Out_Multiplexer, OutBank_2, 0               // change relays to watch inputs
-    WAIT    TICKS, 0, 100/10                            // 100 ms
+    SIO     Out_Multiplexer, OutBank_2, 0               // change relays to watch inputs and not vials // i forgot why i put this here
+    WAIT    TICKS, 0, 10                                // 100 ms
     
-// first test for liquid presence and only after check if volume is correct
     // read liquid presence sensor - test that no air is at the edge of the syringe
     GIO     In_liquidPresence, InBankAnalog_1           // 0 ... 4095
-    CALCVA  LOAD, GB_liquidPresence
-    // test if is in state 0 , 1  or 2  (liquidPresence_state 0=no liquid, 1=yes liquid, 2=sensor blocked) (analog ranges/threshold that defines states 0 1 or 2 will be in M_pistonMotor(Motor_3) parameters)
-    COMP    NO_LIQUID_DETECTED                          // too much light sensed
-    JC      GT, SyringeContent_Error
-    COMP    DETECTOR_BLOCKED                            // no light sensed
-    JC      LT, SyringeContent_Error 
-    // if reached here -> liquid detected correctly
+    CALCVA  LOAD, GB_liquidPresence                     // results will go to GB_liquidDetected
     
+// (analog ranges/threshold that defines states will be in M_pistonMotor(Motor_3) parameters)
+    COMP    LIQUID_DETECTION_BORDER
+    JC      GT, SyringeContent_Error                    // higher values = light passes through syringe = liquid not blocking light = no liquid detected
+    CALCV   LOAD, GB_liquidDetected, set                // detected = yes
+    JA      Return_testLiquidPresence
     
-    // read thumbRest distance sensor - double chech piston location compared to the withdrawn amount from the current vial 
-    GIO    In_thumbRestDistance, InBankAnalog_1         // 0 ... 4095 // in_0 = U10
-    CALCVA LOAD, GB_thumbRestDistance
-    //test higher than X_MIN and lower than Y_MAX (analog ranges/threshold that defines X_MIN and Y_MAX will be in M_pistonMotor(Motor_3) parameters)
-    COMP    X_MIN
-    JC      LT, SyringeVolume_Error                     // error
-    COMP    Y_MAX
-    JC      GT, SyringeVolume_Error                     // error
-    // TBD = test location compared to content amount = (GB_thumbRestDistance - X_MIN)/(Y_MAX-X_MIN)*100 // percentage of piston location 
-    
-    JA return_SyringeContent
-    
-SyringeContent_Error: // Syringe content detection error
+ SyringeContent_Error:                                  // Syringe content detection error - liquid presence not detected            
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
     CALC    OR, BitEr_SyringeContent_Error              // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     CSUB    setStateSTOPPED_ON_ERROR 
     JA      ABORT_NoReport
+   
+Return_testLiquidPresence:   
+    RSUB
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+checkSyringeContent: // func_166
+    
+// first test for liquid presence and only after check if volume is correct
+    CSUB    testLiquidPresence
+    // CALCAV  LOAD, GB_liquidDetected
+    // if reached here -> liquid detected correctly
+    
+    
+// read thumbRest distance sensor - chech piston location compared to the withdrawn amount from the current vial 
+    CSUB    testSyringesVolume
+    // if reached here -> volume detected by laser is within range
+    
+    JA return_checkSyringeContent
+    
+
+return_checkSyringeContent:
+    RSUB 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+testSyringesVolume:
+    
+    GIO    In_thumbRestDistance, InBankAnalog_1         // 0 ... 4095 // in_0 = U10
+    CALCVA LOAD, GB_thumbRestDistance
+    // test location compared to content amount = [(GB_thumbRestDistance - GB_min_vol_laserDist) / (GB_max_vol_laserDist - GB_min_vol_laserDist)] * 100 // percentage of piston location 
+    JA      Return_testSyringesVolume
 
 SyringeVolume_Error: // Syringe Volume incorrect
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
@@ -1021,7 +1039,8 @@ SyringeVolume_Error: // Syringe Volume incorrect
     CSUB    setStateSTOPPED_ON_ERROR
     JA      ABORT_NoReport
     
-return_SyringeContent:
+    
+Return_testSyringesVolume:   
     RSUB 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1961,8 +1980,8 @@ return_FIND_HOME:
 checkVialPoppedOut:
 
     CSUB    screenAllVials                       // put all vials state into data Base
-    SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs
-    WAIT    TICKS, 0, 100/10                         // 100 ms
+    SIO     Out_Multiplexer, OutBank_2, 0        // change relays to watch inputs from watching vials
+    WAIT    TICKS, 0, 10                         // 100 ms
 
     GGP     GB_current_vial, GPBank_2            // current vial
     CALC    LOAD, GB_vial1Bit - 1                // copy GB address to A
