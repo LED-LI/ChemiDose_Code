@@ -1026,25 +1026,52 @@ return_checkSyringeContent:
     RSUB 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // test location compared to content amount = [(GB_thumbRestDistance - GB_min_vol_laserDist) * 100] / (GB_max_vol_laserDist - GB_min_vol_laserDist)  // percentage of piston location 
+    // test location compared to content amount = [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)  // percentage of piston location 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++ step #1 : get analog value of thumbRest distance                                            ++
-// ++ step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings ++
-// ++ step #3 : calculate volume [uL] acording to percentage mesured                              ++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ++ step #1 : get analog value of thumbRest distance                                              ++
+// ++ step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings   ++
+// ++ step #3 : calculate volume [uL] acording to percentage mesured                                ++
+// ++ step #4 : compare messured volume [uL] to intended Withdraw volume                            ++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 testSyringesVolume:
 
-        // step #1 : get analog value of thumbRest distance
+// step #1 : get analog value of thumbRest distance
     GIO    In_thumbRestDistance, InBankAnalog_1         // 0 ... 4095 // in_0 = U10
-    CALCVA LOAD, GB_thumbRestDistance
+    CALCVA LOAD, GB_thumbRestDistance // GB_77
     
     
+// step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings
+// [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
+    CALCAV  SUB, GB_min_vol_laserDist_AVAL
+    CALC    MUL, 100
+    CALCVA  LOAD, GB_pistonsRangePercentage             // save this part : [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100]
     
-    JA      Return_testSyringesVolume
+    CALCAV  LOAD, GB_max_vol_laserDist_AVAL
+    CALCAV  SUB, GB_min_vol_laserDist_AVAL
+    CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
+    
+// step #3 : calculate volume [uL] acording to percentage mesured    
+// GB_pistonsRangePercentage * GB_piston_set_vol_uL [uL]
+    CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
+    CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_set_vol_uL
+    
+// step #4 : compare messured volume [uL] to intended Withdraw volume
+//  GB_pistonsRangePercentage - GB_accepted_diviation_range // must be > 0
+    CALCAV  LOAD, GB_accepted_diviation_range 
+    CALCAV  SUB, GB_pistonsRangePercentage
+    COMP    0
+    JC      GT, Return_testSyringesVolume
+    // if current_diviation is smaller than the accepted_diviation
+
+    // CALC    MUL, -1 // test the other side of the +-
+    // COMP    0
+    // JC      GT, Return_testSyringesVolume
+    // JA      Return_testSyringesVolume
+
 
 SyringeVolume_Error: // Syringe Volume incorrect
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
@@ -1053,7 +1080,6 @@ SyringeVolume_Error: // Syringe Volume incorrect
     CSUB    setStateSTOPPED_ON_ERROR
     JA      ABORT_NoReport
     
-// ++ step #2   
 // ++ step #3   
     
 Return_testSyringesVolume:   
