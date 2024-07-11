@@ -48,11 +48,12 @@
 //   41. 2024-06-25 returned CAP_AT_HOME to 0 and commented out the early release of the cap holder
 //   42. 2024-06-26 returned the early release of the cap holder in the init func after fixing sensor
 //   43. 2024-07-07 setting BANNER values
-//   43. 2024-07-08 setting BANNER values
+//   44. 2024-07-08 setting BANNER values
+//   45. 2024-07-11 finishing BANNER funcs
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  2024-07-08-CM-Init.tmc
+// This file:  2024-07-11-CM-Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return

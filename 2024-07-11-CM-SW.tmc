@@ -49,7 +49,8 @@
 //   42. 2024-06-26 returned the early release of the cap holder in the init func after fixing sensor
 //                  returned vibrate func and commented out draw_321 until fixed
 //   43. 2024-07-07 setting BANNER values
-//   43. 2024-07-08 setting BANNER values
+//   44. 2024-07-08 setting BANNER values
+//   45. 2024-07-11 finishing BANNER funcs
 //
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -57,11 +58,11 @@
 //************
 // Includes
 //************
-// This file:  2024-07-08-CM-SW.tmc
+// This file:  2024-07-11-CM-SW.tmc
 
 #Include CM_TMCLParam.tmc              // TMCL Parameters
-#Include 2024-07-08-CM-Defines.tmc     // CM   definitions
-#Include 2024-07-08-CM-Init.tmc        // CM   initialization
+#Include 2024-07-11-CM-Defines.tmc     // CM   definitions
+#Include 2024-07-11-CM-Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC
@@ -1037,7 +1038,7 @@ return_checkSyringeContent:
 // ++ step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings   ++
 // ++           (a/b)*100
 // ++ step #3 : calculate volume [uL] acording to percentage mesured                                ++
-// ++ 
+// ++           {[(a/b)*100]*c}/100
 // ++ step #4 : compare messured volume [uL] to intended Withdraw volume                            ++
 // ++ 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1059,23 +1060,21 @@ testSyringesVolume:
     CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
     
 // step #3 : calculate volume [uL] acording to percentage mesured    
-// GB_pistonsRangePercentage * GB_piston_set_vol_uL [uL]
+// GB_pistonsRangePercentage * GB_piston_set_vol_uL [uL] / 100
     CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
     CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_set_vol_uL
+    CALCV   DIV, GB_messuredAmountOfLiquid, 100
     
 // step #4 : compare messured volume [uL] to intended Withdraw volume
-//  GB_pistonsRangePercentage - GB_accepted_diviation_range // must be > 0
-    CALCAV  LOAD, GB_accepted_diviation_range 
-    CALCAV  SUB, GB_pistonsRangePercentage
-    COMP    0
-    JC      GT, Return_testSyringesVolume
-    // if current_diviation is smaller than the accepted_diviation
-
-    // CALC    MUL, -1 // test the other side of the +-
-    // COMP    0
-    // JC      GT, Return_testSyringesVolume
-    // JA      Return_testSyringesVolume
-
+//  (GB_messuredAmountOfLiquid - GB_microLtoWithdraw_current) * GB_piston_set_vol_uL - GB_accepted_diviation_range // must be > 0
+    CALCVV  LOAD, GB_current_diviation, GB_messuredAmountOfLiquid
+    CALCVV  SUB, GB_current_diviation, GB_microLtoWithdraw_current
+    CALCV   COMP, GB_current_diviation, 0
+    JC      GT, skipFlipSign
+    CALCV   mul, GB_current_diviation, -1               // if a negative value - make positive for calculation with absolute value
+ skipFlipSign:
+    CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
+    JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
 
 SyringeVolume_Error: // Syringe Volume incorrect
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
@@ -1083,8 +1082,6 @@ SyringeVolume_Error: // Syringe Volume incorrect
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     CSUB    setStateSTOPPED_ON_ERROR
     JA      ABORT_NoReport
-    
-// ++ step #3   
     
 Return_testSyringesVolume:   
     RSUB 
