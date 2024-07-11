@@ -520,8 +520,8 @@ GB_74                        =    74
    SWITCH_SPEED_PIST             =    40 
    MAX_CURRENT_PIST              =   200        // 128
    MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
-   X_MIN                         =  2048
-   Y_MAX                         =  4095
+   // X_MIN                         =  2048
+   // Y_MAX                         =  4095
    LIQUID_DETECTION_BORDER       =   200 // [the analog value] // under this value light didnt pass => sensor is blocked   
    // DETECTOR_BLOCKED              =   200 // [the value that is displayed on the sensor] // under this value light didnt pass => sensor is blocked   
    // NO_LIQUID_DETECTED            = 10000 // [the value that is displayed on the sensor] // over this value light passed - not through liquid => no liquid present
