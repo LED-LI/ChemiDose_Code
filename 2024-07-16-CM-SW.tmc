@@ -1062,13 +1062,13 @@ testSyringesVolume:
     CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
     
 // step #3 : calculate volume [uL] acording to percentage mesured    
-// GB_pistonsRangePercentage * GB_piston_set_vol_uL [uL] / 100
+// GB_pistonsRangePercentage * GB_piston_defined_vol_uL [uL] / 100
     CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
-    CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_set_vol_uL
+    CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_defined_vol_uL
     CALCV   DIV, GB_messuredAmountOfLiquid, 100
     
 // step #4 : compare messured volume [uL] to intended Withdraw volume
-//  (GB_messuredAmountOfLiquid - GB_microLtoWithdraw_current) * GB_piston_set_vol_uL - GB_accepted_diviation_range // must be > 0
+//  (GB_messuredAmountOfLiquid - GB_microLtoWithdraw_current) * GB_piston_defined_vol_uL - GB_accepted_diviation_range // must be > 0
     CALCVV  LOAD, GB_current_diviation, GB_messuredAmountOfLiquid
     CALCVV  SUB, GB_current_diviation, GB_microLtoWithdraw_current
     CALCV   COMP, GB_current_diviation, 0

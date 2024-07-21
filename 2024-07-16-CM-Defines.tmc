@@ -188,7 +188,7 @@ GB_cyclesTotal              =  12    //
 // GB_setBumpBottom         =  13    // needle touches the vial 4 rubber at bottom 
 GB_min_vol_laserDist_AVAL   =  14    // GB_14 // analog value when piston is at empty syringe location
 GB_max_vol_laserDist_AVAL   =  15    // GB_15 // analog value when piston is at max syringe volume location (Currently set as 15000 uL)
-GB_piston_set_vol_uL        =  16    // GB_16 // uL of max syringes volume - as set in GB_15
+GB_piston_defined_vol_uL    =  16    // GB_16 // uL of max syringes volume - as set in GB_15
 GB_accepted_diviation_range =  17    //
 GB_messuredAmountOfLiquid   =  18    //
 GB_current_diviation        =  19
@@ -528,7 +528,7 @@ GB_74                        =    74
 
 // GB_min_vol_laserDist_AVAL             =  14    // GB_14
 // GB_max_vol_laserDist_AVAL             =  15    // GB_15
-// GB_piston_set_vol_uL             =  16    // GB_16
+// GB_piston_defined_vol_uL             =  16    // GB_16
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
 // GB_current_diviation             =  19
