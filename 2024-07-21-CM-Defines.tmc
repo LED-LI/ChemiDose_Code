@@ -951,7 +951,7 @@ func_108:  CSUB ejectSyringeFromTopVial
            JA     backGroundProcess
 func_110:  CSUB ejectSyringeFromBottomVial
            JA     backGroundProcess
-func_112:  CSUB dummy_sub
+func_112:  CSUB goIntoBag
            JA     backGroundProcess
 
 // more functions
