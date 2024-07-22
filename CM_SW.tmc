@@ -4,6 +4,9 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+ last edited : 2024-07-22                              +
+//+ by : LED                                              +
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is : CM_SW.tmc
 
@@ -19,6 +22,7 @@
 // Subroutines initialized from PC
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ClearRunningErrors:   // func 84
+
     CSUB    INIT_MOTORS      // func 16
     CSUB    ClearErrorsRAM
 
