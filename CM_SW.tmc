@@ -1101,49 +1101,6 @@ Return_testSyringesVolume:
 // Return_testSyringesVolume:   
     // RSUB 
 
-// // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-testSyringesVolume:
-
-// step #1 : get analog value of thumbRest distance
-    CSUB    getLaserDistAVAL // STEP1 // func_128
-    
-// step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings
-// [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
-    CALCAV  SUB, GB_min_vol_laserDist_AVAL
-    CALC    MUL, 100
-    CALCVA  LOAD, GB_pistonsRangePercentage             // save this part : [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100]
-    
-    CALCAV  LOAD, GB_max_vol_laserDist_AVAL
-    CALCAV  SUB, GB_min_vol_laserDist_AVAL
-    CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
-    
-// step #3 : calculate volume [uL] acording to percentage mesured    
-// GB_pistonsRangePercentage * GB_piston_defined_vol_uL [uL] / 100
-    CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
-    CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_defined_vol_uL
-    CALCV   DIV, GB_messuredAmountOfLiquid, 100
-    
-// step #4 : compare messured volume [uL] to intended Withdraw volume
-//  GB_accepted_diviation_range - (GB_microLtoWithdraw_current - GB_messuredAmountOfLiquid ) * 100 / GB_piston_defined_vol_uL  // must be > 0
-    CALCVV  LOAD, GB_current_diviation, GB_messuredAmountOfLiquid
-    CALCVV  SUB, GB_current_diviation, GB_microLtoWithdraw_current
-    CALCV   COMP, GB_current_diviation, 0
-    JC      GT, skipFlipSign
-    CALCV   mul, GB_current_diviation, -1               // if a negative value - make positive for calculation with absolute value
- skipFlipSign:
-    CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
-    JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
-
-SyringeVolume_Error: // Syringe Volume incorrect
-    GGP     GB_errors_syringe_bag, GPbank_2             // load error word
-    CALC    OR, BitEr_SyringeVolume_Error               // add the error bit
-    AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    CSUB    setStateSTOPPED_ON_ERROR
-    JA      ABORT_NoReport
-    
-Return_testSyringesVolume:   
-    RSUB 
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
