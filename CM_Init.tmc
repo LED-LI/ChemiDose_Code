@@ -1,11 +1,11 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ Name:        CM-Init.tmc                              +
+//+ Name:        CM_Init.tmc                              +
 //+                                                       +
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  CM-Init.tmc
+// This file is :  CM_Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return

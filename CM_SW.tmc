@@ -1,19 +1,19 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ Name:        CM-SW.tmc                                +
+//+ Name:        CM_SW.tmc                                +
 //+                                                       +
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file is : CM-SW.tmc
+// This file is : CM_SW.tmc
 
 //************
 // Includes
 //************
 
 #Include CM_TMCLParam.tmc   // TMCL Parameters
-#Include CM-Defines.tmc     // CM   definitions
-#Include CM-Init.tmc        // CM   initialization
+#Include CM_Defines.tmc     // CM   definitions
+#Include CM_Init.tmc        // CM   initialization
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Subroutines initialized from PC

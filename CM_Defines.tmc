@@ -1,11 +1,11 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ Name:        CM-Defines.tmc                           +
+//+ Name:        CM_Defines.tmc                           +
 //+                                                       +
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  CM-Defines.tmc
+// This file is :  CM_Defines.tmc
 
 CURRENT_VERSION      =  20240722
 

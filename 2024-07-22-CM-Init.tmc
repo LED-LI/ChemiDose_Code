@@ -1,11 +1,59 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ Name:        CM-Init.tmc                              +
+//+ Name:        CM_Init.tmc                              +
 //+                                                       +
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Changes: 
+//    1. V2010001 initial SW
+//    2. V2010002 After rework for separate DIR for capHolder. swappes out3 and out
+//    3. V2010003 Initialize works and draws on vial into the bag
+//    4. V2010004 Multi- vial opperation
+//    5. V2010005 2022 - back to work
+//    6. 2022-05-18 corrections
+//    7. 2022-08-02 first code' before clean up
+//    8. 2022-08-09 go thru code before on machine
+//    9. 2022-09-29 homing, capHolder
+//   10. 2022-10-05 reference from first vial linear and bump
+//   11. 2022-11-05 full cycle with one vial
+//   12. 2022-11-14 running all 6 vials from PC
+//   13. 2022-11-21 running bottom vials
+//   14. 2022-11-22 fix backup problem
+//   15. 2022-11-23 vibrate vial 4
+//   16. 2022-11-24 fix error after vibrate vials
+//   17. 2022-11-27 vibrate success with RFS issue   BUMP_DOWN_REL
+//   18. 2022-11-28 BUMP_DOWN_REL 330 -> 300
+//   19. 2022-11-29 fix turning with large draw volume
+//   20. 2022-11-30 creating boundaries for the syringe movement in space acording to its volume
+//   21. 2022-12-01 debuging syringe parimiters
+//   22. 2022-12-04 canceling PushPull50PerCent
+//   23. 2022-12-05 defined as our reference
+//   24. 2023-04-16 returning back to last reference (before "optimizing") and writing everything again
+//   25. 2023-04-30 removed STGP for GB_currentVersion + moved global parameters from 0-55 to higher numbers
+//   26. 2023-05-10 canceled the use of draw_321 - there is a problem when trying to operate while vibrating
+//   27. 2024-01-01 added dropVials to FUNC_10
+//   28. 2024-02-13 changed baud rate from 57600 to 9600
+//   29. 2024-02-18 reversing fill vial procedure - was: first fill then pull air - now is: pull air then fill (emptySyringeToFillVial) + (fix all of MAX_POS_SPEED_PIST) + created limits to pistons movement + disabled volume tests 
+//   30. 2024-02-19 returning draw_321
+//   31. 2024-02-22 
+//   32. 2024-02-26 testing if the Syringe is In the Bag
+//   33. 2024-02-29 troubleshooting draw_321 - adjust syringeNotInBag test parameters
+//   34. 2024-03-03 .......
+//   35. 2024-03-28 .......
+//   36. 2024-04-08 .......
+//   37. 2024-04-15 .......
+//   38. 2024-05-16 created code for BANNER sensors
+//   39. 2024-05-22 corrected VER_NEEDLE_RFS_BELOW_BUMP from 4150 to 5500
+//TBD40. 2024-05-23 mesured and inputed BANNER sensors endpoints values
+//   41. 2024-06-25 returned CAP_AT_HOME to 0 and commented out the early release of the cap holder
+//   42. 2024-06-26 returned the early release of the cap holder in the init func after fixing sensor
+//   43. 2024-07-07 setting BANNER values
+//   44. 2024-07-08 setting BANNER values
+//   45. 2024-07-11 finishing BANNER funcs
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// This file:  CM-Init.tmc
+// This file:  2024-07-22-CM-Init.tmc
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // stop all motors and return
