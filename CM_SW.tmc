@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-23                              +
+//+ last edited : 2024-07-24                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -103,9 +103,9 @@ continue_init_cm:
 
     CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
 
-    CSUB    screenAllVials             // put all vials state into data Base
-    SIO     Out_Multiplexer, OutBank_2, 0            // change relays to watch inputs from watching vials //// L.E.D ////
-    WAIT    TICKS, 0, 100/10                         // 100 ms  //// L.E.D ////
+    // // // CSUB    screenAllVials             // put all vials state into data Base
+    // // // SIO     Out_Multiplexer, OutBank_2, 0            // change relays to watch inputs from watching vials //// L.E.D ////
+    // // // WAIT    TICKS, 0, 100/10                         // 100 ms  //// L.E.D ////
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM  //   5
     SGP     GB_initialVolume, GPbank_2, clr             //  15
@@ -921,14 +921,8 @@ preLoadCurrentParameters:
     /////
     
     CSUB    emptySyringeToBag
-    
-    // CSUB    resumeVibrate
-    // // // // // // // calculate the volume in the bag
-    // // // // // // CALCVV  ADD, GB_microLinBAG, GB_microLtoWithdraw_current                // add to total in bag
-
-    // CSUB    injectIntoBag
+   
     CSUB    rePositionToStart          // CSUB    rePositionToStartFromTop //  //// L.E.D ////
-    // CSUB    Vibrate
 
 ReturnDrawFromVial:
     RSUB
@@ -966,7 +960,6 @@ checkSyringeContent: // func_166
     
 // first test for liquid presence and only after check if volume is correct
     CSUB    testLiquidPresence
-    // CALCAV  LOAD, GB_liquidDetected
     // if reached here -> liquid detected correctly
     
     
@@ -974,7 +967,7 @@ checkSyringeContent: // func_166
     CSUB    testSyringesVolume
     // if reached here -> volume detected by laser is within range
     
-    JA return_checkSyringeContent
+    // JA return_checkSyringeContent
     
 
 return_checkSyringeContent:
@@ -1040,66 +1033,66 @@ measuredIsOutOfAcceptedRange: // Syringe Volume incorrect ( SyringeVolume_Error 
 Return_testSyringesVolume:   
     RSUB 
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++ backup of previous method of validating measurment ++
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ backup of previous method of validating measurment ++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// test location compared to content amount = [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)  // percentage of piston location 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // test location compared to content amount = [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)  // percentage of piston location 
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++ step #1 : get analog value of thumbRest distance                                              ++
-// ++           a
-// ++ step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings   ++
-// ++           (a/b)*100
-// ++ step #3 : calculate volume [uL] acording to percentage measured                               ++
-// ++           {[(a/b)*100]*c}/100
-// ++ step #4 : compare messured volume [uL] to intended Withdraw volume                            ++
-// ++ 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ step #1 : get analog value of thumbRest distance                                              ++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++           a
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings   ++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++           (a/b)*100
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ step #3 : calculate volume [uL] acording to percentage measured                               ++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++           {[(a/b)*100]*c}/100
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ step #4 : compare messured volume [uL] to intended Withdraw volume                            ++
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ++ 
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// testSyringesVolume:
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // testSyringesVolume:
 
-// // step #1 : get analog value of thumbRest distance
-    // CSUB    getLaserDistAVAL // STEP1 // func_128
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // step #1 : get analog value of thumbRest distance
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CSUB    getLaserDistAVAL // STEP1 // func_128
     
-// // step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings
-// // [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
-    // CALCAV  SUB, GB_min_vol_laserDist_AVAL
-    // CALC    MUL, 100
-    // CALCVA  LOAD, GB_pistonsRangePercentage             // save this part : [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100]
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // step #2 : calculate percentage of syringe filled regarding the min_vol and max_vol settings
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100] / (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCAV  SUB, GB_min_vol_laserDist_AVAL
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALC    MUL, 100
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVA  LOAD, GB_pistonsRangePercentage             // save this part : [(GB_thumbRestDistance - GB_min_vol_laserDist_AVAL) * 100]
     
-    // CALCAV  LOAD, GB_max_vol_laserDist_AVAL
-    // CALCAV  SUB, GB_min_vol_laserDist_AVAL
-    // CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCAV  LOAD, GB_max_vol_laserDist_AVAL
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCAV  SUB, GB_min_vol_laserDist_AVAL
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVA  DIV, GB_pistonsRangePercentage              // divide <var> by accumulator // divide by this part : (GB_max_vol_laserDist_AVAL - GB_min_vol_laserDist_AVAL)
     
-// // step #3 : calculate volume [uL] acording to percentage mesured    
-// // GB_pistonsRangePercentage * GB_piston_defined_vol_uL [uL] / 100
-    // CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
-    // CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_defined_vol_uL
-    // CALCV   DIV, GB_messuredAmountOfLiquid, 100
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // step #3 : calculate volume [uL] acording to percentage mesured    
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_pistonsRangePercentage * GB_piston_defined_vol_uL [uL] / 100
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_messuredAmountOfLiquid, GB_pistonsRangePercentage
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVV  MUL, GB_messuredAmountOfLiquid, GB_piston_defined_vol_uL
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCV   DIV, GB_messuredAmountOfLiquid, 100
     
-// // step #4 : compare messured volume [uL] to intended Withdraw volume
-// //  GB_accepted_diviation_range - (GB_microLtoWithdraw_current - GB_messuredAmountOfLiquid ) * 100 / GB_piston_defined_vol_uL  // must be > 0
-    // CALCVV  LOAD, GB_current_diviation, GB_messuredAmountOfLiquid
-    // CALCVV  SUB, GB_current_diviation, GB_microLtoWithdraw_current
-    // CALCV   COMP, GB_current_diviation, 0
-    // JC      GT, skipFlipSign
-    // CALCV   mul, GB_current_diviation, -1               // if a negative value - make positive for calculation with absolute value
- // skipFlipSign:
-    // CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
-    // JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // step #4 : compare messured volume [uL] to intended Withdraw volume
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // //  GB_accepted_diviation_range - (GB_microLtoWithdraw_current - GB_messuredAmountOfLiquid ) * 100 / GB_piston_defined_vol_uL  // must be > 0
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_current_diviation, GB_messuredAmountOfLiquid
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVV  SUB, GB_current_diviation, GB_microLtoWithdraw_current
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCV   COMP, GB_current_diviation, 0
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // JC      GT, skipFlipSign
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCV   mul, GB_current_diviation, -1               // if a negative value - make positive for calculation with absolute value
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // skipFlipSign:
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
 
-// SyringeVolume_Error: // Syringe Volume incorrect
-    // GGP     GB_errors_syringe_bag, GPbank_2             // load error word
-    // CALC    OR, BitEr_SyringeVolume_Error               // add the error bit
-    // AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    // CSUB    setStateSTOPPED_ON_ERROR
-    // JA      ABORT_NoReport
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // SyringeVolume_Error: // Syringe Volume incorrect
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GGP     GB_errors_syringe_bag, GPbank_2             // load error word
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CALC    OR, BitEr_SyringeVolume_Error               // add the error bit
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // AGP     GB_errors_syringe_bag, GPbank_2             // and write again
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // CSUB    setStateSTOPPED_ON_ERROR
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // JA      ABORT_NoReport
     
-// Return_testSyringesVolume:   
-    // RSUB 
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // Return_testSyringesVolume:   
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // RSUB 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
@@ -1117,24 +1110,12 @@ Return_testSyringesVolume:
     COMP    clr // if clr - do not drop the vials
     JC      EQ, returnAfterAllVialsDone // when clr (at show) will skip dropVials
 
-    // drop vials
+// drop vials
     CSUB    dropVials
-
-   //// GGP     GB_DisposeDropVialsPos, GPbank_2                                //// L.E.D ////
-   //// MVPA    ABS, M_disposeMotor                        // move, wait later  //// L.E.D ////
-
-   //// GGP     GB_DisposeDropVials456Pos, GPbank_2                             //// L.E.D ////
-   //// MVPA    ABS, M_armMotor                           // move, wait later   //// L.E.D ////
-
-   //// CSUB    waitDispose                                                     //// L.E.D ////
-   //// CSUB    waitArmMotor                                                    //// L.E.D ////
 
     WAIT    TICKS, 0, WAIT_TICKS                      // wait 10 seconds till all vials rest
 
-   //// CSUB    HomeDisposeMotor                                                //// L.E.D ////
-   //// CSUB    positionArmMotor                                                //// L.E.D ////
-
-    // check if overflow
+// check if overflow
     CSUB    checkOverFlow         // check if closed and not full and door closed
 
 returnAfterAllVialsDone:
@@ -1683,22 +1664,11 @@ insertNeedleIntoVialBelow:    //
 drawVial:    // just pull to required volume
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW   // Set maximum positioning speed //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
-    // GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
-    // CALCAV  MUL, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
-    // CALC    DIV, 100                                    // now in uSteps
-    // MVPA    REL, M_pistonMotor                          // move, wait later
-    // CSUB    waitPistonDraw 
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
-
-    // MVP     REL, M_pistonMotor, PISTON_MORE             // move more
-    // CSUB    waitPiston 
-    CSUB    waitAfterDraw  //     CSUB    waitAfterVialDraw 
+    CSUB    waitAfterDraw
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED    // return positioning speed to default
-
-    // // // // // // // // calculate the volume left in the vial
-    // // // // // // // CALCVV  SUB, GB_microLinVial_current, GB_microLtoWithdraw_current  // add to total in vial // get rid of this !!!!!
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED    // return positioning speed to default   /// maybe change every end of func to run a func to reset all axiss parameters
 
 returnDrawVial:
     RSUB
@@ -1709,14 +1679,10 @@ drawVialMoreBack:    // just pull to required volume
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW // MAX_POS_SPEED_PIST // Set maximum positioning speed
 // always push for later bump
-    // MVP     REL, M_pistonMotor, -BUMP_DOWN_REL          // re-push to compensate the "bump"
-    // CSUB    waitPiston
     CALC    LOAD, -BUMP_DOWN_REL
     CSUB    movePiston_REL
-    // MVP     REL, M_pistonMotor, -PISTON_MORE            // push back the 300[uL]
-    // CSUB    waitPiston
 // returnMoreBack:
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed   /// maybe change every end of func to run a func to reset all axiss parameters
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1733,7 +1699,6 @@ waitAfterDraw:
 
 waitAfterVialDraw:
 
-    // GGP     GB_DrawFromVialWaitTime, GPbank_2              // get time in [100ms]
     GGP     GB_DrawWaitTime, GPbank_2              // get time in [100ms]
    // wait period set by needle specs after drawing to allow pressure to balance
     WAIT    TICKS, 0, ACCUMULATOR_WAIT             // wait ticks as in A
@@ -1768,7 +1733,6 @@ moveSlowlyBottomBag:    //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 goIntoBag:   //              //// L.E.D //// maybe possible to reduce function 
 
-   // CSUB    pull1ml
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
@@ -1779,12 +1743,6 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
    // CSUB    moveLinear
     CSUB      findCenterOfNeedleSensor                 // find center of bag
 
-// attemp to pause vibration while injecting into bag 
-    // DI     TI_TIMER0     
-    // DI     TI_TIMER1 
-    // DI     TI_TIMER2 
-    // DI     TI_GLOBAL 
-
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
     CSUB    moveVertical                               // move head up to sensor, wait later
@@ -1792,31 +1750,10 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // MAX_POS_SPEED_VER_INTO_BAG // INTO_BAG // MAX_POS_SPEED_VER_INTO_BAG // Set maximum positioning speed
     MVP     ABS, M_verticalMotor, SYRINGE_IN_BAG_ABS                            // move to location
     CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH     // Set maximum positioning speed
-
-    // EI     TI_TIMER0     
-    // EI     TI_TIMER1 
-    // EI     TI_TIMER2 
-    // EI     TI_GLOBAL 
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH     // Set maximum positioning speed   /// maybe change every end of func to run a func to reset all axiss parameters
 
    RSUB
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// // injectIntoBag:
-    // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW // MAX_POS_SPEED_PIST_SLOW // Set maximum positioning speed
-    // // // CSUB    homePistonMotor
-
-    // // // GGP     GB_PistonHomePos, GPbank_2                                      // load to A
-    // // // MVPA    ABS, M_pistonMotor                            // move, wait later
-    // // // CSUB    waitPistonDraw
-    // // // CSUB    waitAfterDraw
-    // // // WAIT     TICKS, 0, WAIT_TICKS_200ms
-    // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST    // Set maximum positioning speed
-    // // CSUB    emptySyringeToBag
-    // // // calculate the volume in the bag
-    // // CALCVV  ADD, GB_microLinBAG, GB_microLtoWithdraw_current                // add to total in bag
-
-    // // RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 drawFromBag: 
 
@@ -1837,27 +1774,20 @@ drawFromBag:
     CSUB    waitPistonDraw
     SGP     GB_MotorIsMoving, GPbank_2, clr
 
-    //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
-    // // // // // // // // // // // calculate the volume in the bag
-    // // // // // // // // // // CALCVV  SUB, GB_microLinBAG, GB_microLtoFill_current                // add to total in bag
-
+    //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed   /// maybe change every end of func to run a func to reset all axiss parameters
 
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 rePositionToStart: // rePositionToStartFromTop:  // rePositionToStartFromTop:   // exit bag after injecting into it 
 
-   // CSUB    pull1ml
     CSUB    startHomePistonMotor // i hate this func name
     CSUB    positionPistonMotor
   // move down, out of the bag
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
-    // GGP     GB_verticalCapPos, GPbank_2
-    // MVPA    ABS, M_verticalMotor                         // move, wait later
-    // CSUB    waitVertical
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
     
-  // move linear and rotate to position
+  // move linear to position
     CSUB    homeLinearMotor                         // Linear and Cap holders first to clear the way for vertical
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
@@ -1886,17 +1816,7 @@ rePositionAfterDrawFromBag:   //
 
 recapSyringe:   //
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// actualy moved to this - but canceled right now just for the remerging back to B4 the optimization
-/////////////////////////////////////////////////////////////////////////////////////////////
     GGP     GB_linearLoading, GPbank_2                     // loading position parameter
-    // GGP     GB_linearCenterOfVial1, GPbank_2
-    // CALC    ADD, LINEAR_VIAL1_TO_LOADING
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-    // //GGP     GB_linearLoading, GPbank_2                     // go back to loading position
-    // GGP     GB_linearCenterOfVial1, GPbank_2
-    // CALC    ADD, LINEAR_VIAL1_TO_LOADING
 
     CSUB    moveLinear
     CSUB    homeCapHolderMotor                             // to home switch upwards
@@ -2123,7 +2043,7 @@ checkSyringeSensor:
 //  The movement consists of the following commands.
 //  The global parameter GP_uPulsesManual (address 19)  holds the micro-meters 
 //  or mili-degrees to go, which can be negative or positive.
-//  Before sending the next movement look if GB_MotorIsMoving (GB_16) is clear
+//  Before sending the next movement look if GB_MotorIsMoving (GB_226) is clear
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2285,31 +2205,16 @@ waitLinearMotorRfs:    //
 
 positionLinearMotor:   // func 56
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// actualy moved to this - but canceled right now just for the remerging back to B4 the optimization
-/////////////////////////////////////////////////////////////////////////////////////////////
     GGP     GB_linearLoading, GPbank_2
-    // GGP     GB_linearCenterOfVial1, GPbank_2
-    // CALC    ADD, LINEAR_VIAL1_TO_LOADING
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-    // //GGP       GB_linearLoading, GPbank_2
-    // GGP       GB_linearCenterOfVial1, GPbank_2
-    // CALC      ADD, LINEAR_VIAL1_TO_LOADING
-    CSUB      moveLinear
+    CSUB    moveLinear
     RSUB
 
 homeLinearMotor:    // motor 1   func 42
-   // // // // // // // // attempt to avoid the BOOM sound when homing linear
-    // // // // // // // SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME // Set maximum positioning speed
-    // // // // // // // CALC    LOAD, -100
-    // // // // // // // CSUB    moveLinear
-    //SAP       AP_StandbyCurrent, M_linearMotor, STBY_CURRENT_LINEAR_HIGH   // Set standby current
-    SAP       AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
-    SAP       AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
-    SAP       AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
-    RFS       START, M_linearMotor                                         // Start reference search
-    CSUB      waitLinearMotorRfs
+    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
+    SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
+    SAP     AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
+    RFS     START, M_linearMotor                                         // Start reference search
+    CSUB    waitLinearMotorRfs
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2328,6 +2233,7 @@ LinearMotorTOerr:
 
 armMotorManual:    //   func 140
 
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_UnitsToMoveManual, GPbank_2        // load the movement [mDeg] into A
@@ -2345,8 +2251,8 @@ armMotorManual:    //   func 140
 
 armMotorManualAbsolute:    //   FUNC_150
 
-    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     GGP     GB_GoToAbsoluteInSteps, GPbank_2        // load the movement [mDeg] into A
     MVPA    ABS, M_armMotor                         // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -2389,16 +2295,16 @@ waitArmMotorRfs:    //
 
 positionArmMotor:             // motor 2   func 96
 
-    CSUB      homeArmMotor                                          // to home switch upwards
-    GGP       GB_ArmVialPosition, GPbank_2
-    CSUB      moveArmMotor
+    CSUB    homeArmMotor                                          // to home switch upwards
+    GGP     GB_ArmVialPosition, GPbank_2
+    CSUB    moveArmMotor
     RSUB
 
 homeArmMotor:  // 50
-    SAP       AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
-    SAP       AP_RefSearchMode, M_armMotor, APV_RefLeftSwitch
-    RFS       START, M_armMotor                                     // Start reference search
-    CSUB      waitArmMotorRfs
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
+    SAP     AP_RefSearchMode, M_armMotor, APV_RefLeftSwitch
+    RFS     START, M_armMotor                                     // Start reference search
+    CSUB    waitArmMotorRfs
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2558,20 +2464,20 @@ waitPistonRfs:    //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 homePistonMotor:     // motor 3   104
-    CSUB      startHomePistonMotor
-    CSUB      waitPistonRfs
-    CSUB      positionPistonMotor // canceled in future version
+    CSUB    startHomePistonMotor
+    CSUB    waitPistonRfs
+    CSUB    positionPistonMotor // canceled in future version
     RSUB
 
 startHomePistonMotor:  // 124
-    SAP       AP_RefSearchMode,  M_pistonMotor, APV_RefLeftSwitch  
-    RFS       START, M_pistonMotor                                          // Start reference search
+    SAP     AP_RefSearchMode,  M_pistonMotor, APV_RefLeftSwitch  
+    RFS     START, M_pistonMotor                                          // Start reference search
     RSUB
 
 positionPistonMotor:       // func 106                                                 // wait home sensor and position
     // CSUB      waitPistonRfs
-    GGP       GB_PistonHomePos, GPbank_2                                    // go to required height
-    CSUB      movePiston_ABS                                                    // move, wait and error if delay
+    GGP     GB_PistonHomePos, GPbank_2                                    // go to required height
+    CSUB    movePiston_ABS                                                    // move, wait and error if delay
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2590,9 +2496,9 @@ pistonMotorTOerr:
 
 RotationManual:    //   func 144
 
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current 
     SAP     AP_LeftLimitSwitchDisable, M_headRotateMotor, set           // Disable left limit switch
-    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [mDeg] into A
     CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
     CALC    MUL, rotateMicrostepsPerDeg                 // 
@@ -2608,9 +2514,9 @@ RotationManual:    //   func 144
 
 RotationManualAbsolute:    //   FUNC_154
 
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current 
     SAP     AP_LeftLimitSwitchDisable, M_headRotateMotor, set           // Disable left limit switch
-    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [mDeg] into A
     MVPA    ABS, M_headRotateMotor                        // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -2692,29 +2598,28 @@ waitRotateRfsVeryShort:    //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 PositionHeadRotateToTopMotor:   // motor 4  func_64
-    CSUB      HomeHeadRotateMotor
-    GGP       GB_HeadRotateAtTop, GPbank_2                                // go to required height
-    CSUB      moveRotate                                                    // move, wait and error if delay
+    CSUB    HomeHeadRotateMotor
+    GGP     GB_HeadRotateAtTop, GPbank_2                                // go to required height
+    CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateToLeftMotor:   // motor 4  func_38
-    CSUB      HomeHeadRotateMotor
-    GGP       GB_HeadRotateHomePos, GPbank_2                                // go to required height
-    CSUB      moveRotate                                                    // move, wait and error if delay
+    CSUB    HomeHeadRotateMotor
+    GGP     GB_HeadRotateHomePos, GPbank_2                                // go to required height
+    CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateToBottomMotor:   // motor 4 func_70
-    CSUB      HomeHeadRotateMotor
-    GGP       GB_headAtBottom, GPbank_2                                // go to required height
-    CSUB      moveRotate                                                    // move, wait and error if delay
+    CSUB    HomeHeadRotateMotor
+    GGP     GB_headAtBottom, GPbank_2                                // go to required height
+    CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 HomeHeadRotateMotor:   // 58
-    CSUB      homeHeadRotateMotorFast                                       // find fast, before slow
+    CSUB    homeHeadRotateMotorFast                                       // find fast, before slow
 //    CSUB      homeHeadRotateMotorSlow                                     // find fast, before slow
     RSUB
 
-// homeHeadRotateMotorSlow:
     // SAP       AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT_SLOW   // speed for search slow
     // SAP       AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT_SLOW   // speed for final search
     // SAP       AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
@@ -2723,11 +2628,11 @@ HomeHeadRotateMotor:   // 58
     // RSUB
 
 homeHeadRotateMotorFast:   
-    SAP       AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
-    SAP       AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
-    SAP       AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
-    RFS       START, M_headRotateMotor                                      // Start reference search
-    CSUB      waitRotateRfs
+    SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
+    SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
+    SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
+    RFS     START, M_headRotateMotor                                      // Start reference search
+    CSUB    waitRotateRfs
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2805,18 +2710,18 @@ waitDisposeRfs:    //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 HomeDisposeMotor:       // motor 5   52
-    CSUB      startHomeDisposeMotor
-    CSUB      waitHomeDisposeMotor
+    CSUB    startHomeDisposeMotor
+    CSUB    waitHomeDisposeMotor
     RSUB
 
 startHomeDisposeMotor:       // motor 5   92
-    SAP       AP_StandbyCurrent, M_disposeMotor, STBY_CURRENT_DISPOSE   // Set standby current
-    SAP       AP_RefSearchMode, M_disposeMotor, APV_RefLeftSwitch
-    RFS       START, M_disposeMotor                                     // Start reference search
+    SAP     AP_StandbyCurrent, M_disposeMotor, STBY_CURRENT_DISPOSE   // Set standby current
+    SAP     AP_RefSearchMode, M_disposeMotor, APV_RefLeftSwitch
+    RFS     START, M_disposeMotor                                     // Start reference search
     RSUB
 
 waitHomeDisposeMotor:
-    CSUB      waitDisposeRfs
+    CSUB    waitDisposeRfs
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2839,8 +2744,8 @@ CapHolderManual:   // FUNC 160
 //   GB_CapHolderPulses               = 87    
 //   GB_slowCapHolder                 = 88
 
-//    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
 
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_UnitsToMoveManual, GPbank_2              // GB_19 load the movement [uMeter] into A
     CALC    MUL, capHolderMicroStepsPerMM           
     CALC    DIV, 1000                                   // now in uSteps
@@ -2889,14 +2794,16 @@ exitCapHolderManual:
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  testCapHolder:  // FUNC 162
 
-    //SGP     GB_UnitsToMoveManual, GPbank_2, -6000              // move up to start position
-    //CSUB    CapHolderManual
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+
     CSUB    homeCapHolderMotor
-    //SGP     GB_UnitsToMoveManual, GPbank_2, CAP_LOCK_STEPS
-    //CSUB    CapHolderManual
+    WAIT    TICKS, 0, 100                                      // wait 1 s
+
     CSUB    holdCap
-    WAIT  TICKS, 0, 100                                      // wait 1 s
+    WAIT    TICKS, 0, 100                                      // wait 1 s
+
     JA    testCapHolder
+
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2933,23 +2840,23 @@ capHolderMotorTOerr:
 // VIBRATE
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 defaultVibrate:   // func 126
-    SGP    GB_vibrationTime_4, GPbank_2, 3
-    SGP    GB_vibrationTime_56, GPbank_2, 2
-    SGP    GB_vibrationHz, GPbank_2, 25
-    SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40
+    SGP     GB_vibrationTime_4, GPbank_2, 3
+    SGP     GB_vibrationTime_56, GPbank_2, 2
+    SGP     GB_vibrationHz, GPbank_2, 25
+    SGP     GB_vibrationDutyCyclePercent, GPbank_2, 40
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 StopVibrate:   // FUNC 120   
-    DI     TI_TIMER0     
-    DI     TI_TIMER1 
-    DI     TI_TIMER2 
-    SGP    GB_vibrator4done, GPbank_2, 1
-    SGP    GB_vibrator56done, GPbank_2, 1
-    CALCV  LOAD, GB_vibrationTime_4_calc, 0
-    CALCV  LOAD, GB_vibrationTime_56_calc, 0
-    SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
-    SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
+    DI      TI_TIMER0     
+    DI      TI_TIMER1 
+    DI      TI_TIMER2 
+    SGP     GB_vibrator4done, GPbank_2, 1
+    SGP     GB_vibrator56done, GPbank_2, 1
+    CALCV   LOAD, GB_vibrationTime_4_calc, 0
+    CALCV   LOAD, GB_vibrationTime_56_calc, 0
+    SIO     Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
+    SIO     Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2971,61 +2878,61 @@ Vibrate:   // FUNC 114
     CSUB   StopVibrate
 
 // check strength validity                       // acceptable values 10-100
-    GGP      GB_vibrationDutyCyclePercent, GPbank_2
-    COMP     10               
-    JC       LT, errorVibrateParameter
+    GGP     GB_vibrationDutyCyclePercent, GPbank_2
+    COMP    10               
+    JC      LT, errorVibrateParameter
     //GGP      GB_vibrationDutyCyclePercent, GPbank_2
-    COMP     100
-    JC       GT, errorVibrateParameter
+    COMP    100
+    JC      GT, errorVibrateParameter
 
 // check HZ validity                       // acceptable values 4-100 HZ
-    GGP      GB_vibrationHz, GPbank_2
-    COMP     100
-    JC       GT, errorVibrateParameter
+    GGP     GB_vibrationHz, GPbank_2
+    COMP    100
+    JC      GT, errorVibrateParameter
     //GGP      GB_vibrationHz, GPbank_2
-    COMP     4
-    JC       LT, errorVibrateParameter
+    COMP    4
+    JC      LT, errorVibrateParameter
 
 // check TIME validity                       // acceptable values > 0 [s]
-    GGP      GB_vibrationTime_4, GPbank_2
-    COMP     0
-    JC       LT, errorVibrateParameter
-    SGP      GB_vibrator4done, GPbank_2, 0     // assume, will sign when it finished
-    JC       NE, check56
-    SGP      GB_vibrator4done, GPbank_2, 1     // will sign when it finished
+    GGP     GB_vibrationTime_4, GPbank_2
+    COMP    0
+    JC      LT, errorVibrateParameter
+    SGP     GB_vibrator4done, GPbank_2, 0     // assume, will sign when it finished
+    JC      NE, check56
+    SGP     GB_vibrator4done, GPbank_2, 1     // will sign when it finished
 check56:
-    GGP      GB_vibrationTime_56, GPbank_2
-    COMP     0
-    JC       LT, errorVibrateParameter
-    SGP      GB_vibrator56done, GPbank_2, 0    // assume, will sign when it finished
-    JC       NE, loadParameters
-    SGP      GB_vibrator56done, GPbank_2, 1    // will sign when it finished
+    GGP     GB_vibrationTime_56, GPbank_2
+    COMP    0
+    JC      LT, errorVibrateParameter
+    SGP     GB_vibrator56done, GPbank_2, 0    // assume, will sign when it finished
+    JC      NE, loadParameters
+    SGP     GB_vibrator56done, GPbank_2, 1    // will sign when it finished
  
 loadParameters:
 
-    GGP      GB_vibration4IsNeeded, GPbank_2
-    COMP     clr
-    JC       EQ, setVibration56Time
-    CALCVV   LOAD, GB_vibrationTime_4_calc, GB_vibrationTime_4
+    GGP     GB_vibration4IsNeeded, GPbank_2
+    COMP    clr
+    JC      EQ, setVibration56Time
+    CALCVV  LOAD, GB_vibrationTime_4_calc, GB_vibrationTime_4
     
   setVibration56Time:
-    GGP      GB_vibration56IsNeeded, GPbank_2
-    COMP     clr
-    JC       EQ, doneSetVibrationTime
-    CALCVV   LOAD, GB_vibrationTime_56_calc, GB_vibrationTime_56
+    GGP     GB_vibration56IsNeeded, GPbank_2
+    COMP    clr
+    JC      EQ, doneSetVibrationTime
+    CALCVV  LOAD, GB_vibrationTime_56_calc, GB_vibrationTime_56
 
   doneSetVibrationTime:
 // calculate cycle time from HZ
-    CALC     LOAD, 500                     // load 500 to A
-    CALCAV   DIV, GB_vibrationHz           // cycle MS = 500(=A) / HZ = 1000/Hz/2
-    CALCVA   LOAD, GB_vibrationCycleMS     // load into GB
+    CALC    LOAD, 500                     // load 500 to A
+    CALCAV  DIV, GB_vibrationHz           // cycle MS = 500(=A) / HZ = 1000/Hz/2
+    CALCVA  LOAD, GB_vibrationCycleMS     // load into GB
 
 // calculate duty cycle time:  pecentage of the full cycle
-    CALCVV   LOAD, GB_vibrStrengthPercentCalc, GB_vibrationDutyCyclePercent
+    CALCVV  LOAD, GB_vibrStrengthPercentCalc, GB_vibrationDutyCyclePercent
     //CALCV    MUL, GB_vibrStrengthPercentCalc, 10                  // 1->10 ... 10->100 
-    CALCVV   LOAD, GB_PwmDutyCycleMS, GB_vibrationCycleMS           // ms
-    CALCVV   MUL, GB_PwmDutyCycleMS, GB_vibrStrengthPercentCalc     // ms * % *100
-    CALCV    DIV, GB_PwmDutyCycleMS, 100                            // :100 = ms
+    CALCVV  LOAD, GB_PwmDutyCycleMS, GB_vibrationCycleMS           // ms
+    CALCVV  MUL, GB_PwmDutyCycleMS, GB_vibrStrengthPercentCalc     // ms * % *100
+    CALCV   DIV, GB_PwmDutyCycleMS, 100                            // :100 = ms
 
     // ----- RUN VIBRATIONS ------
     CSUB   initInterrups                     // re-initialize
@@ -3192,6 +3099,24 @@ ejectSyringeFromBottomVial: // FUNC_110
     MVP     REL, M_verticalMotor, -5000 // go up
     CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration location
+    
+    CSUB    verifySyringe
+    CSUB    decap
+    CSUB    goIntoBag
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib location back to loading position
+    
+    CSUB    positionVerticalMotor // includes home to vertical inside
+    CSUB    homeLinearMotor
+    CSUB    PositionHeadRotateToLeftMotor
+    CSUB    positionLinearMotor
+    CSUB    recapSyringe
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++

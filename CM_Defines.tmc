@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-23                              +
+//+ last edited : 2024-07-24                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240723
+CURRENT_VERSION      =  20240724
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -50,12 +50,12 @@ In_capHolderHome       = 7 // U25
 
 InX_salineBagIsIn        = 0 // U44
 InX_vialIsIn1            = 1 // U16
-InX_vialIsIn2            = 2 // U46
+InX_vialIsIn2            = 7 // U30 // replaced with IN7 because of an error in the new distribution board creation (missing pull-up resistor for in_vial2 - U46)
 InX_vialIsIn3            = 3 // U37
 InX_vialIsIn4            = 4 // U47
 InX_vialIsIn5            = 5 // U48
 InX_vialIsIn6            = 6 // U33
-InX_mux7                 = 7 // U30 // input is vacant
+InX_mux7                 = 2 // U46 // input is vacant
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of Outputs
@@ -927,9 +927,9 @@ func_126:  CSUB defaultVibrate
            JA     backGroundProcess
 func_128:  CSUB getLaserDistAVAL
            JA     backGroundProcess
-func_130:  CSUB dummy_sub
+func_130:  CSUB moveToLDcalibLocation
            JA     backGroundProcess
-func_132:  CSUB dummy_sub
+func_132:  CSUB moveFromLDcalibLocation
            JA     backGroundProcess
 func_134:  CSUB dummy_sub
            JA     backGroundProcess
