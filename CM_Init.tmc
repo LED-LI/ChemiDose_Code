@@ -50,12 +50,19 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
 
     SGP     GB_currentVersion, GPbank_2, CURRENT_VERSION        // Write version number
     // STGP    GB_currentVersion, GPbank_2                         // Write version number
-    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 57600
+    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 9600 - for interfacing with andoid UI purposes 
 //    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
     SGP     GB_CoordinateStorage, GPbank_0, 0                   // 0=RAM only; 1=always also in EEPROM
     SGP     GB_DoNotRestoreUserVars, GPbank_0, 0                // 0=restore;  1=Do not restore at startup
        // Stop a running TMCL program. Reset program counter and stack pointer
        // to zero. Reset accumulator and X register to zero. Reset all flags.
+    SGP     GB_vial1Bit, GPbank_2, 1   //  
+    SGP     GB_vial2Bit, GPbank_2, 2   //  
+    SGP     GB_vial3Bit, GPbank_2, 4   //  
+    SGP     GB_vial4Bit, GPbank_2, 8   //  
+    SGP     GB_vial5Bit, GPbank_2, 16  //  
+    SGP     GB_vial6Bit, GPbank_2, 32  //  
+    SGP     GB_BagBit  , GPbank_2, 64  //  
     RST     continueClearErrors             
 
 continueClearErrors:    // stack is now empty
@@ -71,7 +78,7 @@ INIT_MOTORS:       // func 16  Init user variables
     // SGP     GB_InitDone, GPbank_2, clr
     CSUB    LEDS_OFF
     CSUB    initSyringes
-    CSUB    initNeedles
+    // CSUB    initNeedles
     CSUB    initVerticalMotor
     CSUB    initLinearMotor
     CSUB    initArmMotor
@@ -128,9 +135,9 @@ initSyringes:
     // GGP     GB_Syringe_Type, GPbank_2
     // COMP    DPS_LureLock_20                                     // is it syringe_4?
     // JC      NE, syringe_5                                 // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_4
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_4
     SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_4
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_4
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_4
 //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_4
     JA      returnInitSyringes
 // syringe_5:
@@ -188,9 +195,9 @@ initSyringes:
 // //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_10
     // JA      returnInitSyringes
 
-defaultSyringe:  // 
-    SGP     GB_Syringe_Type, GPbank_2, DEFAULT_SYRINGE_TYPE     // 
-    JA      initSyringes
+// defaultSyringe:  // 
+    // SGP     GB_Syringe_Type, GPbank_2, DEFAULT_SYRINGE_TYPE     // 
+    // JA      initSyringes
 
 returnInitSyringes:    // save in EEPROM
  // // check data exists
@@ -211,99 +218,99 @@ returnInitSyringes:    // save in EEPROM
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge and volume
+// // // // // // // // // // // // // // initNeedles:      // calculate in INIT_MOTORS according to needle length, gauge and volume
 
- // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME_25M_22G
- // The flow with same pressure relates to the 1/length and internal dia^2
+ // // // // // // // // // // // // // // // default for 25 mm and Gauge 22: DEF_DRAW_WAIT_TIME_25M_22G
+ // // // // // // // // // // // // // // // The flow with same pressure relates to the 1/length and internal dia^2
 
 
-    SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME_25M_22G  // init initially to 2 seconds
+    // // // // // // // // // // // // // // SGP     GB_DrawWaitTime, GPbank_2, DEF_DRAW_WAIT_TIME_25M_22G  // init initially to 2 seconds
 
- // calculate drawWaitTime according to length, compare to 25 mm
-    GGP     GB_NeedleLength, GPbank_2
-    COMP    16
-    JC      GE, checkTooLong                               // too low
-    SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
-checkTooLong:
-    GGP     GB_NeedleLength, GPbank_2
-    COMP    40
-    JC      LE, calcWithLength                             // too high
-    SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
-calcWithLength:
-    CALCVV  MUL, GB_DrawWaitTime, GB_NeedleLength          // multiply by needle length
-    CALCV   DIV, GB_DrawWaitTime, DEFAULT_NEEDLE_LENGTH    // divide by default length (25)
+ // // // // // // // // // // // // // // // calculate drawWaitTime according to length, compare to 25 mm
+    // // // // // // // // // // // // // // GGP     GB_NeedleLength, GPbank_2
+    // // // // // // // // // // // // // // COMP    16
+    // // // // // // // // // // // // // // JC      GE, checkTooLong                               // too low
+    // // // // // // // // // // // // // // SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
+// // // // // // // // // // // // // // checkTooLong:
+    // // // // // // // // // // // // // // GGP     GB_NeedleLength, GPbank_2
+    // // // // // // // // // // // // // // COMP    40
+    // // // // // // // // // // // // // // JC      LE, calcWithLength                             // too high
+    // // // // // // // // // // // // // // SGP     GB_NeedleLength, GPbank_2, DEFAULT_NEEDLE_LENGTH    
+// // // // // // // // // // // // // // calcWithLength:
+    // // // // // // // // // // // // // // CALCVV  MUL, GB_DrawWaitTime, GB_NeedleLength          // multiply by needle length
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, DEFAULT_NEEDLE_LENGTH    // divide by default length (25)
 
-// ///////////////////////////////////////
-//
-// calculate dwell time of gauge				
-// 				
-// 		dwell time of 22		2.000
-// 				
-// Gauge inner  relative   relative  multiply    dwell 
-//       dia    to 22      square                time
-// 				
-// 14    1.600  3.874     15.009     006.7       0.133
-// 16    1.194  2.891      8.358     012.0       0.239
-// 18    0.838  2.029      4.117     024.3       0.486
-// 20    0.603  1.460      2.132     046.9       0.938
-// 21    0.514  1.245      1.549     064.6       1.291
-// 22    0.413  1.000      1.000     100.0       2.000
-// 23    0.337  0.816      0.666     150.2       3.004
-// 24    0.311  0.753      0.567     176.4       3.527
-//
-// ///////////////////////////////////////
+// // // // // // // // // // // // // // // ///////////////////////////////////////
+// // // // // // // // // // // // // // //
+// // // // // // // // // // // // // // // calculate dwell time of gauge				
+// // // // // // // // // // // // // // // 				
+// // // // // // // // // // // // // // // 		dwell time of 22		2.000
+// // // // // // // // // // // // // // // 				
+// // // // // // // // // // // // // // // Gauge inner  relative   relative  multiply    dwell 
+// // // // // // // // // // // // // // //       dia    to 22      square                time
+// // // // // // // // // // // // // // // 				
+// // // // // // // // // // // // // // // 14    1.600  3.874     15.009     006.7       0.133
+// // // // // // // // // // // // // // // 16    1.194  2.891      8.358     012.0       0.239
+// // // // // // // // // // // // // // // 18    0.838  2.029      4.117     024.3       0.486
+// // // // // // // // // // // // // // // 20    0.603  1.460      2.132     046.9       0.938
+// // // // // // // // // // // // // // // 21    0.514  1.245      1.549     064.6       1.291
+// // // // // // // // // // // // // // // 22    0.413  1.000      1.000     100.0       2.000
+// // // // // // // // // // // // // // // 23    0.337  0.816      0.666     150.2       3.004
+// // // // // // // // // // // // // // // 24    0.311  0.753      0.567     176.4       3.527
+// // // // // // // // // // // // // // //
+// // // // // // // // // // // // // // // ///////////////////////////////////////
     
-// check Gauge, compare 16
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
-    COMP    16
-    JC      NE, compare18
-    CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 836                      // 
-    JA      adjustDrawVolume
+// // // // // // // // // // // // // // // check Gauge, compare 16
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    16
+    // // // // // // // // // // // // // // JC      NE, compare18
+    // // // // // // // // // // // // // // CALCV   MUL, GB_DrawWaitTime, 100
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, 836                      // 
+    // // // // // // // // // // // // // // JA      adjustDrawVolume
 
-compare18:   // check Gauge, compare 18
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
-    COMP    18
-    JC      NE, compare21
-    CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 412                      // (1/2.03)^2
-    JA      adjustDrawVolume
+// // // // // // // // // // // // // // compare18:   // check Gauge, compare 18
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    18
+    // // // // // // // // // // // // // // JC      NE, compare21
+    // // // // // // // // // // // // // // CALCV   MUL, GB_DrawWaitTime, 100
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, 412                      // (1/2.03)^2
+    // // // // // // // // // // // // // // JA      adjustDrawVolume
 
-compare20:   // check Gauge, compare 20
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
-    COMP    20
-    JC      NE, compare21
-    CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 146                      // (1/1.24)^2
-    JA      adjustDrawVolume
+// // // // // // // // // // // // // // compare20:   // check Gauge, compare 20
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    20
+    // // // // // // // // // // // // // // JC      NE, compare21
+    // // // // // // // // // // // // // // CALCV   MUL, GB_DrawWaitTime, 100
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, 146                      // (1/1.24)^2
+    // // // // // // // // // // // // // // JA      adjustDrawVolume
 
-compare21:   // check Gauge, compare 21
-    GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
-    COMP    21
-    JC      NE, compare22
-    CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 154                      // (1/1.24)^2
-    JA      adjustDrawVolume
+// // // // // // // // // // // // // // compare21:   // check Gauge, compare 21
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                       //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    21
+    // // // // // // // // // // // // // // JC      NE, compare22
+    // // // // // // // // // // // // // // CALCV   MUL, GB_DrawWaitTime, 100
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, 154                      // (1/1.24)^2
+    // // // // // // // // // // // // // // JA      adjustDrawVolume
 
-compare22:  // check Gauge, compare 22
-    GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
-    COMP    22
-    JC      EQ, adjustDrawVolume
+// // // // // // // // // // // // // // compare22:  // check Gauge, compare 22
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    22
+    // // // // // // // // // // // // // // JC      EQ, adjustDrawVolume
 
-compare23:  // check Gauge, compare 23
-    GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
-    COMP    23
-    JC      NE, adjustDrawVolume
-    CALCV   MUL, GB_DrawWaitTime, 100
-    CALCV   DIV, GB_DrawWaitTime, 67                                    // * (1/0.816)^2
+// // // // // // // // // // // // // // compare23:  // check Gauge, compare 23
+    // // // // // // // // // // // // // // GGP     GB_needleGauge, GPbank_2                                    //  current needle Gauge
+    // // // // // // // // // // // // // // COMP    23
+    // // // // // // // // // // // // // // JC      NE, adjustDrawVolume
+    // // // // // // // // // // // // // // CALCV   MUL, GB_DrawWaitTime, 100
+    // // // // // // // // // // // // // // CALCV   DIV, GB_DrawWaitTime, 67                                    // * (1/0.816)^2
 
- // calculate drawWaitTime according to draw volume, compare to 1mL
-adjustDrawVolume:
- //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
-    // CALCVV  MUL,  GB_DrawWaitTime, GB_microLbagToFill                   // adjust wait time according to draw volume
-    // CALCV   DIV,  GB_DrawWaitTime, DEFAULT_DRAW_VOLUME
- //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
-    RSUB
+ // // // // // // // // // // // // // // // calculate drawWaitTime according to draw volume, compare to 1mL
+// // // // // // // // // // // // // // adjustDrawVolume:
+ // // // // // // // // // // // // // // //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
+    // // // // // // // // // // // // // // // CALCVV  MUL,  GB_DrawWaitTime, GB_microLbagToFill                   // adjust wait time according to draw volume
+    // // // // // // // // // // // // // // // CALCV   DIV,  GB_DrawWaitTime, DEFAULT_DRAW_VOLUME
+ // // // // // // // // // // // // // // //// L.E.D //// //// L.E.D //// //// L.E.D //// //// L.E.D ////
+    // // // // // // // // // // // // // // RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Init M_verticalMotor axis  (M_0)
@@ -311,11 +318,11 @@ adjustDrawVolume:
 
 initVerticalMotor:
     MST     M_verticalMotor                                             // Motor stop
-    // SGP     GB_EndSwitchPlarity, GPbank_0, normalPolarity0to5            // set normal polarity for limit switches of all motors
-    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity0to2           // set reverse polarity for limit switches of 0-2 motors and normal Polarity 3-5
-    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5           // set normal polarity for limit switches of 0-2 motors and reverse Polarity 3-5
-    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity0to5           // set reverse polarity for limit switches of all motors
-    // SGP     GB_EndSwitchPlarity, GPbank_0, 1
+    // SGP     GB_EndSwitchPolarity, GPbank_0, normalPolarity0to5            // set normal polarity for limit switches of all motors
+    // SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity0to2           // set reverse polarity for limit switches of 0-2 motors and normal Polarity 3-5
+    SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity3to5           // set normal polarity for limit switches of 0-2 motors and reverse Polarity 3-5
+    // SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity0to5           // set reverse polarity for limit switches of all motors
+    // SGP     GB_EndSwitchPolarity, GPbank_0, 1
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
@@ -330,9 +337,9 @@ initVerticalMotor:
     SAP     AP_RampDivisor, M_verticalMotor, 3                          // Set ramp divisor
     SAP     AP_PulseDivisor, M_verticalMotor, 3                         // Set pulse divisor
     SAP     AP_SoftStopFlag, M_verticalMotor, set                       // Soft stop (using deceleration ramp) when a stop switch is hit
-//calculate: GB_needleLengthInMicroSteps = 130                    // verticalMicroStepsPerMM * GB_needleLength
-    CALCVV  LOAD, GB_needleLengthInMicroSteps, GB_needleLength
-    CALCV   MUL, GB_needleLengthInMicroSteps, verticalMicroStepsPerMM
+// //calculate: GB_needleLengthInMicroSteps = 130                    // verticalMicroStepsPerMM * GB_needleLength
+    // CALCVV  LOAD, GB_needleLengthInMicroSteps, GB_needleLength
+    // CALCV   MUL, GB_needleLengthInMicroSteps, verticalMicroStepsPerMM
     RSUB
     
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -390,7 +397,7 @@ initArmMotor:
 
 initPistonMotor:
     MST     M_pistonMotor                                         // Motor stop
-    // SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5    // set in motor 5. reverse polarity for motors 3-5
+    // SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity3to5    // set in motor 5. reverse polarity for motors 3-5
     SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST   // speed for search
     SAP     AP_RefSwitchSpeed, M_pistonMotor, SWITCH_SPEED_PIST // _MED // speed for final search  //// L.E.D //// MAX_POS_SPEED_PIST_MED  //// L.E.D ////
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
@@ -418,9 +425,8 @@ initPistonMotor:
 
 initHeadRotateMotor:
     MST     M_headRotateMotor                                           // Motor stop
-//    SGP     GB_EndSwitchPlarity, GPbank_0, reversePolarity3to5          // set in motor 5. reverse polarity for motors 3-5
+//    SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity3to5          // set in motor 5. reverse polarity for motors 3-5
     SGP     GB_rotateMicroStepsPerMM, GPbank_2, rotateMicroStepsPerMM   // just to see on line
-//    SGP     GB_limitNeedleBentMicroS, GPbank_2, limitNeedleBentMicroS   // just to see on line
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT      // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT      // speed for final search
     SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_ROT // was : MAX_POS_SPEED_VER_ROT // Set maximum positioning speed

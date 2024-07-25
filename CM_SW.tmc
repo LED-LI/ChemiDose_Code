@@ -26,39 +26,32 @@ ClearRunningErrors:   // func 84
     CSUB    INIT_MOTORS      // func 16
     CSUB    ClearErrorsRAM
 
-    RSGP    GB_any_Error, GPbank_2             // restore parameter from EEPROM. Now we see if errors in EEPROM
-    GGP     GB_any_Error, GPbank_2             // read the parameter. if set, reset data in EEPROM
-    COMP    set 
-    JC      NE, endClearRunningErrors
+    // RSGP    GB_any_Error, GPbank_2             // restore parameter from EEPROM. Now we see if errors in EEPROM
+    // GGP     GB_any_Error, GPbank_2             // read the parameter. if set, reset data in EEPROM
+    // COMP    set 
+    // JC      NE, endClearRunningErrors
     SGP     GB_any_Error, GPbank_2, clr        // signal error: general
-    STGP    GB_any_Error, GPbank_2             // erase any error. The errors were erased already in RAM
+    // STGP    GB_any_Error, GPbank_2             // erase any error. The errors were erased already in RAM
                                                // in "ClearErrorsRAM", now store in eeprom if needed
-    STGP    GB_errors_syringe_bag, GPbank_2         // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_verticalMotor, GPbank_2     // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_linearMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_armMotor, GPbank_2          // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_pistonMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_headRotateMotor, GPbank_2   // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_disposeMotor, GPbank_2      // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_M_capHolderMotor, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_1, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_2, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_3, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_4, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_5, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_Vial_6, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_findHome, GPbank_2            // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_errors_wrong_PC_command, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-    STGP    GB_special_Error, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_syringe_bag, GPbank_2         // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_verticalMotor, GPbank_2     // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_linearMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_armMotor, GPbank_2          // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_pistonMotor, GPbank_2       // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_headRotateMotor, GPbank_2   // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_disposeMotor, GPbank_2      // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_M_capHolderMotor, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_1, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_2, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_3, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_4, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_5, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_Vial_6, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_findHome, GPbank_2            // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_errors_wrong_PC_command, GPbank_2    // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // STGP    GB_special_Error, GPbank_2              // HATE THIS SHIT - STOP STORING ERRORS !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 endClearRunningErrors:
-    SGP     GB_vial1Bit, GPbank_2, 1   //  
-    SGP     GB_vial2Bit, GPbank_2, 2   //  
-    SGP     GB_vial3Bit, GPbank_2, 4   //  
-    SGP     GB_vial4Bit, GPbank_2, 8   //  
-    SGP     GB_vial5Bit, GPbank_2, 16  //  
-    SGP     GB_vial6Bit, GPbank_2, 32  //  
-    SGP     GB_BagBit  , GPbank_2, 64  //  
     CSUB    GREEN_ON
     RSUB
 
@@ -136,7 +129,6 @@ setTestParams:   //  98
 
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
-    SGP    GB_BagSize_microL,GPbank_2, 500000
     SGP    GB_microLtoWithdraw_1,GPbank_2,03000
     SGP    GB_microLtoWithdraw_2,GPbank_2,00000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
@@ -144,38 +136,22 @@ setTestParams:   //  98
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
     SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
-    SGP    GB_vialSize_microL_1,GPbank_2, 10000
-    SGP    GB_vialSize_microL_2,GPbank_2, 10000
-    SGP    GB_vialSize_microL_3,GPbank_2, 10000
-    SGP    GB_vialSize_microL_4,GPbank_2, 10000
-    SGP    GB_vialSize_microL_5,GPbank_2, 10000
-    SGP    GB_vialSize_microL_6,GPbank_2, 10000
-
-  //// L.E.D ////  DO NOT CHANGE FROM 0 !!!!!     ///L.E.D//////DO NOT CHANGE FROM 0 !!!!!
-    SGP    GB_microLtoFill_1,GPbank_2, 00000000  ////L.E.D//////DO NOT CHANGE FROM 0 !!!!!
-    SGP    GB_microLtoFill_2,GPbank_2, 00000000 /////L.E.D///// DO NOT CHANGE FROM 0 !!!!!
-    SGP    GB_microLtoFill_3,GPbank_2, 00000000//////L.E.D////  DO NOT CHANGE FROM 0 !!!!!
-  //// L.E.D ////  DO NOT CHANGE FROM 0 !!!!! ///////L.E.D///   DO NOT CHANGE FROM 0 !!!!!
-  
     SGP    GB_microLtoFill_4,GPbank_2,    02000
     SGP    GB_microLtoFill_5,GPbank_2,    00000
     SGP    GB_microLtoFill_6,GPbank_2,    00000
 
-    SGP    GB_vibrationLocation,GPbank_2, Bit_vibrateDown        // determens the location of the vibration - DO NOT CHANGE until development continues
-
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
     // SGP     GB_skipCheckVial456,GPbank_2, set
     // SGP     GB_skipCheckBag,GPbank_2, set
-
-   //// SGP    GB_HeadRotatePointLeft,GPbank_2,  16240        // 16240 is the default for the syringe pointing left // arbitrary setting for debugging //// L.E.D ////
 
     SGP    GB_vibrationTime_4, GPbank_2, 10               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
 
-    SGP     GB_ShowOverride, GPbank_2, clr           // if in a show - the parameter must be SET after each power ON
-    SGP     GB_disposeYN, GPbank_2, clr             // if set to clr - will NOT dispose vials at end of Sequence 
+// commented out to not reset settings every initialization
+    // SGP     GB_ShowOverride, GPbank_2, clr           // if in a show - the parameter must be SET after each power ON
+    // SGP     GB_disposeYN, GPbank_2, clr             // if set to clr - will NOT dispose vials at end of Sequence 
 
     RSUB
 
@@ -304,9 +280,9 @@ checkVibrate_456:
     COMP    set
     JC      NE, returnfillandVibrate_456                // if not needed, skip vibrations
 // ------------------------------------------------------------
-    GGP     GB_vibrationLocation, GPbank_2
-    COMP    Bit_vibrateDown
-    JC      NE, returnfillandVibrate_456                // if not needed, skip vibrations
+    // GGP     GB_vibrationLocation, GPbank_2
+    // COMP    Bit_vibrateDown
+    // JC      NE, returnfillandVibrate_456                // if not needed, skip vibrations
     CSUB    lower_arm
 // ------------------------------------------------------------
 
@@ -415,7 +391,6 @@ checkFill56:
     JC     EQ, checkFill6
     SGP    GB_FillingIsNeeded, GPbank_2, set                 // needed
     SGP    GB_Filling5IsNeeded, GPbank_2, set                // vial 5 needs filling
-////////////////////////////////////////////////////////////////////////////////////////////////////////    JA     exitcheckFillingAndVibrationNeeded                   // stays here for clarity, actually not needed
 
 checkFill6:
     // check if needs to vibrate vial 6
@@ -807,8 +782,8 @@ doNotAdd6:
     CSUB    preLoadCurrentParameters
 
   //// L.E.D
-    CALC    LOAD, GB_microLtoFill_1 - 1          // copy GB address to A (130)
-    CALCAV  ADD, GB_current_Vial                 // add vial number  1 -> 6
+    CALC    LOAD, GB_microLtoFill_4 - 4          // copy GB address to A (130)
+    CALCAV  ADD, GB_current_Vial                 // add vial number  4 -> 6
     CALCX   LOAD                                 // put the address in X
     GIV                                          // the content of the vial fill is copied into A
     CALCVA  LOAD, GB_microLtoFill_current        // and loaded into current parameter
@@ -914,7 +889,7 @@ testLiquidPresence:
     CALCVA  LOAD, GB_liquidPresence                     // results will go to GB_liquidDetected
     
 // (analog ranges/threshold that defines states will be in M_pistonMotor(Motor_3) parameters)
-    COMP    LIQUID_DETECTION_BORDER
+    COMP    LIQUID_DETECTION_BORDER_AVAL
     JC      GT, SyringeContent_Error                    // higher values = light passes through syringe = liquid not blocking light = no liquid detected
     CALCV   LOAD, GB_liquidDetected, set                // detected = yes
     JA      Return_testLiquidPresence
@@ -1071,7 +1046,7 @@ Return_testSyringesVolume:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
-    CSUB    PositionHeadRotateToLeftMotor
+    CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe
 
@@ -1215,9 +1190,9 @@ returnVerifyAllVial:
     // WAIT    TICKS, 0, 100/10                         // 100 ms
     RSUB
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Summary:  checks if the vial' syrine and are ready to draw
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++ Summary:  checks if the vials and the syringe and are ready to draw ++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 VERIFY_READY_DRAW:    //  checks if syringe, vail are in place
 
@@ -1466,7 +1441,7 @@ moveBelowVial:   // go under current vial
     MVPA    ABS, M_verticalMotor                         // move, wait later
 //    CSUB    moveVertical                               // move head up to sensor, wait later
 
-    CSUB PositionHeadRotateToTopMotor    
+    CSUB PositionHeadRotateMotorToTop    
 
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     MVPA    ABS, M_linearMotor                            // move, wait later
@@ -1481,7 +1456,7 @@ moveBelowVial:   // go under current vial
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 getWaterFromBag:  // go below Bag to fill syringe
 
-    CSUB PositionHeadRotateToTopMotor
+    CSUB PositionHeadRotateMotorToTop
     
     CSUB    goIntoBag
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed to MED
@@ -1494,7 +1469,7 @@ getWaterFromBag:  // go below Bag to fill syringe
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveAboveVialFromCenter:
 
-    CSUB    PositionHeadRotateToBottomMotor
+    CSUB    PositionHeadRotateMotorToBottom
 
     CSUB    calcTopVertNeedleDown
     GGP     GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
@@ -1517,7 +1492,7 @@ moveAboveVial:
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     MVPA    ABS, M_linearMotor                            // move, wait later
 
-    CSUB    PositionHeadRotateToBottomMotor
+    CSUB    PositionHeadRotateMotorToBottom
     
     CSUB    waitVertical
     CSUB    waitLinearMotor
@@ -1534,7 +1509,7 @@ moveAboveVialFromBelow:
     CSUB    moveLinear
 
 // turn down
-    // CSUB    PositionHeadRotateToBottomMotor
+    // CSUB    PositionHeadRotateMotorToBottom
 
     RSUB
 
@@ -1555,7 +1530,7 @@ push70air:
 
 findCenterOfNeedleSensor:
 
-    CSUB PositionHeadRotateToTopMotor
+    CSUB PositionHeadRotateMotorToTop
     GGP     GB_linearCenterOfVial1, GPbank_2           // load Vial1 position
     CALC    ADD, LINEAR_VIAL1_TO_BAG_RFS               // start of needle RFS posotion
     CSUB    moveLinear
@@ -1630,7 +1605,6 @@ insertNeedleIntoVialBelow:    //
     CSUB    waitPiston
     CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
-    CSUB    checkVialPoppedOut                           // verify that the vial did not pop out
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1663,9 +1637,9 @@ drawVialMoreBack:    // just pull to required volume
 
 waitAfterDraw:
 
-    // GGP     GB_DrawWaitTime, GPbank_2              // get time in [100ms] // wait period set by needle specs after drawing to allow pressure to balance
-    CALC    LOAD, 200                              // wait 2 sec till SW calculate
-    WAIT    TICKS, 0, ACCUMULATOR_WAIT             // wait ticks as in A
+    // GGP     GB_DrawWaitTime, GPbank_2                // get time in [100ms] // wait period set by needle specs after drawing to allow pressure to balance
+    CALC    LOAD, 200                                   // wait 2 sec till SW calculate
+    WAIT    TICKS, 0, ACCUMULATOR_WAIT                  // wait ticks as in A
     RSUB
 
                   
@@ -1673,9 +1647,9 @@ waitAfterDraw:
 
 waitAfterVialDraw:
 
-    GGP     GB_DrawWaitTime, GPbank_2              // get time in [100ms]
+    // GGP     GB_DrawWaitTime, GPbank_2                // get time in [100ms]
    // wait period set by needle specs after drawing to allow pressure to balance
-    WAIT    TICKS, 0, ACCUMULATOR_WAIT             // wait ticks as in A
+    WAIT    TICKS, 0, DRAWFROMVIAL_WAITTIME             // ACCUMULATOR_WAIT // wait ticks as in A
 
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1831,7 +1805,7 @@ FIND_HOMES:
     CSUB    positionArmMotor
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
-    CSUB    PositionHeadRotateToLeftMotor
+    CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    waitArmMotorRfs
 
@@ -1934,7 +1908,7 @@ noSyringeFH:
     CALC    OR, BitEr_syringeIsInwhileFindHome          // add the error bit
     CALC    XOR, BitEr_syringeIsInwhileFindHome         // Clear the error bit
     AGP     GB_errors_findHome, GPbank_2                // and write again
-    STGP    GB_errors_findHome, GPbank_2                // and store it
+    // STGP    GB_errors_findHome, GPbank_2                // and store it
 
 returnCheckNoSyringeFH:
     RSUB
@@ -2420,9 +2394,9 @@ waitPistonDraw:    //
 
 waitDrawFromBag:    //// L.E.D ////
 
-    GGP     GB_DrawWaitTime, GPbank_2
-    CALC    DIV, 3                                      // wait shorter time - easier to pull from the bag 
-    WAIT    TICKS, 0, ACCUMULATOR_WAIT                  // wait period set by needle specs after drawing to allow pressure to balance
+    // GGP     GB_DrawWaitTime, GPbank_2
+    // CALC    DIV, 3                                   // wait shorter time - easier to pull from the bag 
+    WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME              // ACCUMULATOR_WAIT // wait period set by needle specs after drawing to allow pressure to balance
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2572,19 +2546,19 @@ waitRotateRfsVeryShort:    //
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-PositionHeadRotateToTopMotor:   // motor 4  func_64
+PositionHeadRotateMotorToTop:   // motor 4  func_64
     CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointUp, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
-PositionHeadRotateToLeftMotor:   // motor 4  func_38
+PositionHeadRotateMotorToLeft:   // motor 4  func_38
     CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointLeft, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
-PositionHeadRotateToBottomMotor:   // motor 4 func_70
+PositionHeadRotateMotorToBottom:   // motor 4 func_70
     CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointDown, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
@@ -2744,9 +2718,6 @@ nextStep:   //  loop
     GIO     Out_CAPHolderDIR_Down, InBankOuput_2
     COMP    1
     JC      EQ, moveOneStep                             // going down, don't check sensor
-//    GGP     GB_CapLimitSwitchDisable, GPbank_2
-//    COMP    DISABLE_SENSOR
-//    JC      EQ, moveOneStep                           // going down, don't check sensor
     GIO     In_capHolderHome, InBankDigital_0                 
     COMP    CAP_HOLDER_AT_HOME             
     JC      EQ, exitCapHolderManual                     // reached home sensor, exit
@@ -3089,7 +3060,7 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
-    CSUB    PositionHeadRotateToLeftMotor
+    CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe
     RSUB

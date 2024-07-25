@@ -372,7 +372,9 @@ GB_verticalCapPos                      =   8 // syringe loading  380
 GB_BumpPosVert                         =   9 // needle touches the vial 1 rubber at top ~ -8792
 
 GB_setBumpBottom                       =  13 // needle touches the vial 4 rubber at bottom 
-GB_needleLengthInMicroSteps            =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
+
+
+GB_60                                  =  60 // was GB_needleLengthInMicroSteps =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
 
 GB_Calced_Top_Vert_Needle_Down_Allowed =  61 // GB_61 = 61
 GB_62                         = 62
@@ -487,11 +489,11 @@ GB_74                        =    74
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
 // GB_current_diviation             =  19
+// GB_microL_per_100mm_current      = 161        // 6522
 
-GB_PistonHomePos                 =    48        // for empty syringe 345 [0] => need to redesign - adujstment to new syringe holder and diferent syringes 
-// GB_microL_per_100mm_current   =   161        // 6522
+GB_PistonHomePos                 =    48         // for empty syringe 345 [0] => need to redesign - adujstment to new syringe holder
 
-GB_DrawWaitTime                  =    75
+GB_75                            = 75
 GB_pistonMicroStepPer100microL   =    76 // 10000 * pistonMicroStepsPerMM / GB_microL_per_100mm_current = 224
 GB_thumbRestDistance             =    77 // In_thumbRestDistance
 GB_pistonsRangePercentage        =    78
@@ -508,10 +510,6 @@ GB_liquidPresence                =    79 // In_liquidPresence
    rotateMicroStepsPerDeg        = rotateMicroStepsPerRev / DegreePerRev + 1 // 177.778
    rotateMicroStepsPerMM         = rotateMicroStepsPerRev / (2 * needleRotationRadius * 314 / 100) ///  85 [us/mm]
 
-//   HEAD_ROTATE_NEEDLE_SEARCH     =  32392 // 32000 // relative to cap place. later will move more by GB_HeadRotatePointLeft
-//   ROTATE_AT_TOP                 =    242
-   RE_CALC_CENTER_OF_VIAL_LIMIT  =     60
-//   NEEDLE_TO_HOME                = -31400 ///
    ACC_ROT                       =     20 ///
    STBY_CUR_ROTATE_LOW           =     10 // after ABORT
    STBY_CUR_ROTATE               =    100 /// normal
@@ -524,8 +522,6 @@ GB_liquidPresence                =    79 // In_liquidPresence
    SWITCH_SPEED_ROT_SLOW         =     50 // 20
    WAIT_NEEDLE_REF               =     90 // 0.8 [S] //  //// L.E.D ////   30 // 0.3 [S]
    MAX_CURRENT_ROT               =    128 ///
-   // DEGREES_90                    =  rotateMicroStepsPerRev / 4    // 16000
-   // DEGREES_180                   =  rotateMicroStepsPerRev / 2    // 32000
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
 
@@ -573,11 +569,11 @@ GB_DisposeDropVialsPos            = 23
    DISABLE_SENSOR                   =     1
    CAP_LOCK_STEPS                   =  7000   // um to move down to lock // 6000  //// L.E.D ////
 
-// GB_CapLimitSwitchDisable    = 54  // was erased once //// L.E.D ////
-GB_CapHolderHolds           = 86  //  "1" = holds,    "0" = open
-GB_CapHolderPulses          = 87
-GB_slowCapHolder            = 88
-GB_capWaitLoops             = 89
+GB_capHolderMicrostepsTolock   = 85
+GB_CapHolderHolds              = 86  //  "1" = holds,    "0" = open
+GB_CapHolderPulses             = 87
+GB_slowCapHolder               = 88
+GB_capWaitLoops                = 89
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // parameters for CM
@@ -592,13 +588,6 @@ GB_microLtoWithdraw_4        =  94
 GB_microLtoWithdraw_5        =  95
 GB_microLtoWithdraw_6        =  96
 
-// TODO
-//GB_currentVolume_microL_1        =  TBD
-//GB_currentVolume_microL_2        =  TBD
-//GB_currentVolume_microL_3        =  TBD
-//GB_currentVolume_microL_4        =  TBD
-//GB_currentVolume_microL_5        =  TBD
-//GB_currentVolume_microL_6        =  TBD
 GB_CmdInProcess              =  97
 
 // SW states
@@ -613,29 +602,20 @@ GB_CmdInProcess              =  97
        STOPPED_TIME_OUT      = 80
        ABORTED               = 90
 
-GB_microLinBAG               =  99
-GB_moveManualBackwards       = 100    // 1 = forward;  -1 = backward
+GB_99                   =  99
+GB_moveManualBackwards  = 100    // 1 = forward;  -1 = backward
 
-// vialSize_microL values
-GB_vialSize_microL_1             = 101
-GB_vialSize_microL_2             = 102
-GB_vialSize_microL_3             = 103
-GB_vialSize_microL_4             = 104
-GB_vialSize_microL_5             = 105
-GB_vialSize_microL_6             = 106
-
-GB_vialSize_microL_current   = 107
-GB_BagSize_microL            = 108
-GB_109                       = 109
-GB_110                       = 110
-
-GB_rotateVialsDown           = 111
-    Bit_vibrate0      =  %00000001 // bit   1
-    Bit_vibrate1      =  %00000010 // bit   2
-    Bit_vibrate2      =  %00000100 // bit   4
-    Bit_vibrate3      =  %00001000 // bit   8
-    Bit_vibrate4      =  %00010000 // bit  16
-    Bit_vibrate5      =  %00100000 // bit  32
+GB_101  = 101
+GB_102  = 102
+GB_103  = 103
+GB_104  = 104
+GB_105  = 105
+GB_106  = 106
+GB_107  = 107
+GB_108  = 108
+GB_109  = 109
+GB_110  = 110
+GB_111  = 111
 
 GB_vibration4IsNeeded        = 112
 GB_vibration56IsNeeded       = 113
@@ -647,13 +627,13 @@ GB_vibrationTime_4_calc      = 115
 GB_vibrationTime_56          = 116
 GB_vibrationTime_56_calc     = 117
 
-GB_vibrationLocation         = 118
-    Bit_vibrateUp        =  %00000001 // bit   1
-    Bit_vibrateDown      =  %00000010 // bit   2
-    Bit_vibrateHalfway   =  %00000100 // bit   4
-    Bit_vibrateLocation3 =  %00001000 // bit   8
-    Bit_vibrateLocation4 =  %00010000 // bit  16
-    Bit_vibrateLocation5 =  %00100000 // bit  32
+// GB_vibrationLocation         = 118
+    // Bit_vibrateUp        =  %00000001 // bit   1
+    // Bit_vibrateDown      =  %00000010 // bit   2
+    // Bit_vibrateHalfway   =  %00000100 // bit   4
+    // Bit_vibrateLocation3 =  %00001000 // bit   8
+    // Bit_vibrateLocation4 =  %00010000 // bit  16
+    // Bit_vibrateLocation5 =  %00100000 // bit  32
 
 // vibration strength for vials 4,56 -  1 / 2 / 3 / 4 / 5
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -675,32 +655,22 @@ GB_vibrationTime_56_tmp      = 129
 
 // microLtoFill values
 GB_microLtoFill_current     =  130
-GB_microLtoFill_1           =  131 //// L.E.D //// for possible future use
-GB_microLtoFill_2           =  132 //// L.E.D //// for possible future use
-GB_microLtoFill_3           =  133 //// L.E.D //// for possible future use
+GB_131                      =  131 //// L.E.D //// for possible future use
+GB_132                      =  132 //// L.E.D //// for possible future use
+GB_133                      =  133 //// L.E.D //// for possible future use
 GB_microLtoFill_4           =  134
 GB_microLtoFill_5           =  135
 GB_microLtoFill_6           =  136
 
-//GB_microLtoFill_1           =  131 //// L.E.D //// for possible future use
-//GB_microLtoFill_2           =  132 //// L.E.D //// for possible future use
-//GB_microLtoFill_3           =  133 //// L.E.D //// for possible future use
-//GB_microLtoFill_4           =  134
-//GB_microLtoFill_5           =  135
-//GB_microLtoFill_6           =  136
-
 GB_FillingIsNeeded           = 140
-GB_Filling1IsNeeded          = 141 //// L.E.D //// for possible future use
-GB_Filling2IsNeeded          = 142 //// L.E.D //// for possible future use
-GB_Filling3IsNeeded          = 143 //// L.E.D //// for possible future use
 GB_Filling4IsNeeded          = 144
 GB_Filling5IsNeeded          = 145
 GB_Filling6IsNeeded          = 146
 
 // current syringe
-GB_Max_Volume_current        = 160
+GB_160  = 160
 GB_microL_per_100mm_current  = 161
-GB_Syring_Length_current     = 162
+GB_162  = 162
 GB_readyToFill               = 163
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -826,7 +796,7 @@ func_34:   CSUB verifyVIAL
            JA     backGroundProcess
 func_36:   CSUB screenAllVials
            JA     backGroundProcess
-func_38:   CSUB PositionHeadRotateToLeftMotor
+func_38:   CSUB PositionHeadRotateMotorToLeft
            JA     backGroundProcess
 func_40:   CSUB verticalMotorTOerr
            JA     backGroundProcess
@@ -855,7 +825,7 @@ func_60:   CSUB checkSyringeSensor
            JA     backGroundProcess
 func_62:   CSUB checkNoSyringe
            JA     backGroundProcess
-func_64:   CSUB PositionHeadRotateToTopMotor
+func_64:   CSUB PositionHeadRotateMotorToTop
            JA     backGroundProcess
 func_66:   CSUB checkSyrPoppedOut
            JA     backGroundProcess
@@ -864,7 +834,7 @@ func_66:   CSUB checkSyrPoppedOut
 
 func_68:   CSUB moveAboveVial // func_68:   CSUB moveAboveVialFromCenter
            JA     backGroundProcess
-func_70:   CSUB PositionHeadRotateToBottomMotor
+func_70:   CSUB PositionHeadRotateMotorToBottom
            JA     backGroundProcess
 func_72:   CSUB startPullAir70
            JA     backGroundProcess

@@ -1,6 +1,6 @@
 //***********************************************************
 //
-// Version:   29-Dec-2017
+// Version:   2024-07-25
 //
 //*******************************************
 // General definitions
@@ -135,7 +135,7 @@ GB_CANID                 =  71 //
 GB_TelegramPauseTime     =  75 //
 GB_SerialHostAddr        =  76 //
 GP_AutoStartMode         =  77 // Start runing on power up
-GB_EndSwitchPlarity      =  79 // 0...3
+GB_EndSwitchPolarity     =  79 // 0...3
   normalPolarity0to5   = 0
   reversePolarity0to2  = 1
   reversePolarity3to5  = 2
