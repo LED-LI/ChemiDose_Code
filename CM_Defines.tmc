@@ -457,35 +457,33 @@ GB_74                        =    74
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_3 = M_pistonMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   pistonFeedPerRevolution       =  4877  // micrometer
-   pistonStepsPerRev             =   200
-   pistonMicrosteps              =    16
-   pistonMicroStepsPerRev        = pistonMicrosteps * pistonStepsPerRev  // = 3200 [uS/rev]
-   pistonMicroStepsPerMM         =  1000 * pistonMicroStepsPerRev / pistonFeedPerRevolution // = 656.141
+    pistonFeedPerRevolution       =  4877  // micrometer
+    pistonStepsPerRev             =   200
+    pistonMicrosteps              =    16
+    pistonMicroStepsPerRev        = pistonMicrosteps * pistonStepsPerRev  // = 3200 [uS/rev]
+    pistonMicroStepsPerMM         =  1000 * pistonMicroStepsPerRev / pistonFeedPerRevolution // = 656.141
+    
+    BUMP_DOWN_REL                 =   200 // 300 //(done) 0.15 mL
+    PISTON_BACKLASH               =     0 // (done) will be added to the "70%" push back = 60[uL]
+    PISTON_MORE                   =     0 // 300 // (done) to the draw and then pushed back    = 400[uL]
+    STBY_CURRENT_PIST             =    25 
+    MAX_POS_SPEED_PIST_FAST       =   800 
+    MAX_POS_SPEED_PIST            =   600 // 800 // 600 
+    MAX_POS_SPEED_PIST_MED        =   400
+    MAX_POS_SPEED_PIST_SLOW       =   100
+    MAX_POS_SPEED_PIST_VERY_SLOW  =    50 // 100 // 50
+    ACC_PIST                      =   200 
+    SEARCH_SPEED_PIST             =   800 
+    SWITCH_SPEED_PIST             =    40 
+    MAX_CURRENT_PIST              =   200        // 128
+    MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
+    LIQUID_DETECTION_BORDER_AVAL  =   200 // [the analog value] // under this value light didnt pass => sensor is blocked   
+    DRAWFROMVIAL_WAITTIME         =   100 // 1s 
+    DRAWFROMBAG_WAITTIME          =   200 // 2s
 
-   BUMP_DOWN_REL                 =   200 // 300 //(done) 0.15 mL
-   PISTON_BACKLASH               =     0 // (done) will be added to the "70%" push back = 60[uL]
-   PISTON_MORE                   =     0 // 300 // (done) to the draw and then pushed back    = 400[uL]
-   STBY_CURRENT_PIST             =    25 
-   MAX_POS_SPEED_PIST_FAST       =   800 
-   MAX_POS_SPEED_PIST            =   600 // 800 // 600 
-   MAX_POS_SPEED_PIST_MED        =   400
-   MAX_POS_SPEED_PIST_SLOW       =   100
-   MAX_POS_SPEED_PIST_VERY_SLOW  =    50 // 100 // 50
-   ACC_PIST                      =   200 
-   SEARCH_SPEED_PIST             =   800 
-   SWITCH_SPEED_PIST             =    40 
-   MAX_CURRENT_PIST              =   200        // 128
-   MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
-   // X_MIN                         =  2048
-   // Y_MAX                         =  4095
-   LIQUID_DETECTION_BORDER       =   200 // [the analog value] // under this value light didnt pass => sensor is blocked   
-   // DETECTOR_BLOCKED              =   200 // [the value that is displayed on the sensor] // under this value light didnt pass => sensor is blocked   
-   // NO_LIQUID_DETECTED            = 10000 // [the value that is displayed on the sensor] // over this value light passed - not through liquid => no liquid present
-
-// GB_min_vol_laserDist_AVAL             =  14    // GB_14
-// GB_max_vol_laserDist_AVAL             =  15    // GB_15
-// GB_piston_defined_vol_uL             =  16    // GB_16
+// GB_min_vol_laserDist_AVAL        =  14    // GB_14
+// GB_max_vol_laserDist_AVAL        =  15    // GB_15
+// GB_piston_defined_vol_uL         =  16    // GB_16
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
 // GB_current_diviation             =  19
