@@ -113,16 +113,16 @@ GB_0                         =   0
 
 GB_Syringe_Type              =   1
   DEFAULT_SYRINGE_TYPE  =  4
-  BD_Plastipak_20       =  1   
-  Nipro_12              =  2   
-  BD_Plastipak_10       =  3  
+  // BD_Plastipak_20       =  1   
+  // Nipro_12              =  2   
+  // BD_Plastipak_10       =  3  
   DPS_LureLock_20       =  4
-  Syringe_5             =  5
-  Syringe_6             =  6
-  Syringe_7             =  7
-  Syringe_8             =  8
-  Syringe_9             =  9
-  Syringe_10            = 10
+  // Syringe_5             =  5
+  // Syringe_6             =  6
+  // Syringe_7             =  7
+  // Syringe_8             =  8
+  // Syringe_9             =  9
+  // Syringe_10            = 10
 
 GB_2                         =  2        // = 100 = 1[s]
 GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
@@ -247,16 +247,16 @@ GB_special_Error                =  45
     BitEr_s7                  =  %10000000 // bit 128
 
 // the following global parameters will appear at their motor
-// GB_RecapPositionlinear          = 46   // to hold the cap for recap
-// GB_ArmVialPosition              = 47   // cap holder is under the syringe
+// GB_46                           = 46   // to hold the cap for recap
+// GB_ArmUnderVialPosition         = 47   // cap holder is under the syringe
 // GB_PistonHomePos                = 48   // for empty syringe
-// GB_HeadRotateHomePos            = 49   // center of syringe cap (pointing left)
-// GB_HeadRotateAtTop              = 50   // syringe pointing up
-// GB_SetVial4BottomLinear         = 51   // linear motor
-// GB_headAtBottom                 = 52   // syringe pointing down
+// GB_HeadRotatePointLeft          = 49   // center of syringe cap (pointing left)
+// GB_HeadRotatePointUp            = 50   // syringe pointing up
+// GB_linearCenterOfVial4AtBottom  = 51   // linear motor
+// GB_HeadRotatePointDown          = 52   // syringe pointing down
 // GB_linearCenterOfVial1          = 53
-// GB_linearLoading                = 54  //// GB_CapLimitSwitchDisable        = 54 /// ???  //// L.E.D ////
-// GB_armAtBottom                  = 55    // 
+// GB_linearSyringeLoading         = 54   // linear load of syringe (dock) location
+// GB_armAtBottom                  = 55   // 
 
 // 55 is the last GB that can also be stored permanently in the EEPROM
 
@@ -266,23 +266,23 @@ GB_liquidDetected                  = 56
 // Syringe parameters
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// Syringe_1 = BD_Plastipak_20
-Max_Volume_1         = 20000  // [uL]
-microL_per_100mm_1   = 29200  // [uL]
-Syring_Length_1      =118000  // [um]
-LoadingDistance_1    =105000  // [usteps]6
+// // Syringe_1 = BD_Plastipak_20
+// Max_Volume_1         = 20000  // [uL]
+// microL_per_100mm_1   = 29200  // [uL]
+// Syring_Length_1      =118000  // [um]
+// LoadingDistance_1    =105000  // [usteps]6
 
-// Syringe_2 = Nipro_12
-Max_Volume_2         = 12000  // [uL]
-microL_per_100mm_2   = 18400  // [uL]
-Syring_Length_2      =110000  // [um]
-LoadingDistance_2    = 93000  // [usteps]
+// // Syringe_2 = Nipro_12
+// Max_Volume_2         = 12000  // [uL]
+// microL_per_100mm_2   = 18400  // [uL]
+// Syring_Length_2      =110000  // [um]
+// LoadingDistance_2    = 93000  // [usteps]
 
-// Syringe_3 = BD_Plastipak_10
-Max_Volume_3         = 10000  // [uL]
-microL_per_100mm_3   = 16800  // [uL]
-Syring_Length_3      =107000  // [um]
-LoadingDistance_3    = 95000  // [usteps]
+// // Syringe_3 = BD_Plastipak_10
+// Max_Volume_3         = 10000  // [uL]
+// microL_per_100mm_3   = 16800  // [uL]
+// Syring_Length_3      =107000  // [um]
+// LoadingDistance_3    = 95000  // [usteps]
 
 // Syringe_4 = DPS_LureLock_20
 Max_Volume_4         =  20000  // [uL]
@@ -290,41 +290,41 @@ microL_per_100mm_4   =  29200  // [uL]
 Syring_Length_4      = 122000  // [um]
 LoadingDistance_4    =  69000  // [usteps]
 
-// Syringe_5 = Other_5
-Max_Volume_5         = 0  // [uL]
-microL_per_100mm_5   = 0  // [uL]
-Syring_Length_5      = 0  // [um]
-LoadingDistance_5    = 0  // [usteps]
+// // Syringe_5 = Other_5
+// Max_Volume_5         = 0  // [uL]
+// microL_per_100mm_5   = 0  // [uL]
+// Syring_Length_5      = 0  // [um]
+// LoadingDistance_5    = 0  // [usteps]
 
-// Syringe_6 = Other_6
-Max_Volume_6         = 0  // [uL]
-microL_per_100mm_6   = 0  // [uL]
-Syring_Length_6      = 0  // [um]
-LoadingDistance_6    = 0  // [usteps]
+// // Syringe_6 = Other_6
+// Max_Volume_6         = 0  // [uL]
+// microL_per_100mm_6   = 0  // [uL]
+// Syring_Length_6      = 0  // [um]
+// LoadingDistance_6    = 0  // [usteps]
 
-// Syringe_7 = Other_7
-Max_Volume_7         = 0  // [uL]
-microL_per_100mm_7   = 0  // [uL]
-Syring_Length_7      = 0  // [um]
-LoadingDistance_7    = 0  // [usteps]
+// // Syringe_7 = Other_7
+// Max_Volume_7         = 0  // [uL]
+// microL_per_100mm_7   = 0  // [uL]
+// Syring_Length_7      = 0  // [um]
+// LoadingDistance_7    = 0  // [usteps]
 
-// Syringe_8 = Other_8
-Max_Volume_8         = 0  // [uL]
-microL_per_100mm_8   = 0  // [uL]
-Syring_Length_8      = 0  // [um]
-LoadingDistance_8    = 0  // [usteps]
+// // Syringe_8 = Other_8
+// Max_Volume_8         = 0  // [uL]
+// microL_per_100mm_8   = 0  // [uL]
+// Syring_Length_8      = 0  // [um]
+// LoadingDistance_8    = 0  // [usteps]
 
-// Syringe_9 = Other_9
-Max_Volume_9         = 0  // [uL]
-microL_per_100mm_9   = 0  // [uL]
-Syring_Length_9      = 0  // [um]
-LoadingDistance_9    = 0  // [usteps]
+// // Syringe_9 = Other_9
+// Max_Volume_9         = 0  // [uL]
+// microL_per_100mm_9   = 0  // [uL]
+// Syring_Length_9      = 0  // [um]
+// LoadingDistance_9    = 0  // [usteps]
 
-// Syringe_10 = Other_10
-Max_Volume_10         = 0  // [uL]
-microL_per_100mm_10   = 0  // [uL]
-Syring_Length_10      = 0  // [um]
-LoadingDistance_10    = 0  // [usteps]
+// // Syringe_10 = Other_10
+// Max_Volume_10         = 0  // [uL]
+// microL_per_100mm_10   = 0  // [uL]
+// Syring_Length_10      = 0  // [um]
+// LoadingDistance_10    = 0  // [usteps]
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -404,9 +404,9 @@ GB_64                         = 64
    LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
    LINEAR_VIAL1_TO_BAG_RFS      = -10000      // appr 6.35 mm from center of bag
 
-GB_SetVial4BottomLinear         =    51   
+GB_linearCenterOfVial4AtBottom         =    51   
 GB_linearCenterOfVial1          =    53      // 
-GB_linearLoading                =     54      // 
+GB_linearSyringeLoading                =     54      // 
 
 GB_currentVialLinearLocation    =    65
 GB_LinearCenterOfBag            =    66
@@ -443,7 +443,7 @@ GB_69                           =    69
 
 GB_DisposeDropVials456Pos    =    24           // arm at disposal position for vials 4 5 6 
 
-GB_ArmVialPosition           =    47           // arm holder is above the syringe  -460
+GB_ArmUnderVialPosition           =    47           // arm holder is above the syringe  -460
 GB_armAtBottom               =    55           //  15546  Arm at bottom just below syring
 
 GB_armMicroStepsPerMM        =    70           // 31
@@ -508,7 +508,7 @@ GB_liquidPresence                =    79 // In_liquidPresence
    rotateMicroStepsPerDeg        = rotateMicroStepsPerRev / DegreePerRev + 1 // 177.778
    rotateMicroStepsPerMM         = rotateMicroStepsPerRev / (2 * needleRotationRadius * 314 / 100) ///  85 [us/mm]
 
-//   HEAD_ROTATE_NEEDLE_SEARCH     =  32392 // 32000 // relative to cap place. later will move more by GB_HeadRotateHomePos
+//   HEAD_ROTATE_NEEDLE_SEARCH     =  32392 // 32000 // relative to cap place. later will move more by GB_HeadRotatePointLeft
 //   ROTATE_AT_TOP                 =    242
    RE_CALC_CENTER_OF_VIAL_LIMIT  =     60
 //   NEEDLE_TO_HOME                = -31400 ///
@@ -529,9 +529,9 @@ GB_liquidPresence                =    79 // In_liquidPresence
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
 
-GB_HeadRotateHomePos             = 49     // center of syringe cap (pointing left) 
-GB_HeadRotateAtTop               = 50   // syringe pointing up
-GB_headAtBottom                  = 52   // syringe pointing down
+GB_HeadRotatePointLeft             = 49     // center of syringe cap (pointing left) 
+GB_HeadRotatePointUp               = 50   // syringe pointing up
+GB_HeadRotatePointDown                  = 52   // syringe pointing down
 
 GB_80                            = 80
 GB_rotateMicroStepsPerMM         = 81 
@@ -830,7 +830,7 @@ func_38:   CSUB PositionHeadRotateToLeftMotor
            JA     backGroundProcess
 func_40:   CSUB verticalMotorTOerr
            JA     backGroundProcess
-func_42:   CSUB homeLinearMotor
+func_42:   CSUB FINDHOMELinearMotor
            JA     backGroundProcess
 func_44:   CSUB capHolderMotorTOerr
            JA     backGroundProcess

@@ -97,115 +97,115 @@ INIT_MOTORS:       // func 16  Init user variables
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Init syringes for their parameters
 initSyringes:
-syring_1:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    BD_Plastipak_20                                       // is it BD_Plastipak?
-    JC      NE, syringe_2                                         // no, try next
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_1
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_1
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_1
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_1
-    JA      returnInitSyringes
-syringe_2:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Nipro_12                                    // is it Syringe_2?
-    JC      NE, syringe_3                               // no, try next
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_2
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_2
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_2
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_2
-    JA      returnInitSyringes
-syringe_3:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    BD_Plastipak_10                              // is it Syringe_3?
-    JC      NE, syringe_4                                // no, try next
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_3
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_3
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_3
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_3
-    JA      returnInitSyringes
-syringe_4:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    DPS_LureLock_20                                     // is it syringe_4?
-    JC      NE, syringe_5                                 // no, exit
+// syring_1:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    BD_Plastipak_20                                       // is it BD_Plastipak?
+    // JC      NE, syringe_2                                         // no, try next
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_1
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_1
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_1
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_1
+    // JA      returnInitSyringes
+// syringe_2:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Nipro_12                                    // is it Syringe_2?
+    // JC      NE, syringe_3                               // no, try next
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_2
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_2
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_2
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_2
+    // JA      returnInitSyringes
+// syringe_3:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    BD_Plastipak_10                              // is it Syringe_3?
+    // JC      NE, syringe_4                                // no, try next
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_3
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_3
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_3
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_3
+    // JA      returnInitSyringes
+// syringe_4:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    DPS_LureLock_20                                     // is it syringe_4?
+    // JC      NE, syringe_5                                 // no, exit
     SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_4
     SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_4
     SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_4
 //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_4
     JA      returnInitSyringes
-syringe_5:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_5                                           // is it syringe_5?
-    JC      NE, syringe_6                                       // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_5
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_5
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_5
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_5
-    JA      returnInitSyringes
-syringe_6:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_6                                           // is it syringe_6?
-    JC      NE, syringe_7                                       // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_6
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_6
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_6
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_6
-    JA      returnInitSyringes
-syringe_7:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_7                                           // is it syringe_7?
-    JC      NE, syringe_8                                       // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_7
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_7
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_7
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_7
-    JA      returnInitSyringes
-syringe_8:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_8                                           // is it syringe_8?
-    JC      NE, syringe_9                                       // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_8
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_8
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_8
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_8
-    JA      returnInitSyringes
-syringe_9:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_9                                           // is it syringe_9?
-    JC      NE, syringe_10                                      // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_9
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_9
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_9
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_9
-    JA      returnInitSyringes
-syringe_10:
-    GGP     GB_Syringe_Type, GPbank_2
-    COMP    Syringe_10                                           // is it syringe_10?
-    JC      NE, defaultSyringe                                   // no, exit
-    SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_10
-    SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_10
-    SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_10
-//    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_10
-    JA      returnInitSyringes
+// syringe_5:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_5                                           // is it syringe_5?
+    // JC      NE, syringe_6                                       // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_5
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_5
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_5
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_5
+    // JA      returnInitSyringes
+// syringe_6:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_6                                           // is it syringe_6?
+    // JC      NE, syringe_7                                       // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_6
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_6
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_6
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_6
+    // JA      returnInitSyringes
+// syringe_7:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_7                                           // is it syringe_7?
+    // JC      NE, syringe_8                                       // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_7
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_7
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_7
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_7
+    // JA      returnInitSyringes
+// syringe_8:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_8                                           // is it syringe_8?
+    // JC      NE, syringe_9                                       // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_8
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_8
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_8
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_8
+    // JA      returnInitSyringes
+// syringe_9:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_9                                           // is it syringe_9?
+    // JC      NE, syringe_10                                      // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_9
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_9
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_9
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_9
+    // JA      returnInitSyringes
+// syringe_10:
+    // GGP     GB_Syringe_Type, GPbank_2
+    // COMP    Syringe_10                                           // is it syringe_10?
+    // JC      NE, defaultSyringe                                   // no, exit
+    // SGP     GB_Max_Volume_current, GPbank_2, Max_Volume_10
+    // SGP     GB_microL_per_100mm_current, GPbank_2, microL_per_100mm_10
+    // SGP     GB_Syring_Length_current, GPbank_2, Syring_Length_10
+// //    SGP     GB_LoadingDistance_current, GPbank_2, LoadingDistance_10
+    // JA      returnInitSyringes
 
 defaultSyringe:  // 
     SGP     GB_Syringe_Type, GPbank_2, DEFAULT_SYRINGE_TYPE     // 
     JA      initSyringes
 
 returnInitSyringes:    // save in EEPROM
- // check data exists
-    GGP     GB_Max_Volume_current, GPbank_2
-    COMP    0                                                   // is there data?
-    JC      EQ, defaultSyringe                                  // no, exit
-    GGP     GB_microL_per_100mm_current, GPbank_2
-    COMP    0                                                   // is there data?
-    JC      EQ, defaultSyringe                                  // no, exit
-    GGP     GB_Syring_Length_current, GPbank_2
-    COMP    0                                                   // is there data?
-    JC      EQ, defaultSyringe                                  // no, exit
-//    GGP     GB_LoadingDistance_current, GPbank_2
-    COMP    0                                                   // is there data?
-    JC      EQ, defaultSyringe                                  // no, exit
+ // // check data exists
+    // GGP     GB_Max_Volume_current, GPbank_2
+    // COMP    0                                                   // is there data?
+    // JC      EQ, defaultSyringe                                  // no, exit
+    // GGP     GB_microL_per_100mm_current, GPbank_2
+    // COMP    0                                                   // is there data?
+    // JC      EQ, defaultSyringe                                  // no, exit
+    // GGP     GB_Syring_Length_current, GPbank_2
+    // COMP    0                                                   // is there data?
+    // JC      EQ, defaultSyringe                                  // no, exit
+// //    GGP     GB_LoadingDistance_current, GPbank_2
+    // COMP    0                                                   // is there data?
+    // JC      EQ, defaultSyringe                                  // no, exit
  
     RSUB
 

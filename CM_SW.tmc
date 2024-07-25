@@ -167,7 +167,7 @@ setTestParams:   //  98
     // SGP     GB_skipCheckVial456,GPbank_2, set
     // SGP     GB_skipCheckBag,GPbank_2, set
 
-   //// SGP    GB_HeadRotateHomePos,GPbank_2,  16240        // 16240 is the default for the syringe pointing left // arbitrary setting for debugging //// L.E.D ////
+   //// SGP    GB_HeadRotatePointLeft,GPbank_2,  16240        // 16240 is the default for the syringe pointing left // arbitrary setting for debugging //// L.E.D ////
 
     SGP    GB_vibrationTime_4, GPbank_2, 10               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
@@ -431,6 +431,7 @@ exitcheckFillingAndVibrationNeeded:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 lower_arm:    
 
+    CSUB    homeArmMotor                                          // to home switch upwards
     GGP     GB_armAtBottom, GPbank_2             // load to A
     CSUB    moveArmMotor
     RSUB
@@ -481,20 +482,20 @@ fillVials:
 
     // // // // // // // // // CALCVV  ADD, GB_microLinVial_current, GB_microLtoFill_current  // update total in vial
     
-    GGP     GB_SetVial4BottomLinear, GPbank_2
+    GGP     GB_linearCenterOfVial4AtBottom, GPbank_2
     CALC    SUB, LINEAR_VIALS_SPACE
     MVPA    ABS, M_linearMotor      
     CSUB    waitLinearMotor
 
     // CSUB    HomeHeadRotateMotor
-    GGP     GB_HeadRotateHomePos, GPbank_2                          // go to required height
+    GGP     GB_HeadRotatePointLeft, GPbank_2                          // go to required height
     MVPA    ABS, M_headRotateMotor                        // move, wait later
     GGP     GB_verticalCapPos, GPbank_2 // moved to after linear
     MVPA    ABS, M_verticalMotor                         // move, wait later
 
     CSUB    emptySyringeFast
 
-    // CSUB    homeLinearMotor
+    // CSUB    FINDHOMELinearMotor
     GGP     GB_linearCenterOfVial1, GPbank_2
     MVPA    ABS, M_linearMotor                            // move, wait later
 
@@ -563,16 +564,7 @@ emptySyringeFast:      // empty syringe FAST //// L.E.D ////
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST       // Set maximum positioning speed
     CSUB    emptySyringe
-    // CSUB    positionPistonMotor
 
- // // // // // // // // // // // //// L.E.D ////
-    // // // // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
-    // // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
-    // // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
-    // // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
-    // // // // // // // // // // // // CSUB    homePistonMotor
- // // // // // // // // // // // //// L.E.D ////
- 
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -714,24 +706,6 @@ push5mL:
     // CSUB    waitPistonDraw
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // GGP     GB_pistonMicroStepPer100microL, GPbank_2                             // load to A conversion units
-    // CALCAV  MUL, GB_microLtoFill_current                                         // A <multiply by the amount of units
-    // CALC    DIV, 100                                                             // now in uSteps
-    // CALC    MUL, 50                                                              // multiply by "50%"
-    // CALC    DIV, -100                                                            // uSteps to PUSH
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW  // Set maximum positioning speed
-    // MVPA    REL, M_pistonMotor                                                   // move, wait later 
-    // CSUB    waitPistonDraw                                                       
-    
-    // CALC    MUL, -1                                                              // uSteps to PULL
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW       // Set maximum positioning speed
-    // MVPA    REL, M_pistonMotor                                                   // move, wait later 
-    // CSUB    waitPistonDraw                                                       
-
-    // RSUB
-
-// // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     raise_arm:
 
     CSUB    positionArmMotor
@@ -844,7 +818,7 @@ doNotAdd6:
     COMP    3                                    // less than 3 --> Dont fill
     JC      LE, returnloadCurrentParametersFill
 
-    CALCVV  LOAD, GB_currentVialLinearLocation, GB_SetVial4BottomLinear
+    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial4AtBottom
     CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
     CALC    SUB, 4                               // now 0 -> 2 for vials 4 -> 6 
     CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials 
@@ -1443,7 +1417,7 @@ deCap:    // GB_74
 
     CSUB    homeCapHolderMotor
     CSUB    holdCap
-    CSUB    homeLinearMotor                           // go through home once per cycle
+    CSUB    FINDHOMELinearMotor                           // go through home once per cycle
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
     CSUB    checkSyrPoppedOut                         // verify that the syringe did not pop out
@@ -1556,7 +1530,7 @@ moveAboveVialFromBelow:
     GGP     GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
     CSUB    moveVertical
 
-    GGP     GB_SetVial4BottomLinear, GPBank_2     // copy into A (GB_50)
+    GGP     GB_linearCenterOfVial4AtBottom, GPBank_2     // copy into A (GB_50)
     CSUB    moveLinear
 
 // turn down
@@ -1782,13 +1756,14 @@ drawFromBag:
 rePositionToStart: // rePositionToStartFromTop:  // rePositionToStartFromTop:   // exit bag after injecting into it 
 
     CSUB    startHomePistonMotor // i hate this func name
+    CSUB    waitPistonRfs
     CSUB    positionPistonMotor
   // move down, out of the bag
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
     
   // move linear to position
-    CSUB    homeLinearMotor                         // Linear and Cap holders first to clear the way for vertical
+    CSUB    FINDHOMELinearMotor                         // Linear and Cap holders first to clear the way for vertical
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
 
@@ -1816,7 +1791,7 @@ rePositionAfterDrawFromBag:   //
 
 recapSyringe:   //
 
-    GGP     GB_linearLoading, GPbank_2                     // loading position parameter
+    GGP     GB_linearSyringeLoading, GPbank_2                     // loading position parameter
 
     CSUB    moveLinear
     CSUB    homeCapHolderMotor                             // to home switch upwards
@@ -1850,7 +1825,7 @@ FIND_HOMES:
     CSUB    startHomePistonMotor
     CSUB    startHomeDisposeMotor
     CSUB    homeCapHolderMotor                      // Linear and Cap holders first to clear the way for vertical
-    CSUB    homeLinearMotor                         // Linear and Cap holders first to clear the way for vertical
+    CSUB    FINDHOMELinearMotor                         // Linear and Cap holders first to clear the way for vertical
     CSUB    waitPistonRfs
     CSUB    positionPistonMotor
     CSUB    positionArmMotor
@@ -2205,11 +2180,11 @@ waitLinearMotorRfs:    //
 
 positionLinearMotor:   // func 56
 
-    GGP     GB_linearLoading, GPbank_2
+    GGP     GB_linearSyringeLoading, GPbank_2
     CSUB    moveLinear
     RSUB
 
-homeLinearMotor:    // motor 1   func 42
+FINDHOMELinearMotor:    // motor 1   func 42
     SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
     SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
     SAP     AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
@@ -2242,7 +2217,7 @@ armMotorManual:    //   func 140
     CALC    DIV, 1000                             // now in mDeg
     MVPA    REL, M_armMotor                         // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_armMotor, WAIT_TICKS_2S // WAIT_TICKS_ARM // wait till reaches location or 2 seconds
+    WAIT    POS, M_armMotor, WAIT_TICKS_ARM // wait till reaches location or 30 seconds // why was it on 2 seconds ?!
     JC      ETO, armMotorTOerr              // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2256,7 +2231,7 @@ armMotorManualAbsolute:    //   FUNC_150
     GGP     GB_GoToAbsoluteInSteps, GPbank_2        // load the movement [mDeg] into A
     MVPA    ABS, M_armMotor                         // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_armMotor, WAIT_TICKS_ARM     // wait till reaches location or 2 seconds
+    WAIT    POS, M_armMotor, WAIT_TICKS_ARM     // wait till reaches location or 30 seconds
     JC      ETO, armMotorTOerr              // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2276,7 +2251,7 @@ moveArmMotor:    //
 waitArmMotor:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_armMotor, WAIT_TICKS_ARM        // wait till reaches location or 10 seconds
+    WAIT    POS, M_armMotor, WAIT_TICKS_ARM //// wait upto 30 seconds for travel of arm        // wait till reaches location or 10 seconds
     JC      ETO, armMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2286,7 +2261,7 @@ waitArmMotor:    //
 waitArmMotorRfs:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    RFS, M_armMotor, WAIT_TICKS // _ARM //// wait end of reference search 15 seconds // WAIT_TICKS_ARM
+    WAIT    RFS, M_armMotor, WAIT_TICKS_ARM //// wait upto 30 seconds for travel of arm
     JC      ETO, armMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2296,7 +2271,7 @@ waitArmMotorRfs:    //
 positionArmMotor:             // motor 2   func 96
 
     CSUB    homeArmMotor                                          // to home switch upwards
-    GGP     GB_ArmVialPosition, GPbank_2
+    GGP     GB_ArmUnderVialPosition, GPbank_2
     CSUB    moveArmMotor
     RSUB
 
@@ -2599,19 +2574,19 @@ waitRotateRfsVeryShort:    //
 
 PositionHeadRotateToTopMotor:   // motor 4  func_64
     CSUB    HomeHeadRotateMotor
-    GGP     GB_HeadRotateAtTop, GPbank_2                                // go to required height
+    GGP     GB_HeadRotatePointUp, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateToLeftMotor:   // motor 4  func_38
     CSUB    HomeHeadRotateMotor
-    GGP     GB_HeadRotateHomePos, GPbank_2                                // go to required height
+    GGP     GB_HeadRotatePointLeft, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateToBottomMotor:   // motor 4 func_70
     CSUB    HomeHeadRotateMotor
-    GGP     GB_headAtBottom, GPbank_2                                // go to required height
+    GGP     GB_HeadRotatePointDown, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
@@ -2989,7 +2964,7 @@ calibMotorVertical:
     JA     returnHomeCalibration
 
 calibMotorLinear:
-    CSUB   homeLinearMotor
+    CSUB   FINDHOMELinearMotor
     JA     returnHomeCalibration
 
 calibMotorArm:
@@ -3113,7 +3088,7 @@ moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration 
 moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib location back to loading position
     
     CSUB    positionVerticalMotor // includes home to vertical inside
-    CSUB    homeLinearMotor
+    CSUB    FINDHOMELinearMotor
     CSUB    PositionHeadRotateToLeftMotor
     CSUB    positionLinearMotor
     CSUB    recapSyringe
