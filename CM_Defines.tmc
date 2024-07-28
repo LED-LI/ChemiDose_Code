@@ -399,8 +399,8 @@ GB_64                         = 64
    SWITCH_SPEED_LINEAR_HOME     =    200
    SEARCH_SPEED_LINEAR_BOTTLE   =    100 // 200
    SWITCH_SPEED_LINEAR_BOTTLE   =     50 // 150
-   //LINEAR_NEEDLE_RFS          =  -7000 //  ABS from here starts search
-   //LINEAR_ROTATE_POS          =   2500
+   //LINEAR_NEEDLE_RFS             =  -7000 //  ABS from here starts search
+   //LINEAR_ROTATE_POS             =   2500
    // LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
    // LINEAR_VIAL3to4SPACE         =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
    // LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
