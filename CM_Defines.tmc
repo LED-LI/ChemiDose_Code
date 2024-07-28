@@ -153,7 +153,7 @@ GB_current_diviation        =  19
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 GB_ShowOverride              =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
-GB_21                        =  21
+// GB_linearSpaceBetweenVialsuM =  21
 GB_disposeYN                 =  22    // 
 // GB_DisposeDropVialsPos    =  23    // 
 // GB_DisposeDropVials456Pos =  24    // arm at disposal position for vials 4 5 6 
@@ -401,9 +401,9 @@ GB_64                         = 64
    SWITCH_SPEED_LINEAR_BOTTLE   =     50 // 150
    //LINEAR_NEEDLE_RFS          =  -7000 //  ABS from here starts search
    //LINEAR_ROTATE_POS          =   2500
-   LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
-   LINEAR_VIAL3to4SPACE         =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
-   LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
+   // LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
+   // LINEAR_VIAL3to4SPACE         =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
+   // LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
    LINEAR_VIAL1_TO_BAG_RFS      = -10000      // appr 6.35 mm from center of bag
 
 GB_linearCenterOfVial4AtTop     =     46
@@ -411,9 +411,10 @@ GB_linearCenterOfVial4AtBottom  =     51
 GB_linearCenterOfVial1          =     53 // 
 GB_linearSyringeLoading         =     54 // 
 
+GB_linearSpaceBetweenVialsuM    =     21
 GB_currentVialLinearLocation    =     65
 GB_LinearCenterOfBag            =     66
-GB_67                           =     67
+GB_linearSpaceBetweenVialsuS    =     67
 GB_68                           =     68
 GB_69                           =     69
 

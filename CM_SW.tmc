@@ -129,23 +129,23 @@ setTestParams:   //  98
 
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
-    SGP    GB_microLtoWithdraw_1,GPbank_2,03000
-    SGP    GB_microLtoWithdraw_2,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_1,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_2,GPbank_2,03000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,02000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,00000
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_6,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_6,GPbank_2,02000
 
-    SGP    GB_microLtoFill_4,GPbank_2,    02000
+    SGP    GB_microLtoFill_4,GPbank_2,    00000
     SGP    GB_microLtoFill_5,GPbank_2,    00000
-    SGP    GB_microLtoFill_6,GPbank_2,    00000
+    SGP    GB_microLtoFill_6,GPbank_2,    02000
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
     // SGP     GB_skipCheckVial456,GPbank_2, set
     // SGP     GB_skipCheckBag,GPbank_2, set
 
-    SGP    GB_vibrationTime_4, GPbank_2, 10               //// L.E.D
-    SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
+    SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
+    SGP    GB_vibrationTime_56,GPbank_2, 10              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
 
@@ -458,28 +458,31 @@ fillVials:
     // // // // // // // // // CALCVV  ADD, GB_microLinVial_current, GB_microLtoFill_current  // update total in vial
     
     GGP     GB_linearCenterOfVial4AtBottom, GPbank_2
-    CALC    SUB, LINEAR_VIALS_SPACE
-    MVPA    ABS, M_linearMotor      
-    CSUB    waitLinearMotor
+    // CALC    SUB, LINEAR_VIALS_SPACE
+    CALCAV  SUB, GB_linearSpaceBetweenVialsuS
+    // MVPA    ABS, M_linearMotor      
+    // CSUB    waitLinearMotor
+    CSUB    moveLinear
 
     // CSUB    HomeHeadRotateMotor
-    GGP     GB_HeadRotatePointLeft, GPbank_2                          // go to required height
-    MVPA    ABS, M_headRotateMotor                        // move, wait later
-    GGP     GB_verticalCapPos, GPbank_2 // moved to after linear
-    MVPA    ABS, M_verticalMotor                         // move, wait later
+    GGP     GB_HeadRotatePointLeft, GPbank_2            // start moving to point left with the syringe
+    MVPA    ABS, M_headRotateMotor                      // move, wait later
+
+    GGP     GB_verticalCapPos, GPbank_2                 // moved to after linear
+    MVPA    ABS, M_verticalMotor                        // move, wait later
 
     CSUB    emptySyringeFast
 
     // CSUB    FINDHOMELinearMotor
     GGP     GB_linearCenterOfVial1, GPbank_2
-    MVPA    ABS, M_linearMotor                            // move, wait later
+    MVPA    ABS, M_linearMotor                          // move, wait later
 
     // CSUB    homeVerticalMotor
     GGP     GB_verticalCapPos, GPbank_2
-    MVPA    ABS, M_verticalMotor                         // move, wait later
+    MVPA    ABS, M_verticalMotor                        // move, wait later
 
 
-    CSUB    waitRotate  //// L.E.D ////
+    CSUB    waitRotate                  //// L.E.D ////
     CSUB    waitLinearMotor
     CSUB    waitVertical
 
@@ -521,17 +524,11 @@ calcTopVertNeedleDown:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 emptySyringe:      // empty syringe //// L.E.D ////
 
-    // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed
-    CSUB    homePistonMotor
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed
+    // CSUB    homePistonMotor // not recomended to use during a RUN after physical modification of pistons "home" flag
+    CSUB    positionPistonMotor
     WAIT    TICKS, 0, WAIT_TICKS_200ms                                          // wait 200ms after emptying syringe - to allow pressure to balance
 
- // // // // // // // // // // // // // // // //// L.E.D ////
-    // // // // // // // // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW  // Set maximum positioning speed
-    // // // // // // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
-    // // // // // // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
-    // // // // // // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
-    // // // // // // // // // // // // // // // // CSUB    homePistonMotor
- // // // // // // // // // // // // // // // //// L.E.D ////    
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -564,7 +561,7 @@ emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
 resumeEmptySyringeToBag:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed //// L.E.D //// _MED ??? MAYB
     CSUB    emptySyringe
-    WAIT     TICKS, 0, WAIT_TICKS_200ms
+    WAIT    TICKS, 0, WAIT_TICKS_200ms
 
  // // // // // // // // // // // //// L.E.D ////
     // // // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed
@@ -580,40 +577,8 @@ resumeEmptySyringeToBag:
     emptySyringeToFillVial:      // empty syringe into the vial //// L.E.D ////
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST   // Set maximum positioning speed //  //// L.E.D ////     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed
-
-    GGP     GB_microLtoFill_current, GPbank_2                           // load to A
-    COMP    10100                                                       // if MORE than 10.1mL is transfered then depressure with 4 pulses of 5mL // if LESS then with 10mL pulses
-    JC      LE, depressurunder10mL
     CSUB    pullPush5mL
-    CSUB    pullPush5mL
-    // CSUB    pullPush5mL
-    // CSUB    pullPush5mL
-    // CSUB    push5mL
-    CSUB    homePistonMotor
-    JA      returnemptySyringeToFillVial
-
-depressurunder10mL:
-    // CSUB    pullPush5mL
-    CSUB    pullPush10mL
-    CSUB    pullPush5mL
-    // CSUB    push5mL
-    CSUB    homePistonMotor
-    // // // // // // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
-    // // // // // // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
-    // // // // // // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
-    // // // // // // // // // // // // // // // // CSUB    homePistonMotor
-    JA      returnemptySyringeToFillVial
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// future function
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// // // CSUB    positionPistonMotor                         // empty syrine content    
-                                                                                         
-// // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
-// // // CSUB    pull1ml                                     // get rid 
-// // // CSUB    pull1ml                                     // of the 
-// // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed
-// // // CSUB    positionPistonMotor                         // last drop
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    CSUB    positionPistonMotor
 
 returnemptySyringeToFillVial:
     RSUB
@@ -761,19 +726,35 @@ returnDraw654321:
     CSUB    preLoadCurrentParameters
 
   // calculate vial location
-    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial1     // to the first vial
+    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial1      // to the first vial
     CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
     COMP    3                                    // more than 3'rd vial? 
     JC      LE, doNotAdd6
-    CALCV   ADD, GB_currentVialLinearLocation, LINEAR_VIAL3to4SPACE  // ADD the distancce from 3 to 4
-    CALCV   SUB, GB_currentVialLinearLocation, LINEAR_VIALS_SPACE    // SUB the standard distance between vials
+    // CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial4AtTop // to vial 4
+    // CALCAV  LOAD, GB_current_Vial                // load the vial number 4 -> 6 
+    // CALC    SUB, 4                               // now vials are considered as 0 -> 2
+    // CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
+    // CALCVA  ADD, GB_currentVialLinearLocation        // add to GB_currentVialLinearLocation  
+
+    // CALCV   ADD, GB_currentVialLinearLocation, LINEAR_VIAL3to4SPACE         // ADD the distancce from 3 to 4
+    // CALCV   SUB, GB_currentVialLinearLocation, LINEAR_VIALS_SPACE           // SUB the standard distance between vials
+    
+    CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial4AtTop // to vial 4
+    CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
+    CALC    SUB, 4                               // now 0 -> 2 for vials 4 -> 6 
+    CALCAV  MUL, GB_linearSpaceBetweenVialsuS    // multiply by the space between vials 
+    CALCVA  ADD, GB_currentVialLinearLocation    // add to the initial vial 4 location (GB_currentVialLinearLocation), result of total distance goes to A
+
+    JA      returnloadCurrentParameters
 
 doNotAdd6:    
     CALCAV  LOAD, GB_current_Vial                // load the vial number 0 -> 5 
     CALC    SUB, 1                               // now vials 0-5
-    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
+    CALCAV  MUL, GB_linearSpaceBetweenVialsuS    // multiply by the space between vials 
+    // CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials, total distance in A
     CALCVA  ADD, GB_currentVialLinearLocation        // add to GB_currentVialLinearLocation  
 
+returnloadCurrentParameters:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -782,13 +763,14 @@ doNotAdd6:
     CSUB    preLoadCurrentParameters
 
   //// L.E.D
+  // calculate volume for vial filling  // GB_microLtoFill_current
     CALC    LOAD, GB_microLtoFill_4 - 4          // copy GB address to A (130)
     CALCAV  ADD, GB_current_Vial                 // add vial number  4 -> 6
     CALCX   LOAD                                 // put the address in X
     GIV                                          // the content of the vial fill is copied into A
     CALCVA  LOAD, GB_microLtoFill_current        // and loaded into current parameter
 
-  // calculate vial location
+  // calculate vial location // GB_currentVialLinearLocation
     CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
     COMP    3                                    // less than 3 --> Dont fill
     JC      LE, returnloadCurrentParametersFill
@@ -796,7 +778,7 @@ doNotAdd6:
     CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial4AtBottom
     CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
     CALC    SUB, 4                               // now 0 -> 2 for vials 4 -> 6 
-    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials 
+    CALCAV  MUL, GB_linearSpaceBetweenVialsuS    // multiply by the space between vials 
     CALCVA  ADD, GB_currentVialLinearLocation    // add to the initial vial 4 location (GB_currentVialLinearLocation), result of total distance goes to A
 
 returnloadCurrentParametersFill:   // for GB_current_Vial
@@ -812,26 +794,16 @@ preLoadCurrentParameters:
     GIV                                          // the content of the vial withdraw is copied into A
     CALCVA  LOAD, GB_microLtoWithdraw_current    // and loaded into current parameter
 
-    // // // // // // // // // // // // // // load current quantity in the vial
-    // // // // // // // // // // // // // CALC    LOAD, GB_microLinVial_1 - 1          // copy GB address to A
-    // // // // // // // // // // // // // CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    // // // // // // // // // // // // // CALCX   LOAD                                 // the address is in X
-    // // // // // // // // // // // // // GIV                                          // the content of the vial now is copied into A
-    // // // // // // // // // // // // // CALCVA  LOAD, GB_microLinVial_current        // and loaded into current parameter
-
-    // // // // // // // // // // // // // // load vial size
-    // // // // // // // // // // // // // CALC    LOAD, GB_vialSize_microL_1 - 1       // copy GB address to A
-    // // // // // // // // // // // // // CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    // // // // // // // // // // // // // CALCX   LOAD                                 // the address is in X
-    // // // // // // // // // // // // // GIV                                          // the content of the vial size is copied into A
-    // // // // // // // // // // // // // CALCVA  LOAD, GB_vialSize_microL_current     // and loaded into current parameter
-
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    BeforeDraw:  //  vial #: GB_current_Vial 
 
     CSUB    deCap
+    CALCVV  LOAD, GB_linearSpaceBetweenVialsuS, GB_linearSpaceBetweenVialsuM
+    CALCV   MUL, GB_linearSpaceBetweenVialsuS, linearMicrostepsPerMM
+    CALCV   DIV, GB_linearSpaceBetweenVialsuS, 1000
+    
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1637,9 +1609,10 @@ drawVialMoreBack:    // just pull to required volume
 
 waitAfterDraw:
 
-    // GGP     GB_DrawWaitTime, GPbank_2                // get time in [100ms] // wait period set by needle specs after drawing to allow pressure to balance
-    CALC    LOAD, 200                                   // wait 2 sec till SW calculate
-    WAIT    TICKS, 0, ACCUMULATOR_WAIT                  // wait ticks as in A
+    // GGP     GB_DrawWaitTime, GPbank_2                   // get time in [100ms] // wait period set by needle specs after drawing to allow pressure to balance
+    // CALC    LOAD, 200                                   // wait 2 sec till SW calculate
+    // WAIT    TICKS, 0, ACCUMULATOR_WAIT                  // wait ticks as in A
+    WAIT    TICKS, 0, 200                               // wait 2 sec
     RSUB
 
                   
@@ -2412,10 +2385,10 @@ waitPistonRfs:    //
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-homePistonMotor:     // motor 3   104
+homePistonMotor:     // motor 3   104 // not recomended to use during a RUN after physical modification of pistons "home" flag
     CSUB    startHomePistonMotor
     CSUB    waitPistonRfs
-    CSUB    positionPistonMotor // canceled in future version
+    CSUB    positionPistonMotor
     RSUB
 
 startHomePistonMotor:  // 124
