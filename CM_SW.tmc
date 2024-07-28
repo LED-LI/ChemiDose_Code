@@ -141,8 +141,8 @@ setTestParams:   //  98
     SGP    GB_microLtoFill_6,GPbank_2,    02000
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
-    // SGP     GB_skipCheckVial456,GPbank_2, set
-    // SGP     GB_skipCheckBag,GPbank_2, set
+    // SGP     GB_skipCheckVial456,GPbank_2, set             //// GB_250
+    // SGP     GB_skipCheckBag,GPbank_2, set                ////  GB_251
 
     SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 10              ////  L.E.D
@@ -820,11 +820,7 @@ preLoadCurrentParameters:
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
 
-    // CSUB    pauseVibrate
-
     CSUB    insertNeedleIntoVial
-
-    // CSUB    resumeVibrate
 
    // pushAir
     CSUB    push70air 
@@ -832,8 +828,6 @@ preLoadCurrentParameters:
     CSUB    drawVialMoreBack
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
-    
-    // CSUB    pauseVibrate
     
     CSUB    goIntoBag
     
@@ -854,7 +848,7 @@ testLiquidPresence:
     CALCV   LOAD, GB_liquidDetected, clr                // reset indicator for liquid detection
     
     SIO     Out_Multiplexer, OutBank_2, 0               // change relays to watch inputs and not vials // i forgot why i put this here
-    WAIT    TICKS, 0, 10                                // 100 ms
+    WAIT    TICKS, 0, 50                                // 0.5 sec to let location settle and get a good detection reading
     
     // read liquid presence sensor - test that no air is at the edge of the syringe
     GIO     In_liquidPresence, InBankAnalog_1           // 0 ... 4095
@@ -3003,22 +2997,22 @@ LEDS_OFF:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ejectSyringeFromTopVial: // FUNC_108
+ejectSyringeFromTopVial: // FUNC_108
 
-    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
-    // MVP     REL, M_verticalMotor, 5000 // go down
-    // CSUB    waitVertical
-    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
-    // RSUB
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    MVP     REL, M_verticalMotor, 5000 // go down
+    CSUB    waitVertical
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
+    RSUB
 
 // //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// ejectSyringeFromBottomVial: // FUNC_110
+ejectSyringeFromBottomVial: // FUNC_110
     
-    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
-    // MVP     REL, M_verticalMotor, -5000 // go up
-    // CSUB    waitVertical
-    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
-    // RSUB
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    MVP     REL, M_verticalMotor, -5000 // go up
+    CSUB    waitVertical
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
+    RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration location
@@ -3039,13 +3033,8 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Eyals_dummy_sub:
+LEDs_sub:
 
-//    CSUB holdCap                                              // FUNC_118
-
-//    CSUB setTestParams                                          // FUNC_98
-
-//    CSUB recapSyringe                                         // FUNC_90
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++

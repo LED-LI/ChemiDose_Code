@@ -479,7 +479,7 @@ GB_74                        =    74
     SWITCH_SPEED_PIST             =    40 
     MAX_CURRENT_PIST              =   200        // 128
     MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
-    LIQUID_DETECTION_BORDER_AVAL  =   200 // [the analog value] // under this value light didnt pass => sensor is blocked   
+    LIQUID_DETECTION_BORDER_AVAL  =   300 // [the analog value] // under this value light didnt pass => sensor is blocked   
     DRAWFROMVIAL_WAITTIME         =   100 // 1s 
     DRAWFROMBAG_WAITTIME          =   200 // 2s
 
@@ -527,7 +527,7 @@ GB_liquidPresence                =    79 // In_liquidPresence
 
 GB_HeadRotatePointLeft             = 49     // center of syringe cap (pointing left) 
 GB_HeadRotatePointUp               = 50   // syringe pointing up
-GB_HeadRotatePointDown                  = 52   // syringe pointing down
+GB_HeadRotatePointDown             = 52   // syringe pointing down
 
 GB_80                            = 80
 GB_rotateMicroStepsPerMM         = 81 
@@ -762,7 +762,7 @@ FUNC_0:    CSUB FIRST_RUN         //v  will run on power ON
            JA     backGroundProcess
 FUNC_2:    CSUB Draw_654321       // for testing
            JA     backGroundProcess
-FUNC_4:    CSUB Eyals_dummy_sub  
+FUNC_4:    CSUB LEDs_sub
            JA     backGroundProcess
 FUNC_6:    JA   INIT_CM           //  Run the initial setup, detect if there is a initial volume in the system
            JA     backGroundProcess
@@ -872,9 +872,9 @@ func_104:  CSUB homePistonMotor
            JA     backGroundProcess
 func_106:  CSUB positionPistonMotor
            JA     backGroundProcess
-func_108:  CSUB dummy_sub // ejectSyringeFromTopVial
+func_108:  CSUB ejectSyringeFromTopVial
            JA     backGroundProcess
-func_110:  CSUB dummy_sub // ejectSyringeFromBottomVial
+func_110:  CSUB ejectSyringeFromBottomVial
            JA     backGroundProcess
 func_112:  CSUB goIntoBag
            JA     backGroundProcess
