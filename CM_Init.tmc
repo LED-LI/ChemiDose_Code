@@ -20,7 +20,7 @@ ABORT:
     GGP     GB_errors_syringe_bag, GPbank_2          // load  error word
     CALC    OR, BitEr_machineAborted                 // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2          // and write again
-    STGP    GB_errors_syringe_bag, GPbank_2          // and store it
+    // STGP    GB_errors_syringe_bag, GPbank_2          // and store it
 
 ABORT_NoReport:
     SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH     // stop quicker
@@ -90,7 +90,7 @@ INIT_MOTORS:       // func 16  Init user variables
     CSUB    initVibrator_4
     CSUB    initVibrator_56
 
-    CSUB    screenAllVials
+    // CSUB    screenAllVials
     SIO     Out_Multiplexer, OutBank_2, 0            // change relays from watching inputs
     WAIT    TICKS, 0, 100/10                         // 100 ms
 
