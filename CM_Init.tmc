@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-22                              +
+//+ last edited : 2024-07-28                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -57,7 +57,7 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
        // Stop a running TMCL program. Reset program counter and stack pointer
        // to zero. Reset accumulator and X register to zero. Reset all flags.
     SGP     GB_vial1Bit, GPbank_2, 1   //  
-    SGP     GB_vial2Bit, GPbank_2, 2   //  
+    SGP     GB_vial2Bit, GPbank_2, 128 // 2 //  temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board
     SGP     GB_vial3Bit, GPbank_2, 4   //  
     SGP     GB_vial4Bit, GPbank_2, 8   //  
     SGP     GB_vial5Bit, GPbank_2, 16  //  

@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-25                              +
+//+ last edited : 2024-07-28                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3030,22 +3030,22 @@ LEDS_OFF:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-ejectSyringeFromTopVial: // FUNC_108
+// ejectSyringeFromTopVial: // FUNC_108
 
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
-    MVP     REL, M_verticalMotor, 5000 // go down
-    CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
-    RSUB
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    // MVP     REL, M_verticalMotor, 5000 // go down
+    // CSUB    waitVertical
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
+    // RSUB
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-ejectSyringeFromBottomVial: // FUNC_110
+// //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ejectSyringeFromBottomVial: // FUNC_110
     
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
-    MVP     REL, M_verticalMotor, -5000 // go up
-    CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
-    RSUB
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    // MVP     REL, M_verticalMotor, -5000 // go up
+    // CSUB    waitVertical
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
+    // RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration location

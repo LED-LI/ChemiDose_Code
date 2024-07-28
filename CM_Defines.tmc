@@ -4,7 +4,7 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-25                              +
+//+ last edited : 2024-07-28                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -870,9 +870,9 @@ func_104:  CSUB homePistonMotor
            JA     backGroundProcess
 func_106:  CSUB positionPistonMotor
            JA     backGroundProcess
-func_108:  CSUB ejectSyringeFromTopVial
+func_108:  CSUB dummy_sub // ejectSyringeFromTopVial
            JA     backGroundProcess
-func_110:  CSUB ejectSyringeFromBottomVial
+func_110:  CSUB dummy_sub // ejectSyringeFromBottomVial
            JA     backGroundProcess
 func_112:  CSUB goIntoBag
            JA     backGroundProcess
