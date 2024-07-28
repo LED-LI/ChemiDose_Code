@@ -247,12 +247,12 @@ GB_special_Error                =  45
     BitEr_s7                  =  %10000000 // bit 128
 
 // the following global parameters will appear at their motor
-// GB_46                           = 46   // to hold the cap for recap
+// GB_linearCenterOfVial4AtTop     = 46   // linear location of vial 4 when arm is up
 // GB_ArmUnderVialPosition         = 47   // cap holder is under the syringe
 // GB_PistonHomePos                = 48   // for empty syringe
 // GB_HeadRotatePointLeft          = 49   // center of syringe cap (pointing left)
 // GB_HeadRotatePointUp            = 50   // syringe pointing up
-// GB_linearCenterOfVial4AtBottom  = 51   // linear motor
+// GB_linearCenterOfVial4AtBottom  = 51   // linear location of vial 4 when arm is down
 // GB_HeadRotatePointDown          = 52   // syringe pointing down
 // GB_linearCenterOfVial1          = 53
 // GB_linearSyringeLoading         = 54   // linear load of syringe (dock) location
@@ -384,37 +384,38 @@ GB_64                         = 64
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_1 = M_linearMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   linearFeedPerRevolution      = 25400 // micrometer  
-   linearMicrosteps             =    16 //
-   linearStepsPerRev            =   200 //
-   linearMicroStepsPerRev       = linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
-   linearMicrostepsPerMM        = 1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
-   MAX_CURRENT_LINEAR           =   128 //
-   MAX_CURRENT_LINEAR_HIGH      =   200
-   STBY_CURRENT_LINEAR          =    25 //
-   STBY_CURRENT_LINEAR_HIGH     =   150
-   MAX_POS_SPEED_LINEAR         =   500 //
-   ACC_LINEAR                   =    10 // 12
-   SEARCH_SPEED_LINEAR_HOME     =   400 // 50
-   SWITCH_SPEED_LINEAR_HOME     =   200
-   SEARCH_SPEED_LINEAR_BOTTLE   =   100 // 200
-   SWITCH_SPEED_LINEAR_BOTTLE   =    50 // 150
-   //LINEAR_NEEDLE_RFS          = -7000 //  ABS from here starts search
-   //LINEAR_ROTATE_POS          =  2500
-   LINEAR_VIALS_SPACE           =    50 * linearMicrostepsPerMM       // MicroSteps 6300
-   LINEAR_VIAL3to4SPACE         =    56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
+   linearFeedPerRevolution      =  25400 // micrometer  
+   linearMicrosteps             =     16 //
+   linearStepsPerRev            =    200 //
+   linearMicroStepsPerRev       =  linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
+   linearMicrostepsPerMM        =  1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
+   MAX_CURRENT_LINEAR           =    128 //
+   MAX_CURRENT_LINEAR_HIGH      =    200
+   STBY_CURRENT_LINEAR          =     25 //
+   STBY_CURRENT_LINEAR_HIGH     =    150
+   MAX_POS_SPEED_LINEAR         =    500 //
+   ACC_LINEAR                   =     10 // 12
+   SEARCH_SPEED_LINEAR_HOME     =    400 // 50
+   SWITCH_SPEED_LINEAR_HOME     =    200
+   SEARCH_SPEED_LINEAR_BOTTLE   =    100 // 200
+   SWITCH_SPEED_LINEAR_BOTTLE   =     50 // 150
+   //LINEAR_NEEDLE_RFS          =  -7000 //  ABS from here starts search
+   //LINEAR_ROTATE_POS          =   2500
+   LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
+   LINEAR_VIAL3to4SPACE         =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
    LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
    LINEAR_VIAL1_TO_BAG_RFS      = -10000      // appr 6.35 mm from center of bag
 
-GB_linearCenterOfVial4AtBottom         =    51   
-GB_linearCenterOfVial1          =    53      // 
-GB_linearSyringeLoading                =     54      // 
+GB_linearCenterOfVial4AtTop     =     46
+GB_linearCenterOfVial4AtBottom  =     51   
+GB_linearCenterOfVial1          =     53 // 
+GB_linearSyringeLoading         =     54 // 
 
-GB_currentVialLinearLocation    =    65
-GB_LinearCenterOfBag            =    66
-GB_67                           =    67
-GB_68                           =    68
-GB_69                           =    69
+GB_currentVialLinearLocation    =     65
+GB_LinearCenterOfBag            =     66
+GB_67                           =     67
+GB_68                           =     68
+GB_69                           =     69
 
 // ++++++++++++++++++++++++++++++++
 // Motor_2 = M_armMotor
@@ -445,7 +446,7 @@ GB_69                           =    69
 
 GB_DisposeDropVials456Pos    =    24           // arm at disposal position for vials 4 5 6 
 
-GB_ArmUnderVialPosition           =    47           // arm holder is above the syringe  -460
+GB_ArmUnderVialPosition      =    47           // arm holder is above the syringe  -460
 GB_armAtBottom               =    55           //  15546  Arm at bottom just below syring
 
 GB_armMicroStepsPerMM        =    70           // 31
