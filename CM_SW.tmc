@@ -454,8 +454,6 @@ fillVials:
 
    // exit vial from below
     CSUB    exitFromVialBelow
-
-    // // // // // // // // // CALCVV  ADD, GB_microLinVial_current, GB_microLtoFill_current  // update total in vial
     
     GGP     GB_linearCenterOfVial4AtBottom, GPbank_2
     // CALC    SUB, LINEAR_VIALS_SPACE
@@ -709,13 +707,6 @@ Draw_654321:    // check here if this vial is needed
 // DrawRequiredVial:
     CSUB    DrawFromVial   
 // -------------------------------------------------
-
-    // // // // // // // // // // // // // // // // // load what is left in the vial
-    // // // // // // // // // // // // // // // // CALC    LOAD, GB_microLinVial_1 - 1          // copy GB address to A
-    // // // // // // // // // // // // // // // // CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    // // // // // // // // // // // // // // // // CALCX   LOAD                                 // the address is in X
-    // // // // // // // // // // // // // // // // CALCAV  LOAD, GB_microLinVial_current        // Copy current content into A
-    // // // // // // // // // // // // // // // // AIV                                          // the content of the vial now is copied from A
 
 returnDraw654321:
     RSUB
@@ -1043,7 +1034,7 @@ dropVials:   // drop vials
    MVPA    ABS, M_disposeMotor                        // move, wait later
 
   // SAP     AP_MaxPositioningSpeed, M_armMotor, ARM_DISPOSE_SPEED
-   GGP     GB_DisposeDropVials456Pos, GPbank_2
+   GGP     GB_ArmDropVials456Pos, GPbank_2
    MVPA    ABS, M_armMotor                           // move, wait later
 
    CSUB    waitDispose
@@ -1793,10 +1784,10 @@ checkVialPoppedOut:
     WAIT    TICKS, 0, 10                         // 100 ms
 
     // GGP     GB_current_vial, GPBank_2            // current vial
-    CALC    LOAD, GB_vial1Bit - 1                // copy GB address to A
-    CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    CALCX   LOAD                                 // the address is in X
-    GIV                                          // the content of the vial bit is copied into A
+    CALC    LOAD, GB_vial1Bit - 1                // copy GB address to A ( = 210 )
+    CALCAV  ADD, GB_current_Vial                 // add vial number  1 -> 6 ( = 211-216 )
+    CALCX   LOAD                                 // the address is in X ( index pointing to paremters at 211-216 )
+    GIV                                          // the content of the vial bit is copied into A ( get the value stored from the param at the index [ a number representing the vials BIT in GB_vialsExist to indicate its presence ] )
     CALCAV  AND, GB_vialsExist                   // AND vial bit with GB_vialsExist
     COMP    0
     JC      NE, returnVialPoppedOut              // if NE, vial did not pop out
@@ -1905,7 +1896,7 @@ checkDrawer:       // check if drawer closed, not full and door closed
 
     GIO     In_drawerClose, InBankDigital_0        // read drawer sensor
     COMP    DRAWER_IS_CLOSED                       // is the drawer closed?
-    JC      EQ, returnSyrPoppedOut                 // if in, continue to check vial
+    JC      EQ, returnCheckDrawer                  // if in, continue to check vial
  // drawer is open, signal errors
     GGP     GB_special_Error, GPbank_2             // load Ver002 error word
     CALC    OR, BitEr_drawerIsOpen                 // add the error bit

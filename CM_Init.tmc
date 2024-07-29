@@ -57,7 +57,7 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
        // Stop a running TMCL program. Reset program counter and stack pointer
        // to zero. Reset accumulator and X register to zero. Reset all flags.
     SGP     GB_vial1Bit, GPbank_2, 1   //  
-    SGP     GB_vial2Bit, GPbank_2, 128 // 2 //  temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board
+    SGP     GB_vial2Bit, GPbank_2, 2   //                  //  128  //  2  //  temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board
     SGP     GB_vial3Bit, GPbank_2, 4   //  
     SGP     GB_vial4Bit, GPbank_2, 8   //  
     SGP     GB_vial5Bit, GPbank_2, 16  //  
@@ -496,7 +496,6 @@ initVibrator_56:
 initInterrups:
 
 // Interrupt vector definition
-    SGP     GB_InterruptCount, GPbank_2, 0      // 0=restore;  1=Do not restore at startup
   
 // for direction cycle of PWM of vibration
 // initialize at the end of Timer1Irq:
@@ -531,8 +530,6 @@ Timer0Irq:   // duty cycle of PWM  (time ON)
 
 //*******************************************
 Timer1Irq:    // for direction cycle of PWM
-
-    CALCV   ADD, GB_InterruptCount, 1             // add 1 to interrupt counter
 
 changeVibrationDir:
     GIO    Out_VibrateDIR, InBankOuput_2
