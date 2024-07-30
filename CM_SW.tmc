@@ -806,7 +806,7 @@ preLoadCurrentParameters:
     CSUB    startPullAir70                             // pull 70% of the air
    // --------------------------------------- //// L.E.D //// switched palces of lines 455 & 457
     CSUB    moveBelowVial
-    CSUB    waitPiston
+    CSUB    waitPiston // separated from startPullAir70 for speeding up the DRAW procedure
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
@@ -814,6 +814,9 @@ preLoadCurrentParameters:
     CSUB    insertNeedleIntoVial
 
    // pushAir
+    CSUB    push70air 
+    CSUB    startPullAir70
+    CSUB    waitPiston
     CSUB    push70air 
     CSUB    drawVial
     CSUB    drawVialMoreBack
@@ -1369,7 +1372,7 @@ startPullAir70:  //  pull 70% of the air
     CALC    DIV, 100                                                   // A = 70% in uSteps
  //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
     MVPA    REL, M_pistonMotor                                         // move, wait later 
-    CSUB    waitPiston  
+    // CSUB    waitPiston  // separated from startPullAir70 for speeding up the DRAW procedure
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
