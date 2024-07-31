@@ -849,8 +849,9 @@ testLiquidPresence:
     CALCVA  LOAD, GB_liquidPresence                     // results will go to GB_liquidDetected
     
 // (analog ranges/threshold that defines states will be in M_pistonMotor(Motor_3) parameters)
-    COMP    LIQUID_DETECTION_BORDER_AVAL
-    JC      GT, SyringeContent_Error                    // higher values = light passes through syringe = liquid not blocking light = no liquid detected
+    // COMP    LIQUID_DETECTION_BORDER_AVAL
+    CALCAV  COMP, GB_liquid_detection_border_aval       // CALCAV <operation>, <var> /// COMP – compare accumulator with <var>
+    JC      GT, SyringeContent_Error                    // if A (Aval read from sensor) is greater than the defined border => then ERROR // higher values = light passes through syringe = liquid not blocking light = no liquid detected
     CALCV   LOAD, GB_liquidDetected, set                // detected = yes
     JA      Return_testLiquidPresence
     

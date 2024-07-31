@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-28                              +
+//+ last edited : 2024-07-30                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240725
+CURRENT_VERSION      =  20240730
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -55,7 +55,7 @@ InX_vialIsIn3            = 3 // U37
 InX_vialIsIn4            = 4 // U47
 InX_vialIsIn5            = 5 // U48
 InX_vialIsIn6            = 6 // U33
-InX_mux7                 = 2 // U46 // input is vacant // was U30 - switched to handle error in dist board development 
+InX_mux7                 = 2 // U46 // input is vacant // was U30 - switched to handle error in dist board development // USING POWER PINS FOR BLUETOOTH MODULE
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of Outputs
@@ -137,16 +137,16 @@ GB_7                         =   7
 // GB_verticalCapPos         =   8   // syringe loading
 // GB_BumpPosVert            =   9   // needle touches the vial 1 rubber at top ~ -8792
 
-GB_needleLength             =  10    // 16, 25, 40 [mm]
-GB_needleGauge              =  11    // 14, 16, 18, 21, 22, 23 [gauge]
-GB_cyclesTotal              =  12    //
-// GB_setBumpBottom         =  13    // needle touches the vial 4 rubber at bottom 
-GB_min_vol_laserDist_AVAL   =  14    // GB_14 // analog value when piston is at empty syringe location
-GB_max_vol_laserDist_AVAL   =  15    // GB_15 // analog value when piston is at max syringe volume location (Currently set as 15000 uL)
-GB_piston_defined_vol_uL    =  16    // GB_16 // uL of max syringes volume - as set in GB_15
-GB_accepted_diviation_range =  17    //
-GB_messuredAmountOfLiquid   =  18    //
-GB_current_diviation        =  19
+GB_needleLength                 =  10    // 16, 25, 40 [mm]
+GB_needleGauge                  =  11    // 14, 16, 18, 21, 22, 23 [gauge]
+GB_cyclesTotal                  =  12    //
+// GB_setBumpBottom             =  13    // needle touches the vial 4 rubber at bottom 
+GB_min_vol_laserDist_AVAL       =  14    // GB_14 // analog value when piston is at empty syringe location
+GB_max_vol_laserDist_AVAL       =  15    // GB_15 // analog value when piston is at max syringe volume location (Currently set as 15000 uL)
+GB_piston_defined_vol_uL        =  16    // GB_16 // uL of max syringes volume - as set in GB_15
+GB_accepted_diviation_range     =  17    //
+GB_messuredAmountOfLiquid       =  18    //
+GB_liquid_detection_border_aval =  19
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  prameters from PC to Trinamic:
@@ -490,7 +490,7 @@ GB_74                        =    74
 // GB_piston_defined_vol_uL         =  16    // GB_16
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
-// GB_current_diviation             =  19
+// GB_liquid_detection_border_aval  =  19
 // GB_microL_per_100mm_current      = 161        // 6522
 
 GB_PistonHomePos                 =  48 // uStep value for 0ml in syringe
