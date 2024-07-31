@@ -28,23 +28,24 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 //Definitions of Inputs
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance
+// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance -> moved to AIN4 // now = In_liquidPresence 
 // In_pwrDrawer           = 1 // U38 /////////////////////////////data input is vacant
 // In_NeedleDetected      = 2 // U11
 // In_3                   = 3 // U36 // will turn to be In_slidingDoor - was U45 - will be J36
-// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence
+// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence -> moved to AIN0 // now = In_thumbRestDistance
 // In_drawerOverflow      = 5 // U15
 // In_drawerClose         = 6 // U14
 // In_7                   = 7 // U25 // will turn to be In_capHolderHome - was U10 - will be J25
 
-In_thumbRestDistance   = 0 // U10
+In_liquidPresence      = 0 // U10
 In_pwrDrawer           = 1 // U38
 In_NeedleDetected      = 2 // U11
 In_slidingDoor         = 3 // U36
-In_liquidPresence      = 4 // U45
+In_thumbRestDistance   = 4 // U45
 In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
 In_capHolderHome       = 7 // U25
+
 
 // bottles sensors via relay multiplexers
 
@@ -100,6 +101,11 @@ FIRST_VIAL_VIBRATE    =    4
 OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
+
+    // GB_bypassSlidingDoorYN =  25
+BYPASS_SLIDING_DOOR_Y =    1 // when value is set (1) -> ignore sliding door sensor
+BYPASS_SLIDING_DOOR_N =    0 // when value is set (0) -> dont ignore sliding door sensor
+
 //CM
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -124,8 +130,8 @@ GB_Syringe_Type              =   1
   // Syringe_9             =  9
   // Syringe_10            = 10
 
-GB_2                         =  2        // = 100 = 1[s]
-GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
+GB_2                         =  2        //
+GB_3                         =  3        //
 GB_4                         =  4        //
 GB_5                         =  5        //
 
@@ -152,14 +158,14 @@ GB_liquid_detection_border_aval =  19
 //  prameters from PC to Trinamic:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-GB_ShowOverride              =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
+GB_ShowOverride                 =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
 // GB_linearSpaceBetweenVialsuM =  21
-GB_disposeYN                 =  22    // 
+GB_disposeYN                    =  22    // 
 // GB_DisposeDropVialsPos       =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
-GB_25                        =  25
-GB_26                        =  26
-GB_27                        =  27
+GB_bypassSlidingDoorYN          =  25
+GB_26                           =  26
+GB_27                           =  27
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Errors

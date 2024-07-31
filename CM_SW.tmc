@@ -106,7 +106,7 @@ continue_init_cm:
     CSUB    checkNoSyringe                 // check syringe exists,            sets STOPPED_ON_ERROR state //// L.E.D
     CSUB    checkDrawer                      // check if closed and not full and door closed
     CSUB    checkOverFlow         // check if closed and not full and door closed
-    //CSUB    checkDoorOpen                    // sliding door has to be closed
+    CSUB    checkDoorOpen                    // sliding door has to be closed
     GGP     GB_any_Error, GPbank_2           // get any error status
     COMP    ANY_ERROR_EXISTS                 // exists?
     JC      EQ, returnInitDraw               // error, return (keeps STATE WAITING_INIT_CM)
@@ -130,22 +130,22 @@ setTestParams:   //  98
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
     SGP    GB_microLtoWithdraw_1,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_2,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_2,GPbank_2,00000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,02000
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_6,GPbank_2,02000
+    SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
     SGP    GB_microLtoFill_4,GPbank_2,    00000
     SGP    GB_microLtoFill_5,GPbank_2,    00000
-    SGP    GB_microLtoFill_6,GPbank_2,    02000
+    SGP    GB_microLtoFill_6,GPbank_2,    00000
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
     // SGP     GB_skipCheckVial456,GPbank_2, set             //// GB_250
     // SGP     GB_skipCheckBag,GPbank_2, set                ////  GB_251
 
     SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
-    SGP    GB_vibrationTime_56,GPbank_2, 10              ////  L.E.D
+    SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
 
@@ -1070,6 +1070,7 @@ checkOkToDrawDoze:
     JA      returnCheckOkDraw
 
 okToDrawDoze:
+    CSUB    checkDoorOpen                    // sliding door has to be closed
     SGP     GB_CurrentState, GPbank_2, RUNNING_DISPENSE
 returnCheckOkDraw:
     RSUB
@@ -1930,6 +1931,8 @@ returnCheckOverFlow:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 checkDoorOpen:       // check if door closed
 
+    CALCV   COMP, GB_bypassSlidingDoorYN, BYPASS_SLIDING_DOOR // GB_bypassSlidingDoorYN = GB_25
+    JC      returnCheckDoor
     GIO     In_slidingDoor, InBankDigital_0        // read drawer sensor
     COMP    DOOR_IS_CLOSED                         // is the drawer closed?
     JC      EQ, returnCheckDoor                    // if in, continue to check vial
@@ -2654,20 +2657,20 @@ disposeMotorTOerr:
 
 CapHolderManual:   // FUNC 160  
 
-//   GB_UnitsToMoveManual             = 19    // for manual movement, put here the microMeter to move (+/-)
+//   GB_UnitsToMoveManual             = 229    // for manual movement, put here the microMeter to move (+/-)
 //   GB_CapHolderPulses               = 87    
 //   GB_slowCapHolder                 = 88
 
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
-    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_19 load the movement [uMeter] into A
+    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_229 load the movement [uMeter] into A
     CALC    MUL, capHolderMicroStepsPerMM           
     CALC    DIV, 1000                                   // now in uSteps
     CALCVA  LOAD, GB_CapHolderPulses                    // The required pulses in GB
     SGP     GB_MotorIsMoving, GPbank_2, set
 // check direction
     SIO     Out_CAPHolderDIR_Down, OutBank_2, set       // assume "down", positive steps
-    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_19 load the movement [uMeter] into A
+    GGP     GB_UnitsToMoveManual, GPbank_2              // GB_229 load the movement [uMeter] into A
     COMP    0
     JC      GE, CapGoDownwards                          // as assumed
 // change to UP
