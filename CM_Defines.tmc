@@ -82,6 +82,7 @@ WAIT_TICKS_VERY_SHORT =  100 // [ 1s]
 WAIT_TICKS_2S         =  200 // [ 2s]
 WAIT_TICKS_DISPOSE    =  300 // [ 3s]
 WAIT_TICKS_4S         =  400 // [ 4s]
+WAIT_TICKS_6S         =  600 // [ 4s]
 WAIT_TICKS            = 1000 // [10s]
 WAIT_TICKS_LINEAR     = 1500 // [15s]
 WAIT_TICKS_LONG       = 1500 // [15s]
@@ -102,9 +103,12 @@ OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
 
-    // GB_bypassSlidingDoorYN =  25
-BYPASS_SLIDING_DOOR_Y =    1 // when value is set (1) -> ignore sliding door sensor
-BYPASS_SLIDING_DOOR_N =    0 // when value is set (0) -> dont ignore sliding door sensor
+    // GB_bypassSlidingDoorYN   =  25
+    // GB_bypassDrawerClosedYN  =  26
+    // GB_bypassCheckOverFlowYN =  27
+
+BYPASS_Y =    1 // when value is set (1) -> ignore sliding door sensor
+BYPASS_N =    0 // when value is set (0) -> dont ignore sliding door sensor
 
 //CM
 
@@ -164,8 +168,8 @@ GB_disposeYN                    =  22    //
 // GB_DisposeDropVialsPos       =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
 GB_bypassSlidingDoorYN          =  25
-GB_26                           =  26
-GB_27                           =  27
+GB_bypassDrawerClosedYN         =  26
+GB_bypassCheckOverFlowYN        =  27
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Errors
