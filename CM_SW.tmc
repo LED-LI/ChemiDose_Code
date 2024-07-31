@@ -1932,7 +1932,7 @@ returnCheckOverFlow:
 checkDoorOpen:       // check if door closed
 
     CALCV   COMP, GB_bypassSlidingDoorYN, BYPASS_SLIDING_DOOR // GB_bypassSlidingDoorYN = GB_25
-    JC      returnCheckDoor
+    JC      EQ, returnCheckDoor
     GIO     In_slidingDoor, InBankDigital_0        // read drawer sensor
     COMP    DOOR_IS_CLOSED                         // is the drawer closed?
     JC      EQ, returnCheckDoor                    // if in, continue to check vial
