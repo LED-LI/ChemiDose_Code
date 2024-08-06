@@ -91,6 +91,7 @@ INIT_CM:   // func 6
 // clear errors and check for syringe
     RST     continue_init_cm
 continue_init_cm:
+    SGP     GB_HomingDone, GPbank_2, clr            // clear homing done
     CSUB    ClearRunningErrors
     SGP     GB_CmdInProcess, GPbank_2, set                //   //// L.E.D ////
 
@@ -1772,6 +1773,7 @@ FIND_HOMES:
     CSUB    positionArmMotor
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
+    // CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    waitArmMotorRfs
@@ -2508,9 +2510,12 @@ HomeHeadRotateMotor:   // 58
     // RSUB
 
 homeHeadRotateMotorFast:   
+    RFS     STOP, M_headRotateMotor                         // Stops reference search
+    WAIT    TICKS, 0, 100
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
     SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
+    // RFS     START, M_headRotateMotor                                      // Start reference search
     RFS     START, M_headRotateMotor                                      // Start reference search
     CSUB    waitRotateRfs
     RSUB
@@ -2991,6 +2996,7 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
+    // CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe

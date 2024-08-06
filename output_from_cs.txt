@@ -1,13 +1,13 @@
 Parameter Name                                          Value     
 ===================================================================
-public const string GB_0                                0         
+public const string GB_currentVersion                   0         
 public const string GB_Syringe_Type                     1         
-public const string GB_2                                2         
-public const string GB_3                                3         
-public const string GB_4                                4         
-public const string GB_5                                5         
-public const string GB_RobotSerialNumber                6         
-public const string GB_7                                7         
+public const string GB_skipCheckVial456                 2         
+public const string GB_skipCheckBag                     3         
+public const string GB_bypassSlidingDoorYN              4         
+public const string GB_bypassDrawerClosedYN             5         
+public const string GB_bypassCheckOverFlowYN            6         
+public const string GB_RobotSerialNumber                7         
 public const string GB_verticalCapPos                   8         
 public const string GB_BumpPosVert                      9         
 public const string GB_needleLength                     10        
@@ -19,7 +19,7 @@ public const string GB_max_vol_laserDist_AVAL           15
 public const string GB_piston_defined_vol_uL            16        
 public const string GB_accepted_diviation_range         17        
 public const string GB_messuredAmountOfLiquid           18        
-public const string GB_current_diviation                19        
+public const string GB_liquid_detection_border_aval     19        
 public const string GB_ShowOverride                     20        
 public const string GB_linearSpaceBetweenVialsuM        21        
 public const string GB_disposeYN                        22        
@@ -222,7 +222,7 @@ public const string GB_vialsExist                       218
 public const string GB_219                              219       
 public const string GB_220                              220       
 public const string GB_221                              221       
-public const string GB_currentVersion                   222       
+public const string GB_222                              222       
 public const string GB_223                              223       
 public const string GB_readyToDraw                      224       
 public const string GB_initialVolume                    225       
@@ -250,8 +250,8 @@ public const string GB_246                              246
 public const string GB_247                              247       
 public const string GB_248                              248       
 public const string GB_249                              249       
-public const string GB_skipCheckVial456                 250       
-public const string GB_skipCheckBag                     251       
+public const string GB_250                              250       
+public const string GB_251                              251       
 public const string GB_foundCenterOfNeedle              252       
 public const string GB_DrawFromVialWaitTime             253       
 public const string GB_vialsToDrawFromCounter           254       
