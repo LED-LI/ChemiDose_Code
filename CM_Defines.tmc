@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-28                              +
+//+ last edited : 2024-08-06                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240725
+CURRENT_VERSION      =  20240806
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -28,20 +28,22 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 //Definitions of Inputs
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance
+// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance -> moved to AIN4 // now = In_liquidPresence 
 // In_pwrDrawer           = 1 // U38 /////////////////////////////data input is vacant
 // In_NeedleDetected      = 2 // U11
 // In_3                   = 3 // U36 // will turn to be In_slidingDoor - was U45 - will be J36
-// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence
+// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence -> moved to AIN0 // now = In_thumbRestDistance
 // In_drawerOverflow      = 5 // U15
 // In_drawerClose         = 6 // U14
 // In_7                   = 7 // U25 // will turn to be In_capHolderHome - was U10 - will be J25
 
-In_thumbRestDistance   = 0 // U10
+In_liquidPresence      = 0 // U10
+// In_thumbRestDistance   = 0 // U10
 In_pwrDrawer           = 1 // U38
 In_NeedleDetected      = 2 // U11
 In_slidingDoor         = 3 // U36
-In_liquidPresence      = 4 // U45
+In_thumbRestDistance   = 4 // U45
+// In_liquidPresence      = 4 // U45
 In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
 In_capHolderHome       = 7 // U25
@@ -55,7 +57,7 @@ InX_vialIsIn3            = 3 // U37
 InX_vialIsIn4            = 4 // U47
 InX_vialIsIn5            = 5 // U48
 InX_vialIsIn6            = 6 // U33
-InX_mux7                 = 2 // U46 // input is vacant
+InX_mux7                 = 2 // U46 // input is vacant // was U30 - switched to handle error in dist board development // USING POWER PINS FOR BLUETOOTH MODULE
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of Outputs
@@ -100,6 +102,14 @@ FIRST_VIAL_VIBRATE    =    4
 OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
+
+    // // // // // // // // // // // // // // // // // // // // GB_bypassSlidingDoorYN   =  25
+    // // // // // // // // // // // // // // // // // // // // GB_bypassDrawerClosedYN  =  26
+    // // // // // // // // // // // // // // // // // // // // GB_bypassCheckOverFlowYN =  27
+
+BYPASS_Y =    1 // when value is set (1) -> ignore sliding door sensor
+BYPASS_N =    0 // when value is set (0) -> dont ignore sliding door sensor
+
 //CM
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -108,8 +118,8 @@ DOOR_IS_CLOSED        =    1
 // prameters from Trinamic to PC:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// GB_currentVersion = 0 // Current SW version // moved to GB_222
-GB_0                         =   0
+GB_currentVersion = 0 // Current SW version // moved to GB_222
+// GB_0                         =   0
 
 GB_Syringe_Type              =   1
   DEFAULT_SYRINGE_TYPE  =  4
@@ -124,15 +134,22 @@ GB_Syringe_Type              =   1
   // Syringe_9             =  9
   // Syringe_10            = 10
 
-GB_2                         =  2        // = 100 = 1[s]
-GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
-GB_4                         =  4        //
-GB_5                         =  5        //
+GB_skipCheckVial456              =  2 // 250 // GB_2                         =  2        //
+GB_skipCheckBag                  =  3 // 251 // GB_3                         =  3        //
+GB_bypassSlidingDoorYN          = 4 //  25 // GB_4                         =  4        //
+GB_bypassDrawerClosedYN         = 5 //  26 // GB_5                         =  5        //
+GB_bypassCheckOverFlowYN        = 6 //  27 // GB_7                         =   7    
+
+GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
+// GB_2                         =  2        // = 100 = 1[s]
+// GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
+// GB_4                         =  4        //
+// GB_5                         =  5        //
 
 
-GB_RobotSerialNumber         =   6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
+// GB_RobotSerialNumber         =   6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
 
-GB_7                         =   7    
+// GB_7                         =   7    
 // the following 2 global parameters will appear at motor 0 (vertical)
 // GB_verticalCapPos         =   8   // syringe loading
 // GB_BumpPosVert            =   9   // needle touches the vial 1 rubber at top ~ -8792
@@ -146,7 +163,8 @@ GB_max_vol_laserDist_AVAL   =  15    // GB_15 // analog value when piston is at 
 GB_piston_defined_vol_uL    =  16    // GB_16 // uL of max syringes volume - as set in GB_15
 GB_accepted_diviation_range =  17    //
 GB_messuredAmountOfLiquid   =  18    //
-GB_current_diviation        =  19
+// GB_current_diviation        =  19
+GB_liquid_detection_border_aval =  19
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  prameters from PC to Trinamic:
@@ -156,10 +174,13 @@ GB_ShowOverride              =  20    // 1 = will not dispose vials and also loo
 // GB_linearSpaceBetweenVialsuM =  21
 GB_disposeYN                 =  22    // 
 // GB_DisposeDropVialsPos    =  23    // 
-// GB_DisposeDropVials456Pos =  24    // arm at disposal position for vials 4 5 6 
-GB_25                        =  25
-GB_26                        =  26
-GB_27                        =  27
+// GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
+// // // // // // // // // // // GB_bypassSlidingDoorYN          =  25
+// // // // // // // // // // // GB_bypassDrawerClosedYN         =  26
+// // // // // // // // // // // GB_bypassCheckOverFlowYN        =  27
+// GB_25                        =  25
+// GB_26                        =  26
+// GB_27                        =  27
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Errors
@@ -261,6 +282,9 @@ GB_special_Error                =  45
 // 55 is the last GB that can also be stored permanently in the EEPROM
 
 GB_liquidDetected                  = 56
+GB_57                              = 57
+GB_58                              = 58
+GB_59                              = 59
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Syringe parameters
@@ -345,14 +369,13 @@ LoadingDistance_4    =  69000  // [usteps]
    //VERTICAL_NEEDLE_RFS           =  -7000  // ABS
    VER_NEEDLE_RFS_BELOW_BUMP       =   5500  // REL
    //VERTICAL_IN_VIAL_MM           =     -7  // milimeters to penetrate into the vial
-   VERTICAL_IN_VIAL                = -8500 // with Atraumatic 38mm needle  //// L.E.D //// what is this parameter ? why is it a constant and not a variable that i calibrate ??
+   VERTICAL_IN_VIAL                = -8500 // with Atraumatic 38mm needle  //// L.E.D //// what is this parameter ? why is it a constant and not a variable that i calibrate ?? or a relative value for movement
    // VERTICAL_IN_VIAL                =  -4850  // VERTICAL_IN_VIAL_MM * verticalMicroStepsPerMM  //-7 * 656 = -4592 // -8000  // ABS  -4000  //-3800  // up 175[uS]=1.4[mm]//-3625  //z REL
-   VERTICAL_IN_VIAL_BELOW          =   7070  // !!!! CHECK CORRECTION !!!!
+   VERTICAL_IN_VIAL_BELOW          =   7070  // !!!! CHECK CORRECTION !!!! a relative value for movement – also – turn into a relative value for movement
    MAX_CURRENT_VERT                =    200
    MAX_CURRENT_VERT_HIGH           =    255
    STBY_CURRENT_VERT               =    100  ///
    MAX_POS_SPEED_VER               =   1300
-   // MAX_POS_SPEED_VER_ROT           =   1300  /// needs same speed for vertical and rotation for coordinated move
    MAX_POS_SPEED_VER_INTO_CAP      =    600  // MAX_POS_SPEED_VER_INTO_BAG      =    600  //
    MAX_POS_SPEED_VER_TO_VIAL       =    300
    MAX_POS_SPEED_VER_DOWN          =   1200
@@ -361,7 +384,7 @@ LoadingDistance_4    =  69000  // [usteps]
    ACC_VERT_HIGH                   =     40
    SEARCH_SPEED_VERT               =    400  ///
    SWITCH_SPEED_VERT               =    400  ///
-   // SYRINGE_IN_BAG_ABS              = -15000 // with atraumatic 38mm needle 
+   // SYRINGE_IN_BAG_ABS              = -15000 // only with atraumatic 38mm needle 
    SYRINGE_IN_BAG_ABS              = -14000
    BAG_ENTRY_BELOW_BUMP            =   8000  // REL
    TOP_VERTICAL_NEEDLE_DOWN_FULL   =   1100 // 1500
@@ -445,7 +468,7 @@ GB_69                           =     69
 //   limitUMbentNeedleArm    =  3000  // 2000 // [um]
 //   limitArmBentMicroS      = armMicroStepsPerMM * limitUMbentNeedleArm / 1000  /// 3.00 [mm] // 2.00 [mm] = 81 us
 
-GB_DisposeDropVials456Pos    =    24           // arm at disposal position for vials 4 5 6 
+GB_ArmDropVials456Pos        =    24           // arm at disposal position for vials 4 5 6 
 
 GB_ArmUnderVialPosition      =    47           // arm holder is above the syringe  -460
 GB_armAtBottom               =    55           //  15546  Arm at bottom just below syring
@@ -479,7 +502,7 @@ GB_74                        =    74
     SWITCH_SPEED_PIST             =    40 
     MAX_CURRENT_PIST              =   200        // 128
     MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
-    LIQUID_DETECTION_BORDER_AVAL  =   200 // [the analog value] // under this value light didnt pass => sensor is blocked   
+    LIQUID_DETECTION_BORDER_AVAL  =   300 // [the analog value] // under this value light didnt pass => sensor is blocked   
     DRAWFROMVIAL_WAITTIME         =   100 // 1s 
     DRAWFROMBAG_WAITTIME          =   200 // 2s
 
@@ -491,7 +514,7 @@ GB_74                        =    74
 // GB_current_diviation             =  19
 // GB_microL_per_100mm_current      = 161        // 6522
 
-GB_PistonHomePos                 =    48         // for empty syringe 345 [0] => need to redesign - adujstment to new syringe holder
+GB_PistonHomePos                 =  48 // uStep value for 0ml in syringe
 
 GB_75                            = 75
 GB_pistonMicroStepPer100microL   =    76 // 10000 * pistonMicroStepsPerMM / GB_microL_per_100mm_current = 224
@@ -552,7 +575,6 @@ GB_84                            = 84
    SWITCH_SPEED_DISPOSE           =    20 /// // 100  //// L.E.D //// the returning of the disposing tabs 
    MAX_CURRENT_DISPOSE            =   128 ///
 
-GB_51                 = 51  // not used
 GB_DisposeDropVialsPos            = 23
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -662,16 +684,54 @@ GB_microLtoFill_4           =  134
 GB_microLtoFill_5           =  135
 GB_microLtoFill_6           =  136
 
+GB_137                          = 137
+GB_138                          = 138
+GB_139                          = 139
+
+
 GB_FillingIsNeeded           = 140
 GB_Filling4IsNeeded          = 144
 GB_Filling5IsNeeded          = 145
 GB_Filling6IsNeeded          = 146
+GB_147                          = 147
+GB_148                          = 148
+GB_149                          = 149
+GB_150                          = 150
+GB_151                          = 151
+GB_152                          = 152
+GB_153                          = 153
+GB_154                          = 154
+GB_155                          = 155
+GB_156                          = 156
+GB_157                          = 157
+GB_158                          = 158
+GB_159                          = 159
 
 // current syringe
 GB_160  = 160
 GB_microL_per_100mm_current  = 161
+
 GB_162  = 162
+
 GB_readyToFill               = 163
+GB_164                          = 164
+GB_165                          = 165
+GB_166                          = 166
+GB_167                          = 167
+GB_168                          = 168
+GB_169                          = 169
+GB_170                          = 170
+GB_171                          = 171
+GB_172                          = 172
+GB_173                          = 173
+GB_174                          = 174
+GB_175                          = 175
+GB_176                          = 176
+GB_177                          = 177
+GB_178                          = 178
+GB_179                          = 179
+GB_180                          = 180
+GB_181                          = 181
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 GB_GoToAbsoluteInSteps           =  182
@@ -682,11 +742,13 @@ GB_pistonBubblesPullMicroL       =  185    // 300 * microL = 0.3ml
 GB_pistonBubblesPushMicroL       =  186    // 150 * microL = 0.3ml
 GB_dispenseCycleTime01s          =  187 
 GB_dispenseCycleTimeMS           =  188 
+GB_189                          = 189 
 
 GB_PigWasReplaced                =  190    //
 GB_inHomeCapHolderMotor          =  191    // signals when to check 3 times for syringe poped out
 GB_MulCenterOfVial               =  192    // for running average calculations
 GB_adjustmentsTotal              =  193
+GB_194                          = 194
 GB_TouchedLeftRef                =  195
 GB_dipperInterruptHight          =  196
 
@@ -719,7 +781,8 @@ GB_vialsExist                =  218
     Bit_vial6      =  %00100000 // bit  32
     Bit_bag        =  %01000000 // bit  64
 
-GB_currentVersion            =   222    // Current SW version
+// GB_currentVersion            =   222    // Current SW version
+GB_223                          = 223
 
 GB_readyToDraw             =  224    // after verifyReady
 GB_initialVolume           =  225    // in syringe
@@ -735,14 +798,29 @@ GB_UnitsToMoveManual         =  229    // for manual movement, put here the micr
 GB_TempNumHolder             =  230
 GB_airToPullBefore           =  231    // 20 in Percentage. Should be reduced when vial is full
 GB_232                       =  232
-GB_233                       =  232
-GB_234                       =  232
+GB_233                       =  233
+GB_234                       =  234
 GB_motorNumForHome           =  235    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder
 GB_236                       =  236    // 
 GB_microLbagToFill           =  237    // microL to withdraw in BAG
 
-GB_skipCheckVial456                     =   250
-GB_skipCheckBag                         =   251
+GB_238                           =   238
+GB_239                           =   239
+GB_240                           =   240
+GB_241                           =   241
+GB_242                           =   242
+GB_243                           =   243
+GB_244                           =   244
+GB_245                           =   245
+GB_246                           =   246
+GB_247                           =   247
+GB_248                           =   248
+GB_249                           =   249
+
+GB_250                           =   250
+GB_251                           =   251
+// GB_skipCheckVial456                     =   250
+// GB_skipCheckBag                         =   251
 GB_foundCenterOfNeedle                  =   252 // not needed
 GB_DrawFromVialWaitTime                 =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
 GB_vialsToDrawFromCounter               =   254    // temporary variable  //// L.E.D ////
@@ -762,7 +840,7 @@ FUNC_0:    CSUB FIRST_RUN         //v  will run on power ON
            JA     backGroundProcess
 FUNC_2:    CSUB Draw_654321       // for testing
            JA     backGroundProcess
-FUNC_4:    CSUB Eyals_dummy_sub  
+FUNC_4:    CSUB LEDs_sub
            JA     backGroundProcess
 FUNC_6:    JA   INIT_CM           //  Run the initial setup, detect if there is a initial volume in the system
            JA     backGroundProcess
@@ -872,9 +950,9 @@ func_104:  CSUB homePistonMotor
            JA     backGroundProcess
 func_106:  CSUB positionPistonMotor
            JA     backGroundProcess
-func_108:  CSUB dummy_sub // ejectSyringeFromTopVial
+func_108:  CSUB ejectSyringeFromTopVial
            JA     backGroundProcess
-func_110:  CSUB dummy_sub // ejectSyringeFromBottomVial
+func_110:  CSUB ejectSyringeFromBottomVial
            JA     backGroundProcess
 func_112:  CSUB goIntoBag
            JA     backGroundProcess

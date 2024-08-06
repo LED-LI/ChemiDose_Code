@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-07-28                              +
+//+ last edited : 2024-08-06                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -48,16 +48,25 @@ ABORT_NoReport:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
 
+// TODO : add a compare of the parameter stored to the CURRENT_VERSION - only if not equal -> set and store
+    RSGP    GB_currentVersion, GPbank_2                         // Write version number
+    CALCV   COMP, GB_currentVersion, CURRENT_VERSION
+    JC      EQ, skipSetVer
     SGP     GB_currentVersion, GPbank_2, CURRENT_VERSION        // Write version number
-    // STGP    GB_currentVersion, GPbank_2                         // Write version number
-    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 9600 - for interfacing with andoid UI purposes 
-//    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
+    STGP    GB_currentVersion, GPbank_2                         // Write version number
+    skipSetVer:
+    // SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 9600 - for interfacing with andoid UI purposes 
+    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
+    // // // // SGP     GB_currentVersion, GPbank_2, CURRENT_VERSION        // Write version number
+    // // // // // STGP    GB_currentVersion, GPbank_2                         // Write version number
+    // // // // SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 9600 - for interfacing with andoid UI purposes 
+// // // // //    SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
     SGP     GB_CoordinateStorage, GPbank_0, 0                   // 0=RAM only; 1=always also in EEPROM
     SGP     GB_DoNotRestoreUserVars, GPbank_0, 0                // 0=restore;  1=Do not restore at startup
        // Stop a running TMCL program. Reset program counter and stack pointer
        // to zero. Reset accumulator and X register to zero. Reset all flags.
     SGP     GB_vial1Bit, GPbank_2, 1   //  
-    SGP     GB_vial2Bit, GPbank_2, 128 // 2 //  temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board
+    SGP     GB_vial2Bit, GPbank_2, 2   // // 128 // temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board
     SGP     GB_vial3Bit, GPbank_2, 4   //  
     SGP     GB_vial4Bit, GPbank_2, 8   //  
     SGP     GB_vial5Bit, GPbank_2, 16  //  
