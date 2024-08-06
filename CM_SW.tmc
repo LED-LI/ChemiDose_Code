@@ -1031,6 +1031,7 @@ Return_testSyringesVolume:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
+    CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe
@@ -1798,6 +1799,7 @@ FIND_HOMES:
     CSUB    positionArmMotor
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
+    CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    waitArmMotorRfs
@@ -2550,7 +2552,7 @@ PositionHeadRotateMotorToTop:   // motor 4  func_64
     RSUB
 
 PositionHeadRotateMotorToLeft:   // motor 4  func_38
-    CSUB    HomeHeadRotateMotor
+    // CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointLeft, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
@@ -3057,6 +3059,7 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
+    CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe
