@@ -48,6 +48,7 @@ In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
 In_capHolderHome       = 7 // U25
 
+
 // bottles sensors via relay multiplexers
 
 InX_salineBagIsIn        = 0 // U44
@@ -83,6 +84,7 @@ WAIT_TICKS_VERY_SHORT =  100 // [ 1s]
 WAIT_TICKS_2S         =  200 // [ 2s]
 WAIT_TICKS_DISPOSE    =  300 // [ 3s]
 WAIT_TICKS_4S         =  400 // [ 4s]
+WAIT_TICKS_6S         =  600 // [ 4s]
 WAIT_TICKS            = 1000 // [10s]
 WAIT_TICKS_LINEAR     = 1500 // [15s]
 WAIT_TICKS_LONG       = 1500 // [15s]
@@ -170,7 +172,7 @@ GB_liquid_detection_border_aval =  19
 //  prameters from PC to Trinamic:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-GB_ShowOverride              =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
+GB_ShowOverride                 =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
 // GB_linearSpaceBetweenVialsuM =  21
 GB_disposeYN                 =  22    // 
 // GB_DisposeDropVialsPos    =  23    // 
@@ -181,6 +183,10 @@ GB_disposeYN                 =  22    //
 // GB_25                        =  25
 // GB_26                        =  26
 // GB_27                        =  27
+GB_25                           =    25        
+GB_26                           =    26        
+GB_27                           =    27        
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Errors
@@ -391,18 +397,18 @@ LoadingDistance_4    =  69000  // [usteps]
    TOP_VERTICAL_NEEDLE_DOWN_EMPTY  = -12000
    DITANCE_TO_AVOID_BRONZE_BLOCKS  =   2750 // 3000
 
-GB_verticalCapPos                      =   8 // syringe loading  380
-GB_BumpPosVert                         =   9 // needle touches the vial 1 rubber at top ~ -8792
+GB_verticalCapPos                =   8 // syringe loading  380
+GB_BumpPosVert                   =   9 // needle touches the vial 1 rubber at top ~ -8792
 
-GB_setBumpBottom                       =  13 // needle touches the vial 4 rubber at bottom 
+GB_setBumpBottom                 =  13 // needle touches the vial 4 rubber at bottom 
 
 
-GB_60                                  =  60 // was GB_needleLengthInMicroSteps =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
+GB_60                            =  60 // was GB_needleLengthInMicroSteps =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
 
 GB_Calced_Top_Vert_Needle_Down_Allowed =  61 // GB_61 = 61
-GB_62                         = 62
-GB_63                         = 63
-GB_64                         = 64
+GB_62                            = 62
+GB_63                            = 63
+GB_64                            = 64
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_1 = M_linearMotor
@@ -422,8 +428,8 @@ GB_64                         = 64
    SWITCH_SPEED_LINEAR_HOME     =    200
    SEARCH_SPEED_LINEAR_BOTTLE   =    100 // 200
    SWITCH_SPEED_LINEAR_BOTTLE   =     50 // 150
-   //LINEAR_NEEDLE_RFS          =  -7000 //  ABS from here starts search
-   //LINEAR_ROTATE_POS          =   2500
+   //LINEAR_NEEDLE_RFS             =  -7000 //  ABS from here starts search
+   //LINEAR_ROTATE_POS             =   2500
    // LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
    // LINEAR_VIAL3to4SPACE         =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
    // LINEAR_VIAL1_TO_LOADING      = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
@@ -474,8 +480,8 @@ GB_ArmUnderVialPosition      =    47           // arm holder is above the syring
 GB_armAtBottom               =    55           //  15546  Arm at bottom just below syring
 
 GB_armMicroStepsPerMM        =    70           // 31
-//GB_limitarmBentMicroS      =    71 
-//GB_NeedleArmError          =    72          // error of needle at calholder position
+GB_71                        =    71 
+GB_72                        =    72          // error of needle at calholder position
 GB_73                        =    73
 GB_74                        =    74
 
@@ -511,16 +517,16 @@ GB_74                        =    74
 // GB_piston_defined_vol_uL         =  16    // GB_16
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
-// GB_current_diviation             =  19
+// GB_liquid_detection_border_aval  =  19
 // GB_microL_per_100mm_current      = 161        // 6522
 
 GB_PistonHomePos                 =  48 // uStep value for 0ml in syringe
 
-GB_75                            = 75
-GB_pistonMicroStepPer100microL   =    76 // 10000 * pistonMicroStepsPerMM / GB_microL_per_100mm_current = 224
-GB_thumbRestDistance             =    77 // In_thumbRestDistance
-GB_pistonsRangePercentage        =    78
-GB_liquidPresence                =    79 // In_liquidPresence
+GB_75                            =  75
+GB_pistonMicroStepPer100microL   =  76 // 10000 * pistonMicroStepsPerMM / GB_microL_per_100mm_current = 224
+GB_thumbRestDistance             =  77 // In_thumbRestDistance
+GB_pistonsRangePercentage        =  78
+GB_liquidPresence                =  79 // In_liquidPresence
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_4 = M_headRotateMotor
@@ -537,7 +543,7 @@ GB_liquidPresence                =    79 // In_liquidPresence
    STBY_CUR_ROTATE_LOW           =     10 // after ABORT
    STBY_CUR_ROTATE               =    100 /// normal
    STBY_CUR_ROTATE_HIGH          =    200 // while syringe loading
-   MAX_POS_SPEED_ROT         =   1300 /// needs same speed for vertical and rotation for coordinated move
+   MAX_POS_SPEED_ROT             =   1300 /// needs same speed for vertical and rotation for coordinated move
    MAX_POS_SPEED_ROT_FAST        =   1000
    SEARCH_SPEED_ROT              =    400 ///
    SWITCH_SPEED_ROT              =     50 ///
@@ -548,13 +554,13 @@ GB_liquidPresence                =    79 // In_liquidPresence
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
 
-GB_HeadRotatePointLeft             = 49     // center of syringe cap (pointing left) 
-GB_HeadRotatePointUp               = 50   // syringe pointing up
-GB_HeadRotatePointDown                  = 52   // syringe pointing down
+GB_HeadRotatePointLeft           = 49     // center of syringe cap (pointing left) 
+GB_HeadRotatePointUp             = 50   // syringe pointing up
+GB_HeadRotatePointDown           = 52   // syringe pointing down
 
 GB_80                            = 80
 GB_rotateMicroStepsPerMM         = 81 
-//GB_limitNeedleBentMicroS         = 82 
+GB_82                            = 82 
 GB_NeedleVialError               = 83  // for vial center calculation
 GB_84                            = 84
 
@@ -591,88 +597,84 @@ GB_DisposeDropVialsPos            = 23
    DISABLE_SENSOR                   =     1
    CAP_LOCK_STEPS                   =  7000   // um to move down to lock // 6000  //// L.E.D ////
 
-GB_capHolderMicrostepsTolock   = 85
-GB_CapHolderHolds              = 86  //  "1" = holds,    "0" = open
-GB_CapHolderPulses             = 87
-GB_slowCapHolder               = 88
-GB_capWaitLoops                = 89
+GB_capHolderMicrostepsTolock     = 85
+GB_CapHolderHolds                = 86  //  "1" = holds,    "0" = open
+GB_CapHolderPulses               = 87
+GB_slowCapHolder                 = 88
+GB_capWaitLoops                  = 89
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // parameters for CM
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // microLtoWithdraw values
-GB_microLtoWithdraw_current  =  90
-GB_microLtoWithdraw_1        =  91
-GB_microLtoWithdraw_2        =  92
-GB_microLtoWithdraw_3        =  93
-GB_microLtoWithdraw_4        =  94
-GB_microLtoWithdraw_5        =  95
-GB_microLtoWithdraw_6        =  96
+GB_microLtoWithdraw_current      =  90
+GB_microLtoWithdraw_1            =  91
+GB_microLtoWithdraw_2            =  92
+GB_microLtoWithdraw_3            =  93
+GB_microLtoWithdraw_4            =  94
+GB_microLtoWithdraw_5            =  95
+GB_microLtoWithdraw_6            =  96
 
-GB_CmdInProcess              =  97
+GB_CmdInProcess                  =  97
 
 // SW states
-  GB_CurrentState       =  98        // defines the current state of the process
-       WAITING_INIT_CM       = 10   // this is the state after the power up as well
-       RUNNING_INIT_CM       = 20
-       WAITING_DISPENSE      = 30   // at this state it is possible as well to run INIT_DRAW_DOSE (6)
-       RUNNING_DISPENSE      = 40
-       STATE_50              = 50
-       STATE_60              = 60
-       STOPPED_ON_ERROR      = 70
-       STOPPED_TIME_OUT      = 80
-       ABORTED               = 90
+  GB_CurrentState                =  98        // defines the current state of the process
+       WAITING_INIT_CM   = 10   // this is the state after the power up as well
+       RUNNING_INIT_CM   = 20
+       WAITING_DISPENSE  = 30   // at this state it is possible as well to run INIT_DRAW_DOSE (6)
+       RUNNING_DISPENSE  = 40
+       STATE_50          = 50
+       STATE_60          = 60
+       STOPPED_ON_ERROR  = 70
+       STOPPED_TIME_OUT  = 80
+       ABORTED           = 90
 
-GB_99                   =  99
-GB_moveManualBackwards  = 100    // 1 = forward;  -1 = backward
+GB_99                            =  99
+GB_moveManualBackwards           = 100    // 1 = forward;  -1 = backward
 
-GB_101  = 101
-GB_102  = 102
-GB_103  = 103
-GB_104  = 104
-GB_105  = 105
-GB_106  = 106
-GB_107  = 107
-GB_108  = 108
-GB_109  = 109
-GB_110  = 110
-GB_111  = 111
+GB_101                           = 101
+GB_102                           = 102
+GB_103                           = 103
+GB_104                           = 104
+GB_105                           = 105
+GB_106                           = 106
+GB_107                           = 107
+GB_108                           = 108
+GB_109                           = 109
+GB_110                           = 110
+GB_111                           = 111
 
-GB_vibration4IsNeeded        = 112
-GB_vibration56IsNeeded       = 113
+GB_vibration4IsNeeded            = 112
+GB_vibration56IsNeeded           = 113
 
 // vibration time for vials [seconds]
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GB_vibrationTime_4           = 114
-GB_vibrationTime_4_calc      = 115
-GB_vibrationTime_56          = 116
-GB_vibrationTime_56_calc     = 117
+GB_vibrationTime_4               = 114
+GB_vibrationTime_4_calc          = 115
+GB_vibrationTime_56              = 116
+GB_vibrationTime_56_calc         = 117
+GB_118                           = 118
 
-// GB_vibrationLocation         = 118
-    // Bit_vibrateUp        =  %00000001 // bit   1
-    // Bit_vibrateDown      =  %00000010 // bit   2
-    // Bit_vibrateHalfway   =  %00000100 // bit   4
-    // Bit_vibrateLocation3 =  %00001000 // bit   8
-    // Bit_vibrateLocation4 =  %00010000 // bit  16
-    // Bit_vibrateLocation5 =  %00100000 // bit  32
-
+    
 // vibration strength for vials 4,56 -  1 / 2 / 3 / 4 / 5
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GB_vibrStrengthPercentCalc   = 119      // set up %
-GB_PwmDutyCycleMS            = 120      // calculated [ms]
-GB_vibrator4done             = 121
-GB_vibrator56done            = 122
-GB_vibrationDutyCyclePercent = 123      // 10-100 [%]
+GB_vibrStrengthPercentCalc       = 119      // set up %
+GB_PwmDutyCycleMS                = 120      // calculated [ms]
+GB_vibrator4done                 = 121
+GB_vibrator56done                = 122
+GB_vibrationDutyCyclePercent     = 123      // 10-100 [%]
 
 // vibration cycle time for vials 4,56 - [ms]
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GB_vibrationCycleMS          = 124   // calculation to ms
-GB_vibrationHz               = 125   // data input
-GB_126                       = 126
-GB_vibrationIsNeeded         = 127
-GB_vibrationTime_4_tmp       = 128
-GB_vibrationTime_56_tmp      = 129
+GB_vibrationCycleMS             = 124   // calculation to ms
+GB_vibrationHz                  = 125   // data input
+
+GB_126                          = 126
+
+GB_vibrationIsNeeded            = 127
+GB_vibrationTime_4_tmp          = 128
+GB_vibrationTime_56_tmp         = 129
 
 
 // microLtoFill values
@@ -690,9 +692,13 @@ GB_139                          = 139
 
 
 GB_FillingIsNeeded           = 140
+GB_141                          = 141
+GB_142                          = 142
+GB_143                          = 143
 GB_Filling4IsNeeded          = 144
 GB_Filling5IsNeeded          = 145
 GB_Filling6IsNeeded          = 146
+
 GB_147                          = 147
 GB_148                          = 148
 GB_149                          = 149
@@ -734,7 +740,7 @@ GB_180                          = 180
 GB_181                          = 181
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GB_GoToAbsoluteInSteps           =  182
+GB_GoToAbsoluteInSteps          = 182
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 GB_numberOfKicks                 =  183    //  10
 GB_rotateBubblesUM               =  184    // 750 = 0.75mm
@@ -761,34 +767,42 @@ GB_microLinVial_6                =  202
 GB_microLinVial_current          =  203
 GB_current_Vial                  =  204
 
+
 // the following definitions will be loaded on the bit definitions GB
 // when checkin vial existance, these definitions will be used as AND on the GB_vialsExist parameter
 
-GB_vial1Bit   =  211  //  VIAL1_BIT
-GB_vial2Bit   =  212  //  VIAL2_BIT
-GB_vial3Bit   =  213  //  VIAL3_BIT
-GB_vial4Bit   =  214  //  VIAL4_BIT
-GB_vial5Bit   =  215  //  VIAL5_BIT
-GB_vial6Bit   =  216  //  VIAL6_BIT
-GB_BagBit     =  217  //  BAG_BIT
+GB_vial1Bit                     = 211  //  VIAL1_BIT
+GB_vial2Bit                     = 212  //  VIAL2_BIT
+GB_vial3Bit                     = 213  //  VIAL3_BIT
+GB_vial4Bit                     = 214  //  VIAL4_BIT
+GB_vial5Bit                     = 215  //  VIAL5_BIT
+GB_vial6Bit                     = 216  //  VIAL6_BIT
+GB_BagBit                       = 217  //  BAG_BIT
 
-GB_vialsExist                =  218
+GB_vialsExist                   = 218
     Bit_vial1      =  %00000001 // bit   1
-    Bit_vial2      =  %00000010 // bit   2
+    Bit_vial2      =  %00000010 // bit   2               // %10000000 // bit 128 // 2 //  temporary change - vial 2 sensor redirected to in_7 (instead of in_2) because of faulty design of distribution board // bit   2
     Bit_vial3      =  %00000100 // bit   4
     Bit_vial4      =  %00001000 // bit   8
     Bit_vial5      =  %00010000 // bit  16
     Bit_vial6      =  %00100000 // bit  32
     Bit_bag        =  %01000000 // bit  64
+    
+GB_219                          = 219
+GB_220                          = 220
+GB_221                          = 221
+GB_222                          = 222
 
 // GB_currentVersion            =   222    // Current SW version
 GB_223                          = 223
 
-GB_readyToDraw             =  224    // after verifyReady
-GB_initialVolume           =  225    // in syringe
-GB_MotorIsMoving           =  226    //
-GB_227                     =  227    //
-GB_HomingDone              =  228    //
+GB_223                          = 223
+
+GB_readyToDraw                  = 224    // after verifyReady
+GB_initialVolume                = 225    // in syringe
+GB_MotorIsMoving                = 226    //
+GB_227                          = 227    //
+GB_HomingDone                   = 228    //
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  prameters from PC to Trinamic:
@@ -825,9 +839,11 @@ GB_foundCenterOfNeedle                  =   252 // not needed
 GB_DrawFromVialWaitTime                 =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
 GB_vialsToDrawFromCounter               =   254    // temporary variable  //// L.E.D ////
 
-   MINIMUM_VIAL_WITHDRAW_VOLUME  =  100
+GB_foundCenterOfNeedle           =   252 // not needed
+GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
+GB_vialsToDrawFromCounter        =   254    // temporary variable  //// L.E.D ////
 
-GB_InterruptCount                =  255    // temorary variable 5
+GB_255                           =   255    // temorary variable 5
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++

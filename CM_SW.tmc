@@ -58,7 +58,7 @@ endClearRunningErrors:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ClearErrorsRAM:
     SGP     GB_any_Error, GPbank_2, clr                   // signal error: general
-    STGP    GB_any_Error, GPbank_2
+    // STGP    GB_any_Error, GPbank_2
     SGP     GB_errors_syringe_bag, GPbank_2, clr          // 28
     SGP     GB_errors_M_verticalMotor, GPbank_2, clr      // 30
     SGP     GB_errors_M_linearMotor, GPbank_2, clr        // 31
@@ -91,6 +91,7 @@ INIT_CM:   // func 6
 // clear errors and check for syringe
     RST     continue_init_cm
 continue_init_cm:
+    SGP     GB_HomingDone, GPbank_2, clr            // clear homing done
     CSUB    ClearRunningErrors
     SGP     GB_CmdInProcess, GPbank_2, set                //   //// L.E.D ////
 
@@ -133,6 +134,7 @@ setTestParams:   //  98
     SGP    GB_microLtoWithdraw_2,GPbank_2,00000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
     SGP    GB_microLtoWithdraw_4,GPbank_2,01000
+
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
     SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
@@ -141,8 +143,8 @@ setTestParams:   //  98
     SGP    GB_microLtoFill_6,GPbank_2,    00000
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
-    // SGP     GB_skipCheckVial456,GPbank_2, set
-    // SGP     GB_skipCheckBag,GPbank_2, set
+    // SGP     GB_skipCheckVial456,GPbank_2, set             //// GB_250
+    // SGP     GB_skipCheckBag,GPbank_2, set                ////  GB_251
 
     SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
     SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
@@ -230,12 +232,11 @@ continueAfterDraw:
     CSUB    AfterAllVialsDone                         // decap and position
     
     // check if overflow
-    CSUB    checkOverFlow         // check if closed and not full and door closed            //// L.E.D ////
-
+    CSUB    checkOverFlow         // check if closed and not full and door closed  
+    
 // ------------------------------------------------------------
     CSUB    incrementCycles                           // YES
     SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
-//  SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     SGP     GB_CmdInProcess, GPbank_2, clr                //  
 
    // overide at show and repeat DRAW_DOSE
@@ -454,8 +455,6 @@ fillVials:
 
    // exit vial from below
     CSUB    exitFromVialBelow
-
-    // // // // // // // // // CALCVV  ADD, GB_microLinVial_current, GB_microLtoFill_current  // update total in vial
     
     GGP     GB_linearCenterOfVial4AtBottom, GPbank_2
     // CALC    SUB, LINEAR_VIALS_SPACE
@@ -554,7 +553,7 @@ emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
     GGP     GB_errors_syringe_bag, GPbank_2                  // load Ver002 error word
     CALC    OR, BitEr_SyringeNotInBag                   // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    STGP    GB_errors_syringe_bag, GPbank_2             // and store it
+    // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR
     CSUB    setAnyError
     JA      ABORT_NoReport
@@ -698,7 +697,7 @@ Draw_654321:    // check here if this vial is needed
     GGP     GB_special_Error, GPbank_2           // load  error word
     CALC    OR, BitEr_vialNotDefined             // add the error bit
     AGP     GB_special_Error, GPbank_2           // and write again
-    STGP    GB_special_Error, GPbank_2           // and store it
+    // STGP    GB_special_Error, GPbank_2           // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      returnDraw654321
 // -------------------------------------------------
@@ -709,13 +708,6 @@ Draw_654321:    // check here if this vial is needed
 // DrawRequiredVial:
     CSUB    DrawFromVial   
 // -------------------------------------------------
-
-    // // // // // // // // // // // // // // // // // load what is left in the vial
-    // // // // // // // // // // // // // // // // CALC    LOAD, GB_microLinVial_1 - 1          // copy GB address to A
-    // // // // // // // // // // // // // // // // CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    // // // // // // // // // // // // // // // // CALCX   LOAD                                 // the address is in X
-    // // // // // // // // // // // // // // // // CALCAV  LOAD, GB_microLinVial_current        // Copy current content into A
-    // // // // // // // // // // // // // // // // AIV                                          // the content of the vial now is copied from A
 
 returnDraw654321:
     RSUB
@@ -815,16 +807,12 @@ preLoadCurrentParameters:
     CSUB    startPullAir70                             // pull 70% of the air
    // --------------------------------------- //// L.E.D //// switched palces of lines 455 & 457
     CSUB    moveBelowVial
-    CSUB    waitPiston
+    CSUB    waitPiston // separated from startPullAir70 for speeding up the DRAW procedure
     GGP     GB_any_Error, GPbank_2     // get any error status
     COMP    ANY_ERROR_EXISTS           // exists?
     JC      EQ, ReturnDrawFromVial     // yes, return
 
-    // CSUB    pauseVibrate
-
     CSUB    insertNeedleIntoVial
-
-    // CSUB    resumeVibrate
 
    // pushAir
     CSUB    push70air 
@@ -842,8 +830,6 @@ preLoadCurrentParameters:
     CSUB    drawVialMoreBack
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
-    
-    // CSUB    pauseVibrate
     
     CSUB    goIntoBag
     
@@ -864,7 +850,7 @@ testLiquidPresence:
     CALCV   LOAD, GB_liquidDetected, clr                // reset indicator for liquid detection
     
     SIO     Out_Multiplexer, OutBank_2, 0               // change relays to watch inputs and not vials // i forgot why i put this here
-    WAIT    TICKS, 0, 10                                // 100 ms
+    WAIT    TICKS, 0, 50                                // 0.5 sec to let location settle and get a good detection reading
     
     // read liquid presence sensor - test that no air is at the edge of the syringe
     GIO     In_liquidPresence, InBankAnalog_1           // 0 ... 4095
@@ -876,6 +862,7 @@ testLiquidPresence:
     JC      GT, SyringeContent_Error                    // if A (Aval read from sensor) is greater than the defined border => then ERROR // higher values = light passes through syringe = liquid not blocking light = no liquid detected
     // COMP    LIQUID_DETECTION_BORDER_AVAL
     // JC      GT, SyringeContent_Error                    // higher values = light passes through syringe = liquid not blocking light = no liquid detected
+
     CALCV   LOAD, GB_liquidDetected, set                // detected = yes
     JA      Return_testLiquidPresence
     
@@ -1064,7 +1051,7 @@ dropVials:   // drop vials
 
   // SAP     AP_MaxPositioningSpeed, M_armMotor, ARM_DISPOSE_SPEED
    GGP     GB_ArmDropVials456Pos, GPbank_2
-   // GGP     GB_DisposeDropVials456Pos, GPbank_2
+
    MVPA    ABS, M_armMotor                           // move, wait later
 
    CSUB    waitDispose
@@ -1091,7 +1078,7 @@ checkOkToDrawDoze:
     GGP     GB_errors_wrong_PC_command, GPbank_2           // load  error word
     CALC    OR, BitEr_expecting_WAITING_DISPENSE          // add the error bit
     AGP     GB_errors_wrong_PC_command, GPbank_2           // and write again
-    STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
+    // STGP    GB_errors_wrong_PC_command, GPbank_2           // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      returnCheckOkDraw
 
@@ -1175,6 +1162,7 @@ doneCheckVials:
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 returnVerifyAllVial:
+
     // GGP     GB_special_Error, GPbank_2               // load the error word
     // CALC    AND, (255 - BitEr_No_vials)              // remove the error bit
     // AGP     GB_special_Error, GPbank_2               // and write again
@@ -1217,7 +1205,7 @@ syringeMissing:
     GGP     GB_special_Error, GPbank_2                  // load Ver002 error word
     CALC    OR, BitEr_SyringeMissing                    // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    STGP    GB_errors_syringe_bag, GPbank_2             // and store it
+    // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 returnVerifySyringe:
@@ -1262,7 +1250,7 @@ verify_vial_1:
     COMP    0                                           // is the Vial in?
     JC      NE, verify_vial_2
     CALCV   OR, GB_errors_Vial_1, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_1, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_1, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1284,7 +1272,7 @@ verify_vial_2:
     COMP    0                                           // is the Vial in?
     JC      NE, verify_vial_3
     CALCV   OR, GB_errors_Vial_2, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_2, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_2, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1306,7 +1294,7 @@ verify_vial_3:
     COMP    0                                           // is the Vial in?
     JC      NE, verify_vial_4
     CALCV   OR, GB_errors_Vial_3, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_3, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_3, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1328,7 +1316,7 @@ verify_vial_4:
     COMP    0                                           // is the Vial in?
     JC      NE, verify_vial_5
     CALCV   OR, GB_errors_Vial_4, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_4, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_4, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1350,7 +1338,7 @@ verify_vial_5:
     COMP    0                                           // is the Vial in?
     JC      NE, verify_vial_6
     CALCV   OR, GB_errors_Vial_5, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_5, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_5, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1372,7 +1360,7 @@ verify_vial_6:
     COMP    0                                           // is the Vial in?
     JC      NE, returnVerifyVial
     CALCV   OR, GB_errors_Vial_6, BitEr_VialMissing     // add error
-    STGP    GB_errors_Vial_6, GPbank_2                  // store vial 1 error
+    // STGP    GB_errors_Vial_6, GPbank_2                  // store vial 1 error
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 // --------------------
@@ -1770,7 +1758,7 @@ recapSyringe:   //
 
 incrementCycles:   // function 112
     CALCV   ADD, GB_cyclesTotal, 1
-    STGP    GB_cyclesTotal, GPbank_2                   // store it in EEPROM
+    // STGP    GB_cyclesTotal, GPbank_2                   // store it in EEPROM
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1800,6 +1788,7 @@ FIND_HOMES:
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
     CSUB    HomeHeadRotateMotor
+
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    waitArmMotorRfs
@@ -1856,7 +1845,7 @@ checkOkToInitDrawDoze:
     GGP     GB_errors_wrong_PC_command, GPbank_2         // load error word
     CALC    OR, BitEr_expecting_GP5_10_OR_30             // add the error bit
     AGP     GB_errors_wrong_PC_command, GPbank_2         // and write again
-    STGP    GB_errors_wrong_PC_command, GPbank_2         // and store it
+    // STGP    GB_errors_wrong_PC_command, GPbank_2         // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      returnCheckInitDraw
 
@@ -1877,7 +1866,7 @@ checkNoSyringe:
     GGP     GB_special_Error, GPbank_2                  // load the error word
     CALC    OR, BitEr_SyringeIsIn                       // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    STGP    GB_errors_syringe_bag, GPbank_2             // and store it
+    // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 returnCheckNoSyringe:
@@ -1894,7 +1883,7 @@ checkNoSyringeFH:
     GGP     GB_errors_findHome, GPbank_2                // load piston error word
     CALC    OR, BitEr_syringeIsInwhileFindHome          // add the error bit
     AGP     GB_errors_findHome, GPbank_2                // and write again
-    STGP    GB_errors_findHome, GPbank_2                // and store it
+    // STGP    GB_errors_findHome, GPbank_2                // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      returnCheckNoSyringeFH
 
@@ -1918,7 +1907,7 @@ checkSyrPoppedOut:
     GGP     GB_errors_syringe_bag, GPbank_2             // load Ver002 error word
     CALC    OR, BitEr_syringePoppedOut                  // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    STGP    GB_errors_syringe_bag, GPbank_2             // and store it
+    // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT
 
@@ -1938,6 +1927,7 @@ checkDrawer:       // check if drawer closed, not full and door closed
     CALC    OR, BitEr_drawerIsOpen                  // add the error bit
     AGP     GB_special_Error, GPbank_2              // and write again
     STGP    GB_special_Error, GPbank_2           // and store it
+
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 returnCheckDrawer:
@@ -1955,7 +1945,7 @@ checkOverFlow:       // check if empty vials overflow drawer
     GGP     GB_special_Error, GPbank_2           // load  error word
     CALC    OR, BitEr_drawerOverflow             // add the error bit
     AGP     GB_special_Error, GPbank_2           // and write again
-    STGP    GB_special_Error, GPbank_2           // and store it
+    // STGP    GB_special_Error, GPbank_2           // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     
 returnCheckOverFlow:
@@ -1973,7 +1963,7 @@ checkDoorOpen:       // check if door closed
     GGP     GB_special_Error, GPbank_2             // load Ver002 error word
     CALC    OR, BitEr_slidingDoorIsOpen            // add the error bit
     AGP     GB_special_Error, GPbank_2             // and write again
-    STGP    GB_special_Error, GPbank_2             // and store it
+    // STGP    GB_special_Error, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT
 
@@ -2089,7 +2079,7 @@ verticalMotorTOerr:
     GGP     GB_errors_M_verticalMotor, GPbank_2         // load piston error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_verticalMotor, GPbank_2         // and write again
-    STGP    GB_errors_M_verticalMotor, GPbank_2         // and store it
+    // STGP    GB_errors_M_verticalMotor, GPbank_2         // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2175,7 +2165,7 @@ LinearMotorTOerr:
     GGP     GB_errors_M_linearMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                        // add the error bit
     AGP     GB_errors_M_linearMotor, GPbank_2        // and write again
-    STGP    GB_errors_M_linearMotor, GPbank_2        // and store it
+    // STGP    GB_errors_M_linearMotor, GPbank_2        // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2265,7 +2255,7 @@ armMotorTOerr:
     GGP     GB_errors_M_armMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                     // add the error bit
     AGP     GB_errors_M_armMotor, GPbank_2        // and write again
-    STGP    GB_errors_M_armMotor, GPbank_2        // and store it
+    // STGP    GB_errors_M_armMotor, GPbank_2        // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2438,7 +2428,7 @@ pistonMotorTOerr:
     GGP     GB_errors_M_pistonMotor, GPbank_2           // load piston error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_pistonMotor, GPbank_2           // and write again
-    STGP    GB_errors_M_pistonMotor, GPbank_2           // and store it
+    // STGP    GB_errors_M_pistonMotor, GPbank_2           // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2504,6 +2494,7 @@ waitRotate:    //
     // RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 waitRotateRfs:    // 
 
@@ -2576,9 +2567,12 @@ HomeHeadRotateMotor:   // 58
     // RSUB
 
 homeHeadRotateMotorFast:   
+    RFS     STOP, M_headRotateMotor                         // Stops reference search
+    WAIT    TICKS, 0, 100
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
     SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
+    // RFS     START, M_headRotateMotor                                      // Start reference search
     RFS     START, M_headRotateMotor                                      // Start reference search
     CSUB    waitRotateRfs
     RSUB
@@ -2591,7 +2585,7 @@ headRotateMotorTOerr:
     GGP     GB_errors_M_headRotateMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                            // add the error bit
     AGP     GB_errors_M_headRotateMotor, GPbank_2        // and write again
-    STGP    GB_errors_M_headRotateMotor, GPbank_2        // and store it
+    // STGP    GB_errors_M_headRotateMotor, GPbank_2        // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2680,7 +2674,7 @@ disposeMotorTOerr:
     GGP     GB_errors_M_disposeMotor, GPbank_2         // load disposal error word
     CALC    OR, BitEr_TimeOut                          // add the error bit
     AGP     GB_errors_M_disposeMotor, GPbank_2         // and write again
-    STGP    GB_errors_M_disposeMotor, GPbank_2         // and store it
+    // STGP    GB_errors_M_disposeMotor, GPbank_2         // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2777,7 +2771,7 @@ capHolderMotorTOerr:
     GGP     GB_errors_M_capHolderMotor, GPbank_2        // load cap holder error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_capHolderMotor, GPbank_2        // and write again
-    STGP    GB_errors_M_capHolderMotor, GPbank_2        // and store it
+    // STGP    GB_errors_M_capHolderMotor, GPbank_2        // and store it
     SGP     GB_CurrentState, GPbank_2, STOPPED_TIME_OUT
     JA      ABORT_NoReport
 
@@ -2888,7 +2882,7 @@ errorVibrateParameter:
     GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
     CALC    OR, BitEr_vibrateParemeterError             // add the error bit
     AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
-    STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
+    // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
     CSUB    setStateSTOPPED_ON_ERROR
     JA      ABORT_NoReport
     
@@ -2981,7 +2975,7 @@ setStateSTOPPED_ON_ERROR_Yellow:
 setAnyError:
 
     SGP     GB_any_Error, GPbank_2, set                  // signal error: general
-    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    // STGP    GB_any_Error, GPbank_2                       // declare any error  
     CSUB    RED_ON
     RSUB
 
@@ -2990,7 +2984,7 @@ setAnyError:
 setAnyErrorYellow:
 
     SGP     GB_any_Error, GPbank_2, set                  // signal error: general
-    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    // STGP    GB_any_Error, GPbank_2                       // declare any error  
     CSUB    YELLOW_ON
     RSUB
 
@@ -2999,7 +2993,7 @@ setAnyErrorYellow:
 clrAnyError:
 
     SGP     GB_any_Error, GPbank_2, clr                  // signal error: general
-    STGP    GB_any_Error, GPbank_2                       // declare any error  
+    // STGP    GB_any_Error, GPbank_2                       // declare any error  
     CSUB    GREEN_ON
     RSUB
 
