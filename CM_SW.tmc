@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-01                              +
+//+ last edited : 2024-08-06                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -133,7 +133,8 @@ setTestParams:   //  98
     SGP    GB_microLtoWithdraw_1,GPbank_2,00000
     SGP    GB_microLtoWithdraw_2,GPbank_2,00000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,02000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,01000
+
     SGP    GB_microLtoWithdraw_5,GPbank_2,00000
     SGP    GB_microLtoWithdraw_6,GPbank_2,00000
 
@@ -815,10 +816,17 @@ preLoadCurrentParameters:
 
    // pushAir
     CSUB    push70air 
-    CSUB    startPullAir70
-    CSUB    waitPiston
-    CSUB    push70air 
+
+    CSUB    startPullAir70      // attempt to rid of air in syringe
+    CSUB    waitPiston          // attempt to rid of air in syringe
+    CSUB    push70air           // attempt to rid of air in syringe
+
     CSUB    drawVial
+
+    CSUB    startPullAir70      // attempt to rid of air in syringe
+    CSUB    waitPiston          // attempt to rid of air in syringe
+    CSUB    push70air           // attempt to rid of air in syringe
+
     CSUB    drawVialMoreBack
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
@@ -852,6 +860,9 @@ testLiquidPresence:
     // COMP    LIQUID_DETECTION_BORDER_AVAL
     CALCAV  COMP, GB_liquid_detection_border_aval       // CALCAV <operation>, <var> /// COMP – compare accumulator with <var>
     JC      GT, SyringeContent_Error                    // if A (Aval read from sensor) is greater than the defined border => then ERROR // higher values = light passes through syringe = liquid not blocking light = no liquid detected
+    // COMP    LIQUID_DETECTION_BORDER_AVAL
+    // JC      GT, SyringeContent_Error                    // higher values = light passes through syringe = liquid not blocking light = no liquid detected
+
     CALCV   LOAD, GB_liquidDetected, set                // detected = yes
     JA      Return_testLiquidPresence
     
@@ -1007,6 +1018,7 @@ Return_testSyringesVolume:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
+    CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe
@@ -1039,6 +1051,7 @@ dropVials:   // drop vials
 
   // SAP     AP_MaxPositioningSpeed, M_armMotor, ARM_DISPOSE_SPEED
    GGP     GB_ArmDropVials456Pos, GPbank_2
+
    MVPA    ABS, M_armMotor                           // move, wait later
 
    CSUB    waitDispose
@@ -1138,17 +1151,18 @@ checkBag:
 skipCheckBag:
     CALCV   OR, GB_vialsExist, Bit_bag
 doneCheckVials:
-    // GGP     GB_vialsExist, GPbank_2                  // check if any vial is in
-    // COMP    0                                        // is the Vial in?
-    // JC      NE, returnVerifyAllVial                  // if not, continue
- // // error - no vials
-    // GGP     GB_special_Error, GPbank_2               // load the error word
-    // CALC    OR, BitEr_No_vials                       // add the error bit
-    // AGP     GB_special_Error, GPbank_2               // and write again
-    // // STGP    GB_special_Error, GPbank_2               // and store it
-    // CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    GGP     GB_vialsExist, GPbank_2                  // check if any vial is in
+    COMP    0                                        // is the Vial in?
+    JC      NE, returnVerifyAllVial                  // if not, continue
+ // error - no vials
+    GGP     GB_special_Error, GPbank_2               // load the error word
+    CALC    OR, BitEr_No_vials                       // add the error bit
+    AGP     GB_special_Error, GPbank_2               // and write again
+    STGP    GB_special_Error, GPbank_2               // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
-// returnVerifyAllVial:
+returnVerifyAllVial:
+
     // GGP     GB_special_Error, GPbank_2               // load the error word
     // CALC    AND, (255 - BitEr_No_vials)              // remove the error bit
     // AGP     GB_special_Error, GPbank_2               // and write again
@@ -1773,7 +1787,8 @@ FIND_HOMES:
     CSUB    positionArmMotor
     CSUB    waitHomeDisposeMotor
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
-    // CSUB    HomeHeadRotateMotor
+    CSUB    HomeHeadRotateMotor
+
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    waitArmMotorRfs
@@ -1911,7 +1926,8 @@ checkDrawer:       // check if drawer closed, not full and door closed
     GGP     GB_special_Error, GPbank_2              // load Ver002 error word
     CALC    OR, BitEr_drawerIsOpen                  // add the error bit
     AGP     GB_special_Error, GPbank_2              // and write again
-    // STGP    GB_special_Error, GPbank_2           // and store it
+    STGP    GB_special_Error, GPbank_2           // and store it
+
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
 
 returnCheckDrawer:
@@ -2078,7 +2094,7 @@ LinearMotorManual:    //   func 138
     CALC    DIV, 1000                                   // now in mDeg
     MVPA    REL, M_linearMotor                          // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_linearMotor, WAIT_TICKS_6S           // wait till reaches location or 2 second
+    WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR       // wait till reaches location or 2 second
     JC      ETO, linearMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB    
@@ -2088,11 +2104,11 @@ LinearMotorManual:    //   func 138
 LinearMotorManualAbsolute:    //   FUNC_148
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
-    GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
-    MVPA    ABS, M_linearMotor                            // move, wait later
+    GGP     GB_GoToAbsoluteInSteps, GPbank_2             // load the movement [uMeter] into A
+    MVPA    ABS, M_linearMotor                           // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_linearMotor, WAIT_TICKS_6S        // wait till reaches location or 2 second
-    JC      ETO, linearMotorTOerr                     // timeout occured
+    WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR        // wait till reaches location or 2 second
+    JC      ETO, linearMotorTOerr                        // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB    
 
@@ -2429,7 +2445,7 @@ RotationManual:    //   func 144
     CALC    DIV, 1000                                   // now in mDeg
     MVPA    REL, M_headRotateMotor                        // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_headRotateMotor, WAIT_TICKS_6S    // wait till reaches location or 2 seconds
+    WAIT    POS, M_headRotateMotor, WAIT_TICKS    // wait till reaches location or 2 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2444,7 +2460,7 @@ RotationManualAbsolute:    //   FUNC_154
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [mDeg] into A
     MVPA    ABS, M_headRotateMotor                        // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
-    WAIT    POS, M_headRotateMotor, WAIT_TICKS_6S    // wait till reaches location or 2 seconds
+    WAIT    POS, M_headRotateMotor, WAIT_TICKS    // wait till reaches location or 2 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
@@ -2469,6 +2485,17 @@ waitRotate:    //
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+// waitRotateLong:    // 
+
+    // SGP     GB_MotorIsMoving, GPbank_2, set
+    // WAIT    POS, M_headRotateMotor, WAIT_TICKS_LONG     // wait till reaches location or 15 seconds
+    // JC      ETO, headRotateMotorTOerr                   // timeout occured
+    // SGP     GB_MotorIsMoving, GPbank_2, clr
+    // RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 waitRotateRfs:    // 
 
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -2476,6 +2503,36 @@ waitRotateRfs:    //
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// waitRotateRfsShort:    // 
+
+    // SGP     GB_MotorIsMoving, GPbank_2, set
+    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_2S   // wait end of reference search 15 seconds
+    // JC      ETO, headRotateMotorTOerr                  // timeout occured
+    // SGP     GB_MotorIsMoving, GPbank_2, clr
+    // RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// waitRotateRfsNeedle:    // 
+
+    // SGP     GB_MotorIsMoving, GPbank_2, set
+    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_4S       // wait end of reference search 4 seconds
+    // JC      ETO, headRotateMotorTOerr                   // timeout occured
+    // SGP     GB_MotorIsMoving, GPbank_2, clr
+    // RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// waitRotateRfsVeryShort:    // 
+
+    // SGP     GB_MotorIsMoving, GPbank_2, set
+    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_VERY_SHORT   // wait end of reference search 15 seconds
+    // JC      ETO, headRotateMotorTOerr                       // timeout occured
+    // SGP     GB_MotorIsMoving, GPbank_2, clr
+    // RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2486,7 +2543,7 @@ PositionHeadRotateMotorToTop:   // motor 4  func_64
     RSUB
 
 PositionHeadRotateMotorToLeft:   // motor 4  func_38
-    CSUB    HomeHeadRotateMotor
+    // CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointLeft, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
@@ -2974,7 +3031,7 @@ ejectSyringeFromTopVial: // FUNC_108
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
     RSUB
 
-// //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ejectSyringeFromBottomVial: // FUNC_110
     
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
@@ -2996,7 +3053,7 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
-    // CSUB    HomeHeadRotateMotor
+    CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToLeft
     CSUB    positionLinearMotor
     CSUB    recapSyringe

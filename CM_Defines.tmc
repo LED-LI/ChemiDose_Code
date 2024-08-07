@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-01                              +
+//+ last edited : 2024-08-06                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240801
+CURRENT_VERSION      =  20240806
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -38,10 +38,12 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 // In_7                   = 7 // U25 // will turn to be In_capHolderHome - was U10 - will be J25
 
 In_liquidPresence      = 0 // U10
+// In_thumbRestDistance   = 0 // U10
 In_pwrDrawer           = 1 // U38
 In_NeedleDetected      = 2 // U11
 In_slidingDoor         = 3 // U36
 In_thumbRestDistance   = 4 // U45
+// In_liquidPresence      = 4 // U45
 In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
 In_capHolderHome       = 7 // U25
@@ -118,7 +120,8 @@ BYPASS_N =    0 // when value is set (0) -> dont ignore sliding door sensor
 // prameters from Trinamic to PC:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-GB_currentVersion = 0 // Current SW version // moved to GB_222 // GB_0                         =   0
+GB_currentVersion = 0 // Current SW version // moved to GB_222
+// GB_0                         =   0
 
 GB_Syringe_Type              =   1
   DEFAULT_SYRINGE_TYPE  =  4
@@ -140,22 +143,29 @@ GB_bypassDrawerClosedYN         = 5 //  26 // GB_5                         =  5 
 GB_bypassCheckOverFlowYN        = 6 //  27 // GB_7                         =   7    
 
 GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
+// GB_2                         =  2        // = 100 = 1[s]
+// GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
+// GB_4                         =  4        //
+// GB_5                         =  5        //
 
 
+// GB_RobotSerialNumber         =   6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
 
+// GB_7                         =   7    
 // the following 2 global parameters will appear at motor 0 (vertical)
 // GB_verticalCapPos         =   8   // syringe loading
 // GB_BumpPosVert            =   9   // needle touches the vial 1 rubber at top ~ -8792
 
-GB_needleLength                 =  10    // 16, 25, 40 [mm]
-GB_needleGauge                  =  11    // 14, 16, 18, 21, 22, 23 [gauge]
-GB_cyclesTotal                  =  12    //
-// GB_setBumpBottom             =  13    // needle touches the vial 4 rubber at bottom 
-GB_min_vol_laserDist_AVAL       =  14    // GB_14 // analog value when piston is at empty syringe location
-GB_max_vol_laserDist_AVAL       =  15    // GB_15 // analog value when piston is at max syringe volume location (Currently set as 15000 uL)
-GB_piston_defined_vol_uL        =  16    // GB_16 // uL of max syringes volume - as set in GB_15
-GB_accepted_diviation_range     =  17    //
-GB_messuredAmountOfLiquid       =  18    //
+GB_needleLength             =  10    // 16, 25, 40 [mm]
+GB_needleGauge              =  11    // 14, 16, 18, 21, 22, 23 [gauge]
+GB_cyclesTotal              =  12    //
+// GB_setBumpBottom         =  13    // needle touches the vial 4 rubber at bottom 
+GB_min_vol_laserDist_AVAL   =  14    // GB_14 // analog value when piston is at empty syringe location
+GB_max_vol_laserDist_AVAL   =  15    // GB_15 // analog value when piston is at max syringe volume location (Currently set as 15000 uL)
+GB_piston_defined_vol_uL    =  16    // GB_16 // uL of max syringes volume - as set in GB_15
+GB_accepted_diviation_range =  17    //
+GB_messuredAmountOfLiquid   =  18    //
+// GB_current_diviation        =  19
 GB_liquid_detection_border_aval =  19
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -164,12 +174,15 @@ GB_liquid_detection_border_aval =  19
 
 GB_ShowOverride                 =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
 // GB_linearSpaceBetweenVialsuM =  21
-GB_disposeYN                    =  22    // 
-// GB_DisposeDropVialsPos       =  23    // 
+GB_disposeYN                 =  22    // 
+// GB_DisposeDropVialsPos    =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
 // // // // // // // // // // // GB_bypassSlidingDoorYN          =  25
 // // // // // // // // // // // GB_bypassDrawerClosedYN         =  26
 // // // // // // // // // // // GB_bypassCheckOverFlowYN        =  27
+// GB_25                        =  25
+// GB_26                        =  26
+// GB_27                        =  27
 GB_25                           =    25        
 GB_26                           =    26        
 GB_27                           =    27        
@@ -567,8 +580,8 @@ GB_84                            = 84
    SEARCH_SPEED_DISPOSE           =   100 ///
    SWITCH_SPEED_DISPOSE           =    20 /// // 100  //// L.E.D //// the returning of the disposing tabs 
    MAX_CURRENT_DISPOSE            =   128 ///
-   
-GB_DisposeDropVialsPos           = 23
+
+GB_DisposeDropVialsPos            = 23
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_6 = M_capHolderMotor
@@ -665,27 +678,26 @@ GB_vibrationTime_56_tmp         = 129
 
 
 // microLtoFill values
-GB_microLtoFill_current         = 130
-
-GB_131                          = 131
-GB_132                          = 132
-GB_133                          = 133
-
-GB_microLtoFill_4               = 134
-GB_microLtoFill_5               = 135
-GB_microLtoFill_6               = 136
+GB_microLtoFill_current     =  130
+GB_131                      =  131 //// L.E.D //// for possible future use
+GB_132                      =  132 //// L.E.D //// for possible future use
+GB_133                      =  133 //// L.E.D //// for possible future use
+GB_microLtoFill_4           =  134
+GB_microLtoFill_5           =  135
+GB_microLtoFill_6           =  136
 
 GB_137                          = 137
 GB_138                          = 138
 GB_139                          = 139
 
-GB_FillingIsNeeded              = 140
+
+GB_FillingIsNeeded           = 140
 GB_141                          = 141
 GB_142                          = 142
 GB_143                          = 143
-GB_Filling4IsNeeded             = 144
-GB_Filling5IsNeeded             = 145
-GB_Filling6IsNeeded             = 146
+GB_Filling4IsNeeded          = 144
+GB_Filling5IsNeeded          = 145
+GB_Filling6IsNeeded          = 146
 
 GB_147                          = 147
 GB_148                          = 148
@@ -701,13 +713,13 @@ GB_157                          = 157
 GB_158                          = 158
 GB_159                          = 159
 
-GB_160                          = 160
-
 // current syringe
-GB_microL_per_100mm_current     = 161
+GB_160  = 160
+GB_microL_per_100mm_current  = 161
 
-GB_162                          = 162
-GB_163                          = 163
+GB_162  = 162
+
+GB_readyToFill               = 163
 GB_164                          = 164
 GB_165                          = 165
 GB_166                          = 166
@@ -730,41 +742,31 @@ GB_181                          = 181
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 GB_GoToAbsoluteInSteps          = 182
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-GB_numberOfKicks                = 183    //  10
-GB_rotateBubblesUM              = 184    // 750 = 0.75mm
-GB_pistonBubblesPullMicroL      = 185    // 300 * microL = 0.3ml
-GB_pistonBubblesPushMicroL      = 186    // 150 * microL = 0.3ml
-GB_dispenseCycleTime01s         = 187 
-GB_dispenseCycleTimeMS          = 188 
-
+GB_numberOfKicks                 =  183    //  10
+GB_rotateBubblesUM               =  184    // 750 = 0.75mm
+GB_pistonBubblesPullMicroL       =  185    // 300 * microL = 0.3ml
+GB_pistonBubblesPushMicroL       =  186    // 150 * microL = 0.3ml
+GB_dispenseCycleTime01s          =  187 
+GB_dispenseCycleTimeMS           =  188 
 GB_189                          = 189 
 
-GB_PigWasReplaced               = 190    //
-GB_inHomeCapHolderMotor         = 191    // signals when to check 3 times for syringe poped out
-GB_MulCenterOfVial              = 192    // for running average calculations
-GB_adjustmentsTotal             = 193
-
+GB_PigWasReplaced                =  190    //
+GB_inHomeCapHolderMotor          =  191    // signals when to check 3 times for syringe poped out
+GB_MulCenterOfVial               =  192    // for running average calculations
+GB_adjustmentsTotal              =  193
 GB_194                          = 194
+GB_TouchedLeftRef                =  195
+GB_dipperInterruptHight          =  196
 
-GB_TouchedLeftRef               = 195
-GB_dipperInterruptHight         = 196
+GB_microLinVial_1                =  197
+GB_microLinVial_2                =  198
+GB_microLinVial_3                =  199
+GB_microLinVial_4                =  200
+GB_microLinVial_5                =  201
+GB_microLinVial_6                =  202
+GB_microLinVial_current          =  203
+GB_current_Vial                  =  204
 
-GB_197                          = 197
-GB_198                          = 198
-GB_199                          = 199
-GB_200                          = 200
-GB_201                          = 201
-GB_203                          = 203
-GB_202                          = 202
-
-GB_current_Vial                 = 204
-
-GB_205                          = 205
-GB_206                          = 206
-GB_207                          = 207
-GB_208                          = 208
-GB_209                          = 209
-GB_210                          = 210
 
 // the following definitions will be loaded on the bit definitions GB
 // when checkin vial existance, these definitions will be used as AND on the GB_vialsExist parameter
@@ -791,7 +793,8 @@ GB_220                          = 220
 GB_221                          = 221
 GB_222                          = 222
 
-// GB_currentVersion               = 222    // Current SW version
+// GB_currentVersion            =   222    // Current SW version
+GB_223                          = 223
 
 GB_223                          = 223
 
@@ -805,19 +808,15 @@ GB_HomingDone                   = 228    //
 //  prameters from PC to Trinamic:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-GB_UnitsToMoveManual             =   229    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
-GB_TempNumHolder                 =   230
-GB_airToPullBefore               =   231    // 20 in Percentage. Should be reduced when vial is full
-
-GB_232                           =   232
-GB_233                           =   233
-GB_234                           =   234
-
-GB_motorNumForHome               =   235    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder
-
-GB_236                           =   236    // 
-
-GB_microLbagToFill               =   237    // microL to withdraw in BAG
+GB_UnitsToMoveManual         =  229    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
+GB_TempNumHolder             =  230
+GB_airToPullBefore           =  231    // 20 in Percentage. Should be reduced when vial is full
+GB_232                       =  232
+GB_233                       =  233
+GB_234                       =  234
+GB_motorNumForHome           =  235    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder
+GB_236                       =  236    // 
+GB_microLbagToFill           =  237    // microL to withdraw in BAG
 
 GB_238                           =   238
 GB_239                           =   239
@@ -834,6 +833,11 @@ GB_249                           =   249
 
 GB_250                           =   250
 GB_251                           =   251
+// GB_skipCheckVial456                     =   250
+// GB_skipCheckBag                         =   251
+GB_foundCenterOfNeedle                  =   252 // not needed
+GB_DrawFromVialWaitTime                 =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
+GB_vialsToDrawFromCounter               =   254    // temporary variable  //// L.E.D ////
 
 GB_foundCenterOfNeedle           =   252 // not needed
 GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
