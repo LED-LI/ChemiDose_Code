@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-06                              +
+//+ last edited : 2024-08-08                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -416,25 +416,7 @@ lower_arm:
 fillVials:
 
     CSUB    loadCurrentParametersFill   // for GB_current_Vial
-    // ------------------------------------------------------------
-    // check if need vial 4
-//// L.E.D ////    GGP    GB_current_Vial, GPbank_2       // get current vial #
-//// L.E.D ////    COMP   5                               // more than 5, i.e. vial 5 or 6?
-//// L.E.D ////    JC     GE, check_56_vibration          // yes
-
-    // check_4_vibration:                  // no, check vibration time for vial 4
-//// L.E.D ////    GGP    GB_vibrationTime_4, GPbank_2
-//// L.E.D ////    COMP   0
-//// L.E.D ////    JC     EQ, ReturnFillVials          // if viration time = 0, do not vibrate or fill 4
-//// L.E.D ////    JA     checkFillMicros
-
-//// L.E.D ////check_56_vibration:    
-//// L.E.D ////    GGP    GB_vibrationTime_56, GPbank_2   // no, check vibration time for vial 56
-//// L.E.D ////    COMP   0
-//// L.E.D ////    JC     EQ, ReturnFillVials          // if viration time = 0, do not vibrate or fill 56
-
 // ------------------------------------------------------------
-//// L.E.D ////checkFillMicros:
 
     GGP     GB_microLtoFill_current, GPbank_2        // load fill amount
     COMP    0                                        // need to fill this vial
@@ -444,7 +426,7 @@ fillVials:
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH             // Set standby arm motor current to HIGH
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE // _HIGH //   // Set standby here to rotate current normal //// L.E.D //// do i want -> STBY_CUR_ROTATE_HIGH ??? STBY_CUR_ROTATE_HIGH   // Set standby here to rotate current high //// L.E.D ////
     CSUB    getWaterFromBag
-    CSUB    moveAboveVial               //   CSUB    moveAboveVialFromCenter    //  //// L.E.D ////    
+    CSUB    moveAboveVial
     GGP     GB_any_Error, GPbank_2      // get any error status
     COMP    ANY_ERROR_EXISTS            // exists?
     JC      EQ, ReturnFillVials         // yes, return
@@ -456,32 +438,21 @@ fillVials:
    // exit vial from below
     CSUB    exitFromVialBelow
     
-    GGP     GB_linearCenterOfVial4AtBottom, GPbank_2
-    // CALC    SUB, LINEAR_VIALS_SPACE
-    CALCAV  SUB, GB_linearSpaceBetweenVialsuS
-    // MVPA    ABS, M_linearMotor      
-    // CSUB    waitLinearMotor
+    GGP     GB_linearCenterOfVial1, GPbank_2
     CSUB    moveLinear
 
-    // CSUB    HomeHeadRotateMotor
-    GGP     GB_HeadRotatePointLeft, GPbank_2            // start moving to point left with the syringe
-    MVPA    ABS, M_headRotateMotor                      // move, wait later
+    GGP     GB_HeadRotatePointLeft, GPbank_2    // start moving to point left with the syringe
+    MVPA    ABS, M_headRotateMotor              // move, wait later
 
-    GGP     GB_verticalCapPos, GPbank_2                 // moved to after linear
-    MVPA    ABS, M_verticalMotor                        // move, wait later
+    GGP     GB_verticalCapPos, GPbank_2     // moved to after linear
+    MVPA    ABS, M_verticalMotor            // move, wait later
 
-    CSUB    emptySyringeFast
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // emptySyringeFast
+    GGP     GB_PistonHomePos, GPbank_2                                      // emptySyringe
+    MVPA    ABS, M_pistonMotor                                              // move, wait later
 
-    // CSUB    FINDHOMELinearMotor
-    GGP     GB_linearCenterOfVial1, GPbank_2
-    MVPA    ABS, M_linearMotor                          // move, wait later
-
-    // CSUB    homeVerticalMotor
-    GGP     GB_verticalCapPos, GPbank_2
-    MVPA    ABS, M_verticalMotor                        // move, wait later
-
-
-    CSUB    waitRotate                  //// L.E.D ////
+    CSUB    waitPiston
+    CSUB    waitRotate
     CSUB    waitLinearMotor
     CSUB    waitVertical
 
@@ -492,18 +463,15 @@ ReturnFillVials:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 exitFromVialBelow:
 
-    // CSUB    waitPistonDraw
     CSUB    calcTopVertNeedleDown
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
     MVPA    ABS, M_verticalMotor                         // move now, wait later
     CSUB    bumpPlunger
     CSUB    pull1ml                                     // get rid of the last drop
-    // CSUB    push1ml
     CSUB    waitVertical
-    // CSUB    emptySyringeFast
 
-    WAIT    TICKS, 0, WAIT_TICKS_200ms // let needle release bump rubber after exiting
-    CSUB    moveAboveVialFromBelow
+    GGP     GB_linearCenterOfVial4AtBottom, GPBank_2     // copy into A (GB_50)
+    CSUB    moveLinear
 
     RSUB
 
@@ -524,35 +492,11 @@ calcTopVertNeedleDown:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-emptySyringe:      // empty syringe //// L.E.D ////
-
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed
-    // CSUB    homePistonMotor // not recomended to use during a RUN after physical modification of pistons "home" flag
-    CSUB    positionPistonMotor
-    WAIT    TICKS, 0, WAIT_TICKS_200ms                                          // wait 200ms after emptying syringe - to allow pressure to balance
-
-    RSUB
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-emptySyringeFast:      // empty syringe FAST //// L.E.D ////
-
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST       // Set maximum positioning speed
-    CSUB    emptySyringe
-
-    RSUB
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
 
     GAP     AP_ActualPosition, M_verticalMotor          // get current position of piston
     COMP    SYRINGE_IN_BAG_ABS                          // testing if syring is where it needs to be in order to empty the syringe
     JC      EQ, resumeEmptySyringeToBag                 // close enough
-//syringeNotInBag:
-    // // idea for trying a second time incase of an error
-    // CSUB    vertical home 
-    // CSUB goIntoBag
-    // CSUB emptySyringeToBag
-    // // need to add a counter - to avoid endless loop 
     GGP     GB_errors_syringe_bag, GPbank_2                  // load Ver002 error word
     CALC    OR, BitEr_SyringeNotInBag                   // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
@@ -562,17 +506,9 @@ emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
     JA      ABORT_NoReport
 resumeEmptySyringeToBag:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed //// L.E.D //// _MED ??? MAYB
-    CSUB    emptySyringe
-    WAIT    TICKS, 0, WAIT_TICKS_200ms
+    CSUB    positionPistonMotor // empty Syringe
+    // WAIT    TICKS, 0, WAIT_TICKS_200ms
 
- // // // // // // // // // // // //// L.E.D ////
-    // // // // // // // // // // // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed
-    // // // // // // // // // // // GGP     GB_PistonHomePos, GPbank_2                                           // load to A
-    // // // // // // // // // // // MVPA    ABS, M_pistonMotor                                                   // inject into the vial
-    // // // // // // // // // // // CSUB    waitPistonDraw                                                       // this func can work for inction as well
-    // // // // // // // // // // // CSUB    homePistonMotor
- // // // // // // // // // // // //// L.E.D ////
- 
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -842,7 +778,7 @@ preLoadCurrentParameters:
     
     CSUB    emptySyringeToBag
    
-    CSUB    rePositionToStart          // CSUB    rePositionToStartFromTop //  //// L.E.D ////
+    CSUB    getOutOfBag
 
 ReturnDrawFromVial:
     RSUB
@@ -1383,6 +1319,9 @@ deCap:    // GB_74
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
     CSUB    checkSyrPoppedOut                         // verify that the syringe did not pop out
+    CSUB    homeVerticalMotor
+    CSUB    HomeHeadRotateMotor
+
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1419,20 +1358,15 @@ push1ml:  //  push 1ml  //// L.E.D ////
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveBelowVial:   // go under current vial
 
-    // // // // // // CSUB    positionVerticalMotor
-    // // // // // CSUB    homeVerticalMotor
-
-   // // // // // // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER //// L.E.D //// change speed for the optimization
-    CALCAV  LOAD, GB_BumpPosVert
-    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
-    MVPA    ABS, M_verticalMotor                         // move, wait later
-//    CSUB    moveVertical                               // move head up to sensor, wait later
-
-    CSUB PositionHeadRotateMotorToTop    
-
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     MVPA    ABS, M_linearMotor                            // move, wait later
-//    CSUB    moveLinear
+
+    // CSUB    HomeHeadRotateMotor
+    CSUB    PositionHeadRotateMotorToTop    
+
+    CALCAV  LOAD, GB_BumpPosVert
+    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
+    CSUB    moveVertical                               // move head up to sensor, wait later
 
     CSUB    waitLinearMotor
     CSUB    waitRotate
@@ -1443,38 +1377,25 @@ moveBelowVial:   // go under current vial
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 getWaterFromBag:  // go below Bag to fill syringe
 
-    CSUB PositionHeadRotateMotorToTop
+    CSUB    HomeHeadRotateMotor
+    CSUB    PositionHeadRotateMotorToTop
     
     CSUB    goIntoBag
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed to MED
     CSUB    emptySyringeToBag
     CSUB    drawFromBag
-    CSUB    rePositionAfterDrawFromBag
+    CSUB    getOutOfBag
 
-    RSUB
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-moveAboveVialFromCenter:
-
-    CSUB    PositionHeadRotateMotorToBottom
-
-    CSUB    calcTopVertNeedleDown
-    GGP     GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
-    CSUB    moveVertical
-
-    GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
-    CSUB    moveLinear
-    
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveAboveVial:
     
+    CSUB    PositionHeadRotateMotorToLeft
+
     CSUB    calcTopVertNeedleDown
-    GGP      GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
+    GGP     GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
     MVPA    ABS, M_verticalMotor                         // move, wait later
-
-
 
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     MVPA    ABS, M_linearMotor                            // move, wait later
@@ -1483,21 +1404,6 @@ moveAboveVial:
     
     CSUB    waitVertical
     CSUB    waitLinearMotor
-    RSUB
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-moveAboveVialFromBelow:
-
-    CSUB    calcTopVertNeedleDown
-    GGP     GB_Calced_Top_Vert_Needle_Down_Allowed, GPbank_2
-    CSUB    moveVertical
-
-    GGP     GB_linearCenterOfVial4AtBottom, GPBank_2     // copy into A (GB_50)
-    CSUB    moveLinear
-
-// turn down
-    // CSUB    PositionHeadRotateMotorToBottom
-
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1517,7 +1423,7 @@ push70air:
 
 findCenterOfNeedleSensor:
 
-    CSUB PositionHeadRotateMotorToTop
+    // CSUB    PositionHeadRotateMotorToTop
     GGP     GB_linearCenterOfVial1, GPbank_2           // load Vial1 position
     CALC    ADD, LINEAR_VIAL1_TO_BAG_RFS               // start of needle RFS posotion
     CSUB    moveLinear
@@ -1715,38 +1621,17 @@ drawFromBag:
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-rePositionToStart: // rePositionToStartFromTop:  // rePositionToStartFromTop:   // exit bag after injecting into it 
+getOutOfBag: //  exit bag - reposition in the middle of the machine
 
-    // CSUB    startHomePistonMotor // i hate this func name
-    // CSUB    waitPistonRfs
-    CSUB    positionPistonMotor
   // move down, out of the bag
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
-    CSUB    positionVerticalMotor                   // get it out of Linear and cap
-    
-  // move linear to position
-    CSUB    FINDHOMELinearMotor                         // Linear and Cap holders first to clear the way for vertical
+    CSUB    positionVerticalMotor // includes home to vertical inside
+    CSUB    FINDHOMELinearMotor
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
+    CSUB    HomeHeadRotateMotor
+    CSUB    PositionHeadRotateMotorToLeft
 
-    RSUB
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-rePositionAfterDrawFromBag:   //
-
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // MAX_POS_SPEED_VER // Set maximum positioning speed
-  // move down, out of the bag
-    CALCAV  LOAD, GB_BumpPosVert
-    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
-    MVPA    ABS, M_verticalMotor                                            // move to location
-    
-    CSUB    waitVertical
-  // move linear to rotation position
-    CALCAV  LOAD, GB_linearCenterOfVial1
-    CSUB    moveLinear
-    
-    
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2423,7 +2308,6 @@ startHomePistonMotor:  // 124
     RSUB
 
 positionPistonMotor:       // func 106                                                 // wait home sensor and position
-    // CSUB      waitPistonRfs
     GGP     GB_PistonHomePos, GPbank_2                                    // go to required height
     CSUB    movePiston_ABS                                                    // move, wait and error if delay
     RSUB
@@ -2545,19 +2429,16 @@ waitRotateRfs:    //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 PositionHeadRotateMotorToTop:   // motor 4  func_64
-    CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointUp, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateMotorToLeft:   // motor 4  func_38
-    // CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointLeft, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
 
 PositionHeadRotateMotorToBottom:   // motor 4 func_70
-    CSUB    HomeHeadRotateMotor
     GGP     GB_HeadRotatePointDown, GPbank_2                                // go to required height
     CSUB    moveRotate                                                    // move, wait and error if delay
     RSUB
@@ -2580,7 +2461,6 @@ homeHeadRotateMotorFast:
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
     SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
-    // RFS     START, M_headRotateMotor                                      // Start reference search
     RFS     START, M_headRotateMotor                                      // Start reference search
     CSUB    waitRotateRfs
     RSUB

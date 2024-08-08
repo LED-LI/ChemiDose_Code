@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-06                              +
+//+ last edited : 2024-08-08                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240806
+CURRENT_VERSION      =  20240808
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -105,8 +105,13 @@ OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
 
-BYPASS_Y =    1 // when value is set (1) -> ignore sensor
-BYPASS_N =    0 // when value is set (0) -> dont ignore sensor
+// default values to set an out of the box machine
+
+DEFAULT_MAX_VOL_OF_SYRINGE = 15000
+DEFAULT_ACCEPTED_DIVIATION_RANGE = 5
+DEFAULT_LIQUID_DETECTION_BORDER_AVAL = 300
+DEFAULT_LINEARSPACEBETWEENVIALSUM = 50000
+// DEFAULT_ = 
 
 //CM
 
@@ -134,9 +139,14 @@ GB_Syringe_Type              =   1
 
 GB_skipCheckVial456                     =  2
 GB_skipCheckBag                         =  3
+    SKIPCHECK_Y = 1
+    SKIPCHECK_N = 0
+    
 GB_bypassSlidingDoorYN                  =  4 
 GB_bypassDrawerClosedAndCheckOverFlowYN =  5 
 GB_bypassBannerSensorsYN                =  6 
+    BYPASS_Y =    1 // when value is set (1) -> ignore sensor
+    BYPASS_N =    0 // when value is set (0) -> dont ignore sensor
 
 GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
 
@@ -162,8 +172,13 @@ GB_liquid_detection_border_aval =  19
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 GB_ShowOverride                 =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
+    SHOW_OVERRIDE = 1
+    NORMAL_RUN = 0
 // GB_linearSpaceBetweenVialsuM =  21
 GB_disposeYN                 =  22    // 
+    DISPOSE_Y = 1
+    DISPOSE_N = 0
+
 // GB_DisposeDropVialsPos    =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
 
