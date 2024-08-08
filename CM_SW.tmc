@@ -515,8 +515,11 @@ calcTopVertNeedleDown:
    // CALC    DIV, 40     // to vertical microSteps
    // CALC    ADD, TOP_VERTICAL_NEEDLE_DOWN_EMPTY  // to vertical microSteps
    // CALCVA  LOAD, GB_Calced_Top_Vert_Needle_Down_Allowed
-    
+
+    // CALCAV  LOAD, GB_BumpPosVert
     CALC    LOAD, TOP_VERTICAL_NEEDLE_DOWN_FULL
+    CALCVA  LOAD, GB_Calced_Top_Vert_Needle_Down_Allowed
+    
     
     RSUB
 
@@ -576,8 +579,8 @@ resumeEmptySyringeToBag:
     emptySyringeToFillVial:      // empty syringe into the vial //// L.E.D ////
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST   // Set maximum positioning speed //  //// L.E.D ////     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed
-    CSUB    pullPush5mL
     CSUB    positionPistonMotor
+    CSUB    pullPush5mL
 
 returnemptySyringeToFillVial:
     RSUB
@@ -1711,8 +1714,8 @@ drawFromBag:
 
 rePositionToStart: // rePositionToStartFromTop:  // rePositionToStartFromTop:   // exit bag after injecting into it 
 
-    CSUB    startHomePistonMotor // i hate this func name
-    CSUB    waitPistonRfs
+    // CSUB    startHomePistonMotor // i hate this func name
+    // CSUB    waitPistonRfs
     CSUB    positionPistonMotor
   // move down, out of the bag
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
@@ -1868,6 +1871,7 @@ checkNoSyringe:
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      ABORT
 
 returnCheckNoSyringe:
     RSUB
@@ -2406,10 +2410,11 @@ waitPistonRfs:    //
 homePistonMotor:     // motor 3   104 // not recomended to use during a RUN after physical modification of pistons "home" flag
     CSUB    startHomePistonMotor
     CSUB    waitPistonRfs
-    CSUB    positionPistonMotor
+    // CSUB    positionPistonMotor
     RSUB
 
 startHomePistonMotor:  // 124
+    CSUB    checkNoSyringe                 // stops if syringe is inserted (RFS goes beyond the 0ml of the syringe)
     SAP     AP_RefSearchMode,  M_pistonMotor, APV_RefLeftSwitch  
     RFS     START, M_pistonMotor                                          // Start reference search
     RSUB

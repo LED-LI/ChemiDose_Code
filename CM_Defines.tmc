@@ -105,12 +105,8 @@ OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
 
-    // // // // // // // // // // // // // // // // // // // // GB_bypassSlidingDoorYN   =  25
-    // // // // // // // // // // // // // // // // // // // // GB_bypassDrawerClosedYN  =  26
-    // // // // // // // // // // // // // // // // // // // // GB_bypassCheckOverFlowYN =  27
-
-BYPASS_Y =    1 // when value is set (1) -> ignore sliding door sensor
-BYPASS_N =    0 // when value is set (0) -> dont ignore sliding door sensor
+BYPASS_Y =    1 // when value is set (1) -> ignore sensor
+BYPASS_N =    0 // when value is set (0) -> dont ignore sensor
 
 //CM
 
@@ -136,23 +132,16 @@ GB_Syringe_Type              =   1
   // Syringe_9             =  9
   // Syringe_10            = 10
 
-GB_skipCheckVial456              =  2 // 250 // GB_2                         =  2        //
-GB_skipCheckBag                  =  3 // 251 // GB_3                         =  3        //
-GB_bypassSlidingDoorYN          = 4 //  25 // GB_4                         =  4        //
-GB_bypassDrawerClosedYN         = 5 //  26 // GB_5                         =  5        //
-GB_bypassCheckOverFlowYN        = 6 //  27 // GB_7                         =   7    
+GB_skipCheckVial456          =  2
+GB_skipCheckBag              =  3
+GB_bypassSlidingDoorYN       =  4 
+GB_bypassDrawerClosedYN      =  5 
+GB_bypassCheckOverFlowYN     =  6 
 
 GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
-// GB_2                         =  2        // = 100 = 1[s]
-// GB_3                         =  3        //  GB_InitDone = 3  // INIT_MOTORS (func 0) done. starts automaticaly
-// GB_4                         =  4        //
-// GB_5                         =  5        //
 
-
-// GB_RobotSerialNumber         =   6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
-
-// GB_7                         =   7    
 // the following 2 global parameters will appear at motor 0 (vertical)
+
 // GB_verticalCapPos         =   8   // syringe loading
 // GB_BumpPosVert            =   9   // needle touches the vial 1 rubber at top ~ -8792
 
@@ -177,12 +166,7 @@ GB_ShowOverride                 =  20    // 1 = will not dispose vials and also 
 GB_disposeYN                 =  22    // 
 // GB_DisposeDropVialsPos    =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
-// // // // // // // // // // // GB_bypassSlidingDoorYN          =  25
-// // // // // // // // // // // GB_bypassDrawerClosedYN         =  26
-// // // // // // // // // // // GB_bypassCheckOverFlowYN        =  27
-// GB_25                        =  25
-// GB_26                        =  26
-// GB_27                        =  27
+
 GB_25                           =    25        
 GB_26                           =    26        
 GB_27                           =    27        
@@ -794,7 +778,6 @@ GB_221                          = 221
 GB_222                          = 222
 
 // GB_currentVersion            =   222    // Current SW version
-GB_223                          = 223
 
 GB_223                          = 223
 
@@ -833,11 +816,9 @@ GB_249                           =   249
 
 GB_250                           =   250
 GB_251                           =   251
+
 // GB_skipCheckVial456                     =   250
 // GB_skipCheckBag                         =   251
-GB_foundCenterOfNeedle                  =   252 // not needed
-GB_DrawFromVialWaitTime                 =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
-GB_vialsToDrawFromCounter               =   254    // temporary variable  //// L.E.D ////
 
 GB_foundCenterOfNeedle           =   252 // not needed
 GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
