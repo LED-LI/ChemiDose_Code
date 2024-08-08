@@ -882,6 +882,9 @@ Return_testLiquidPresence:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 checkSyringeContent: // func_166
     
+    CALCV   COMP, GB_bypassBannerSensorsYN, BYPASS_Y
+    JC      EQ, return_checkSyringeContent
+    
 // first test for liquid presence and only after check if volume is correct
     CSUB    testLiquidPresence
     // if reached here -> liquid detected correctly
@@ -1921,7 +1924,7 @@ returnSyrPoppedOut:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 checkDrawer:       // check if drawer closed, not full and door closed
 
-    CALCV   COMP, GB_bypassDrawerClosedYN, BYPASS_Y // GB_bypassDrawerClosedYN = GB_26
+    CALCV   COMP, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_Y // GB_bypassDrawerClosedAndCheckOverFlowYN = GB_26
     JC      EQ, returnCheckDrawer
     GIO     In_drawerClose, InBankDigital_0         // read drawer sensor
     COMP    DRAWER_IS_CLOSED                        // is the drawer closed?
@@ -1940,7 +1943,7 @@ returnCheckDrawer:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 checkOverFlow:       // check if empty vials overflow drawer
 
-    CALCV   COMP, GB_bypassCheckOverFlowYN, BYPASS_Y // GB_bypassCheckOverFlowYN = GB_27
+    CALCV   COMP, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_Y // GB_bypassDrawerClosedAndCheckOverFlowYN = GB_27
     JC      EQ, returnCheckOverFlow
     GIO     In_drawerOverflow, InBankDigital_0   // check if Vial is in
     COMP    OVERFLOW

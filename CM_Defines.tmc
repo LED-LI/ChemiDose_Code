@@ -132,11 +132,11 @@ GB_Syringe_Type              =   1
   // Syringe_9             =  9
   // Syringe_10            = 10
 
-GB_skipCheckVial456          =  2
-GB_skipCheckBag              =  3
-GB_bypassSlidingDoorYN       =  4 
-GB_bypassDrawerClosedYN      =  5 
-GB_bypassCheckOverFlowYN     =  6 
+GB_skipCheckVial456                     =  2
+GB_skipCheckBag                         =  3
+GB_bypassSlidingDoorYN                  =  4 
+GB_bypassDrawerClosedAndCheckOverFlowYN =  5 
+GB_bypassBannerSensorsYN                =  6 
 
 GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
 
