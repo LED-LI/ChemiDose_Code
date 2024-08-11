@@ -904,7 +904,7 @@ func_52:   CSUB HomeDisposeMotor
            JA     backGroundProcess
 func_54:   CSUB incrementCycles
            JA     backGroundProcess
-func_56:   CSUB positionLinearMotor
+func_56:   CSUB positionLinearMotorToSyringeLoading
            JA     backGroundProcess
 func_58:   CSUB homeHeadRotateMotor
            JA     backGroundProcess

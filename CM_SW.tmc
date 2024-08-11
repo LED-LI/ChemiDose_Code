@@ -130,24 +130,24 @@ setTestParams:   //  98
 
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
-    SGP    GB_microLtoWithdraw_1,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_2,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_3,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_4,GPbank_2,01000
+    SGP    GB_microLtoWithdraw_1,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_2,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_3,GPbank_2,03000
 
-    SGP    GB_microLtoWithdraw_5,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_6,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_4,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_5,GPbank_2,03000
+    SGP    GB_microLtoWithdraw_6,GPbank_2,03000
 
-    SGP    GB_microLtoFill_4,GPbank_2,    00000
-    SGP    GB_microLtoFill_5,GPbank_2,    00000
-    SGP    GB_microLtoFill_6,GPbank_2,    00000
+    SGP    GB_microLtoFill_4,GPbank_2,    03000
+    SGP    GB_microLtoFill_5,GPbank_2,    03000
+    SGP    GB_microLtoFill_6,GPbank_2,    03000
 
 // set - to skip cheking in vials 456 / bag is in place and continue AS IF THEY ARE in place
-    // SGP     GB_skipCheckVial456,GPbank_2, set             //// GB_250
-    // SGP     GB_skipCheckBag,GPbank_2, set                ////  GB_251
+    // SGP     GB_skipCheckVial456,GPbank_2, set             //// GB_2
+    // SGP     GB_skipCheckBag,GPbank_2, set                ////  GB_3
 
-    SGP    GB_vibrationTime_4, GPbank_2, 00               //// L.E.D
-    SGP    GB_vibrationTime_56,GPbank_2, 00              ////  L.E.D
+    SGP    GB_vibrationTime_4, GPbank_2, 10               //// L.E.D
+    SGP    GB_vibrationTime_56,GPbank_2, 15              ////  L.E.D
     SGP    GB_vibrationHz,GPbank_2, 25                  ////   L.E.D
     SGP    GB_vibrationDutyCyclePercent, GPbank_2, 40  ////    L.E.D
 
@@ -539,29 +539,6 @@ returnemptySyringeToFillVial:
 
     // RSUB
 
-// // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-pullPush10mL:
-    CSUB    pull10mL
-    CSUB    push10mL
-    RSUB
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-pull10mL:
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
-    CALC    LOAD,  10000                                                // open syringe by 10 mL
-    CSUB    movePiston_REL_uL
-    CSUB    waitPiston
-    // CSUB    waitPistonDraw
-    RSUB
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-push10mL:
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED  // Set maximum positioning speed to MED
-    CALC    LOAD, -10000                                            // close syringe by 10 mL
-    CSUB    movePiston_REL_uL
-    CSUB    waitPiston
-    // CSUB    waitPistonDraw
-    RSUB
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pullPush5mL:
     CSUB    pull5mL
@@ -766,6 +743,8 @@ preLoadCurrentParameters:
     CSUB    waitPiston          // attempt to rid of air in syringe
     CSUB    push70air           // attempt to rid of air in syringe
 
+    CSUB    waitAfterVialDraw
+    
     CSUB    drawVialMoreBack
     CSUB    moveSlowlyBottom
     CSUB    bumpPlunger
@@ -960,9 +939,9 @@ Return_testSyringesVolume:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     AfterAllVialsDone:  //  vial #: GB_current_Vial 
 
-    CSUB    HomeHeadRotateMotor
-    CSUB    PositionHeadRotateMotorToLeft
-    CSUB    positionLinearMotor
+    // CSUB    HomeHeadRotateMotor
+    // CSUB    PositionHeadRotateMotorToLeft
+    // CSUB    positionLinearMotorToSyringeLoading
     CSUB    recapSyringe
 
  // overide dropVials if in a show
@@ -1358,6 +1337,8 @@ push1ml:  //  push 1ml  //// L.E.D ////
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveBelowVial:   // go under current vial
 
+    CSUB    FINDHOMELinearMotor
+
     GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
     MVPA    ABS, M_linearMotor                            // move, wait later
 
@@ -1604,16 +1585,17 @@ drawFromBag:
 
     SGP     GB_MotorIsMoving, GPbank_2, set
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
-    CALCAV  MUL, GB_microLtoFill_current            // A = A* [uSteps*100]
+    CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     CALC    DIV, 100                                    // now in uSteps
-    MVPA    REL, M_pistonMotor                         // move, wait later // draw required volume
+    MVPA    REL, M_pistonMotor                          // move, wait later // draw required volume
     CSUB    waitPistonDraw
     // CSUB    waitAfterDraw 
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
-    CALCAV  MUL, GB_microLtoFill_current            // A = A* [uSteps*100]
+    CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     CALC    DIV, 100                                    // now in uSteps
-    MVPA    ABS, M_pistonMotor                         // remove excess content
+    MVPA    ABS, M_pistonMotor                          // remove excess content
     CSUB    waitPistonDraw
+    CSUB    waitDrawFromBag                             // wait period of 2sec after drawing to allow pressure to balance
     SGP     GB_MotorIsMoving, GPbank_2, clr
 
     //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed   /// maybe change every end of func to run a func to reset all axiss parameters
@@ -1629,8 +1611,8 @@ getOutOfBag: //  exit bag - reposition in the middle of the machine
     CSUB    FINDHOMELinearMotor
     CALCAV  LOAD, GB_linearCenterOfVial1
     CSUB    moveLinear
-    CSUB    HomeHeadRotateMotor
-    CSUB    PositionHeadRotateMotorToLeft
+    // CSUB    HomeHeadRotateMotor
+    // CSUB    PositionHeadRotateMotorToLeft
 
     RSUB
 
@@ -1638,9 +1620,12 @@ getOutOfBag: //  exit bag - reposition in the middle of the machine
 
 recapSyringe:   //
 
-    GGP     GB_linearSyringeLoading, GPbank_2                     // loading position parameter
+    CSUB    PositionHeadRotateMotorToLeft
+    CSUB    positionLinearMotorToSyringeLoading
 
-    CSUB    moveLinear
+    // GGP     GB_linearSyringeLoading, GPbank_2                     // loading position parameter
+    // CSUB    moveLinear
+
     CSUB    homeCapHolderMotor                             // to home switch upwards
 
     RSUB
@@ -1671,8 +1656,8 @@ FIND_HOMES:
     JC      EQ, return_FIND_HOME                    // yes, return
     CSUB    startHomePistonMotor
     CSUB    startHomeDisposeMotor
-    CSUB    homeCapHolderMotor                      // Linear and Cap holders first to clear the way for vertical
-    CSUB    FINDHOMELinearMotor                         // Linear and Cap holders first to clear the way for vertical
+    // CSUB    homeCapHolderMotor                   // Linear and Cap holders first to clear the way for vertical
+    CSUB    FINDHOMELinearMotor                     // Linear and Cap holders first to clear the way for vertical
     CSUB    waitPistonRfs
     CSUB    positionPistonMotor
     CSUB    positionArmMotor
@@ -1680,9 +1665,10 @@ FIND_HOMES:
     CSUB    positionVerticalMotor                   // get it out of Linear and cap
     CSUB    HomeHeadRotateMotor
 
-    CSUB    PositionHeadRotateMotorToLeft
-    CSUB    positionLinearMotor
-    CSUB    waitArmMotorRfs
+    // CSUB    PositionHeadRotateMotorToLeft
+    // CSUB    positionLinearMotorToSyringeLoading
+    // CSUB    waitArmMotorRfs
+    CSUB    recapSyringe                            // instead of CAP ROT and LIN actions - that do the same - and the order is not so much critical 
 
     SGP     GB_HomingDone, GPbank_2, set            // home done
 
@@ -2035,7 +2021,7 @@ waitLinearMotorRfs:    //
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-positionLinearMotor:   // func 56
+positionLinearMotorToSyringeLoading:   // func 56 // recomended to use after RFS of relavent motors
 
     GGP     GB_linearSyringeLoading, GPbank_2
     CSUB    moveLinear
@@ -2457,7 +2443,7 @@ HomeHeadRotateMotor:   // 58
 
 homeHeadRotateMotorFast:   
     RFS     STOP, M_headRotateMotor                         // Stops reference search
-    WAIT    TICKS, 0, 100
+    WAIT    TICKS, 0, 50
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
     SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
@@ -2942,8 +2928,8 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
     CSUB    HomeHeadRotateMotor
-    CSUB    PositionHeadRotateMotorToLeft
-    CSUB    positionLinearMotor
+    // CSUB    PositionHeadRotateMotorToLeft
+    // CSUB    positionLinearMotorToSyringeLoading
     CSUB    recapSyringe
     RSUB
 
