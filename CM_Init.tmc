@@ -65,7 +65,7 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
     CALCV   LOAD, GB_accepted_diviation_range, DEFAULT_ACCEPTED_DIVIATION_RANGE
     CALCV   LOAD, GB_liquid_detection_border_aval, DEFAULT_LIQUID_DETECTION_BORDER_AVAL
     CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
-    CALCV   LOAD, GB_linearSpaceBetweenVialsuM, DEFAULT_LINEARSPACEBETWEENVIALSUM
+    // CALCV   LOAD, GB_linearSpaceBetweenVialsuM, DEFAULT_LINEARSPACEBETWEENVIALSUM
     CALCV   LOAD, GB_disposeYN, DISPOSE_Y
     
     STGP    GB_skipCheckVial456, GPbank_2
@@ -77,7 +77,7 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
     STGP    GB_accepted_diviation_range, GPbank_2
     STGP    GB_liquid_detection_border_aval, GPbank_2
     STGP    GB_ShowOverride, GPbank_2
-    STGP    GB_linearSpaceBetweenVialsuM, GPbank_2
+    // STGP    GB_linearSpaceBetweenVialsuM, GPbank_2
     STGP    GB_disposeYN, GPbank_2
     
     SetcurrentVersion:
