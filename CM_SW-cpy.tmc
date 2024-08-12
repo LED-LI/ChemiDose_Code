@@ -461,10 +461,6 @@ fillVials:
     CSUB    waitLinearMotor
     CSUB    waitVertical
 
-    GGP     GB_HeadRotatePointUp, GPbank_2              // start moving to point up with the syringe
-    MVPA    ABS, M_headRotateMotor                      // move, wait later
-    CSUB    waitRotate
-
 ReturnFillVials:
 
     RSUB
@@ -1362,15 +1358,15 @@ moveBelowVial:   // go under current vial
 
     CSUB    FINDHOMELinearMotor
 
-    GGP     GB_currentVialLinearLocation, GPBank_2    
-    MVPA    ABS, M_linearMotor                          // move, wait later
+    GGP     GB_currentVialLinearLocation, GPBank_2     // copy into A (GB_50)
+    MVPA    ABS, M_linearMotor                            // move, wait later
 
     // CSUB    HomeHeadRotateMotor
     CSUB    PositionHeadRotateMotorToTop    
 
     CALCAV  LOAD, GB_BumpPosVert
-    CALC    ADD, BAG_ENTRY_BELOW_BUMP                   // load Vial1 position
-    CSUB    moveVertical                                // move head up to sensor, wait later
+    CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
+    CSUB    moveVertical                               // move head up to sensor, wait later
 
     CSUB    waitLinearMotor
     CSUB    waitRotate
@@ -1389,6 +1385,7 @@ getWaterFromBag:  // go below Bag to fill syringe
     CSUB    emptySyringeToBag
     CSUB    waitArmMotorRfs
     GGP     GB_armAtBottom, GPbank_2             // load to A
+    // CSUB    moveArmMotor
     MVPA    ABS, M_armMotor                         // move, wait later
     CSUB    drawFromBag
     CSUB    getOutOfBag
@@ -1643,8 +1640,8 @@ getOutOfBag: //  exit bag - reposition in the middle of the machine
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
-    // CALCAV  LOAD, GB_linearCenterOfVial1
-    // CSUB    moveLinear
+    CALCAV  LOAD, GB_linearCenterOfVial1
+    CSUB    moveLinear
     // CSUB    HomeHeadRotateMotor
     // CSUB    PositionHeadRotateMotorToLeft
 
@@ -1866,7 +1863,7 @@ returnCheckOverFlow:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 checkDoorOpen:       // check if door closed
 
-    CALCV   COMP, GB_bypassSlidingDoorYN, BYPASS_Y // GB_bypassSlidingDoorYN = GB_4
+    CALCV   COMP, GB_bypassSlidingDoorYN, BYPASS_Y // GB_bypassSlidingDoorYN = GB_25
     JC      EQ, returnCheckDoor
     GIO     In_slidingDoor, InBankDigital_0        // read drawer sensor
     COMP    DOOR_IS_CLOSED                         // is the drawer closed?

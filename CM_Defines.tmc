@@ -70,6 +70,7 @@ SYRINGE_IN_PLACE      =    1
 ANY_ERROR_EXISTS      =    1
 WAIT_TICKS_200ms      =   20 // [200ms]
 WAIT_TICKS_VERY_SHORT =  100 // [ 1s]
+WAIT_NEEDLE_REF       =  110 // [1.1s]   //  90 // 0.8 [S] //  //// L.E.D ////   30 // 0.3 [S]
 WAIT_TICKS_2S         =  200 // [ 2s]
 WAIT_TICKS_DISPOSE    =  300 // [ 3s]
 WAIT_TICKS_4S         =  400 // [ 4s]
@@ -455,10 +456,7 @@ GB_69                           =     69
    ACC_ARM                   =     2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
    SWITCH_SPEED_ARM          =    50 
-   SEARCH_SPEED_ARM_SLOW     =    50 
-   SWITCH_SPEED_ARM_SLOW     =    20  //  30
-   WAIT_ARM_REF              =    70  // 0.7s 
-   MAX_CURRENT_ARM           =   200 
+   MAX_CURRENT_ARM           =   255  // 200 
    ARM_DROP_FROM_VIAL        =  -100
 //   limitUMbentNeedleArm    =  3000  // 2000 // [um]
 //   limitArmBentMicroS      = armMicroStepsPerMM * limitUMbentNeedleArm / 1000  /// 3.00 [mm] // 2.00 [mm] = 81 us
@@ -538,7 +536,6 @@ GB_liquidPresence                =  79 // In_liquidPresence
    SWITCH_SPEED_ROT              =     50 ///
    SEARCH_SPEED_ROT_SLOW         =    100
    SWITCH_SPEED_ROT_SLOW         =     50 // 20
-   WAIT_NEEDLE_REF               =     90 // 0.8 [S] //  //// L.E.D ////   30 // 0.3 [S]
    MAX_CURRENT_ROT               =    128 ///
    limitUMbentNeedle             =   3000 // 1650 // [um]
    limitNeedleBentMicroS         =  rotateMicroStepsPerMM * limitUMbentNeedle / 1000  /// 3.0 [mm] // 2.0 [mm] = 88 us
