@@ -2033,14 +2033,27 @@ waitLinearMotorRfs:    //
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 positionLinearMotorToSyringeLoading:   // func 56 // recomended to use after RFS of relavent motors
 
     GGP     GB_linearSyringeLoading, GPbank_2
     CSUB    moveLinear
     RSUB
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 FINDHOMELinearMotor:    // motor 1   func 42
+
+    GAP     AP_LeftLimitSwitchState, M_linearMotor   // check RFS sensor - avoid BOOM procedure
+    COMP    AXIS_IN_SENSOR // linear 'head' is in the sensor
+    JC      EQ, resumeFINDHOMELinearMotor
+    
+moveIntoSensor:
+    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
+    MVP     REL, M_linearMotor, 5000
+    JA      FINDHOMELinearMotor
+    
+resumeFINDHOMELinearMotor:
+    MST     M_linearMotor
+    WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR    // wait till motor stops
     SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
     SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
     SAP     AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch

@@ -28,22 +28,11 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 //Definitions of Inputs
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// In_capHolderHome       = 0 // U10 // will turn to be laser distance sensor (from thumbrest) - BANNER  //  In_thumbRestDistance -> moved to AIN4 // now = In_liquidPresence 
-// In_pwrDrawer           = 1 // U38 /////////////////////////////data input is vacant
-// In_NeedleDetected      = 2 // U11
-// In_3                   = 3 // U36 // will turn to be In_slidingDoor - was U45 - will be J36
-// In_slidingDoor         = 4 // U45 // will turn to be liquid detector - BANNER                         //  In_liquidPresence -> moved to AIN0 // now = In_thumbRestDistance
-// In_drawerOverflow      = 5 // U15
-// In_drawerClose         = 6 // U14
-// In_7                   = 7 // U25 // will turn to be In_capHolderHome - was U10 - will be J25
-
 In_liquidPresence      = 0 // U10
-// In_thumbRestDistance   = 0 // U10
 In_pwrDrawer           = 1 // U38
 In_NeedleDetected      = 2 // U11
 In_slidingDoor         = 3 // U36
 In_thumbRestDistance   = 4 // U45
-// In_liquidPresence      = 4 // U45
 In_drawerOverflow      = 5 // U15
 In_drawerClose         = 6 // U14
 In_capHolderHome       = 7 // U25
@@ -104,6 +93,7 @@ FIRST_VIAL_VIBRATE    =    4
 OVERFLOW              =    0 // the sesor sees vials in the drawer
 DRAWER_IS_CLOSED      =    1
 DOOR_IS_CLOSED        =    1
+AXIS_IN_SENSOR       =    1
 
 // default values to set an out of the box machine
 
@@ -422,9 +412,9 @@ GB_64                            = 64
    STBY_CURRENT_LINEAR          =     25 //
    STBY_CURRENT_LINEAR_HIGH     =    150
    MAX_POS_SPEED_LINEAR         =    500 //
-   ACC_LINEAR                   =      4 // 10 // 12
-   SEARCH_SPEED_LINEAR_HOME     =    125 // 400 // 50
-   SWITCH_SPEED_LINEAR_HOME     =     20 // 200
+   ACC_LINEAR                   =      4 //  10 // 12
+   SEARCH_SPEED_LINEAR_HOME     =    100 // 125 // 400 // 50
+   SWITCH_SPEED_LINEAR_HOME     =    100 //  20 // 200
    SEARCH_SPEED_LINEAR_BOTTLE   =    100 // 200
    SWITCH_SPEED_LINEAR_BOTTLE   =     50 // 150
    //LINEAR_NEEDLE_RFS             =  -7000 //  ABS from here starts search
