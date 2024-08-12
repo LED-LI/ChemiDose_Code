@@ -800,6 +800,11 @@ checkSyringeContent: // func_166
     CALCV   COMP, GB_bypassBannerSensorsYN, BYPASS_Y
     JC      EQ, return_checkSyringeContent
     
+// when showovveride is set (at show) will skip testing of Syringes Content
+    GGP     GB_ShowOverride, GPbank_2
+    COMP    set
+    JC      EQ, return_checkSyringeContent
+    
 // first test for liquid presence and only after check if volume is correct
     CSUB    testLiquidPresence
     // if reached here -> liquid detected correctly
@@ -1019,6 +1024,13 @@ screenAllVials:  // sub 36     check the Vial status, set the global parameter
     SIO     Out_Multiplexer, OutBank_2, 1            // change relays to watch vials
     WAIT    TICKS, 0, 90/10                          // 90 ms
     SGP     GB_vialsExist, GPbank_2, 0               // clear vials word
+
+// when showovveride is set (at show) will pretend that all vials exist
+    GGP     GB_ShowOverride, GPbank_2
+    COMP    clr
+    JC      EQ, check1 
+    SGP     GB_vialsExist, GPbank_2, %01111111       // set vials word to mark all vials and bag as present
+    JA      returnVerifyAllVial
 
 check1:
     GIO     InX_vialIsIn1, InBankDigital_0             // check if Vial is in
@@ -1593,6 +1605,7 @@ drawFromBag:
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
     CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     CALC    DIV, 100                                    // now in uSteps
+    CALCAV  ADD, GB_PistonHomePos                       // consider starting point of syringes calibration - to start the ABS movement
     MVPA    ABS, M_pistonMotor                          // remove excess content
     CSUB    waitPistonDraw
     CSUB    waitDrawFromBag                             // wait period of 2sec after drawing to allow pressure to balance
