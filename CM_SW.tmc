@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-12                              +
+//+ last edited : 2024-08-14                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2067,7 +2067,7 @@ FINDHOMELinearMotor:    // motor 1   func 42
     COMP    AXIS_IN_SENSOR // linear 'head' is in the sensor
     JC      EQ, resumeFINDHOMELinearMotor
     
-    // SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
     MVP     REL, M_linearMotor, -50000
 moveIntoSensor:
     GAP     AP_LeftLimitSwitchState, M_linearMotor   // check RFS sensor - avoid BOOM procedure
