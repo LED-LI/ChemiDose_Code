@@ -535,6 +535,12 @@ GB_liquidPresence                =  79 // In_liquidPresence
    rotateMicroStepsPerDeg        = rotateMicroStepsPerRev / DegreePerRev + 1 // 177.778
    rotateMicroStepsPerMM         = rotateMicroStepsPerRev / (2 * needleRotationRadius * 314 / 100) ///  85 [us/mm]
 
+   ACC_ROT_SUPER_HIGH_EXPIRIMENT = 150 //// expirimental accelerationchange to very HIGH Setting ////
+   MAX_POS_SPEED_SUPER_HIGH_EXPIRIMENT = 1500 //// expirimental accelerationchange to very HIGH Setting ////
+   SEARCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT = 1500 //// expirimental accelerationchange to very HIGH Setting ////
+   SWITCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT = 1000 //// expirimental accelerationchange to very HIGH Setting ////
+   MAX_CURRENT_ROT_SUPER_HIGH_EXPIRIMENT = 255 //// expirimental accelerationchange to very HIGH Setting ////
+   
    ACC_ROT                       =     20 ///
    STBY_CUR_ROTATE_LOW           =     10 // after ABORT
    STBY_CUR_ROTATE               =    100 /// normal

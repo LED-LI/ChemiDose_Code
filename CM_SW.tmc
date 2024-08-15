@@ -2519,6 +2519,8 @@ homeHeadRotateMotorFast:
     // WAIT    TICKS, 0, 50
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT        // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT        // speed for final search
+    // SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT
+    // SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT
     SAP     AP_RefSearchMode,  M_headRotateMotor, APV_RefLeftSwitch  
     RFS     START, M_headRotateMotor                                      // Start reference search
     CSUB    waitRotateRfs

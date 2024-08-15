@@ -467,11 +467,19 @@ initHeadRotateMotor:
     MST     M_headRotateMotor                                           // Motor stop
 //    SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity3to5          // set in motor 5. reverse polarity for motors 3-5
     SGP     GB_rotateMicroStepsPerMM, GPbank_2, rotateMicroStepsPerMM   // just to see on line
+    
     SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT      // speed for search
     SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT      // speed for final search
-    SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_ROT // was : MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT             // Set maximum acceleration //     SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT         // Set maximum acceleration  //// L.E.D //// 
-    SAP     AP_MaxCurrent, M_headRotateMotor, MAX_CURRENT_ROT           // Set absolute max. current
+    // SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_ROT // was : MAX_POS_SPEED_VER_ROT // Set maximum positioning speed
+    // SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT             // Set maximum acceleration //     SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT         // Set maximum acceleration  //// L.E.D //// 
+    
+    // SAP     AP_RefSearchSpeed, M_headRotateMotor, SEARCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT
+    // SAP     AP_RefSwitchSpeed, M_headRotateMotor, SWITCH_SPEED_ROT_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxPositioningSpeed, M_headRotateMotor, MAX_POS_SPEED_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxAcceleration, M_headRotateMotor,  ACC_ROT_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxCurrent, M_headRotateMotor, MAX_CURRENT_ROT_SUPER_HIGH_EXPIRIMENT
+    
+    // SAP     AP_MaxCurrent, M_headRotateMotor, MAX_CURRENT_ROT           // Set absolute max. current
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE       // Set standby current (the current limit two seconds after the motor has stopped)
     SAP     AP_BoostCurrent, M_headRotateMotor, 255                     // while acceleration of decelaration
     SAP     AP_RightLimitSwitchDisable, M_headRotateMotor, set          // Disable right limit switch
