@@ -586,7 +586,7 @@ draw_321:
     JC      NE, skipDraw_321
 
    // attempt to avoid the BOOM sound when homing linear
-    SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR // Set maximum positioning speed
     CALC    LOAD, -100
     CSUB    moveLinear
 
@@ -2069,7 +2069,7 @@ moveLinearMotorIntoSensor:
     COMP    AXIS_IN_SENSOR // linear 'head' is in the sensor
     JC      EQ, returnFromMoveLinearMotorIntoSensor
     
-    SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT   // speed for search
     MVP     REL, M_linearMotor, -50000
 moveIntoSensor:
     GAP     AP_LeftLimitSwitchState, M_linearMotor   // check RFS sensor - avoid BOOM procedure
@@ -2080,9 +2080,10 @@ moveIntoSensor:
 LinearMotorReachedSensor:
 
     // SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR 
-    SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR_SUPER_HIGH_EXPIRIMENT  // expirimental acceleration change to very HIGH Setting
+    // SAP     AP_MaxAcceleration, M_linearMotor, 3 * ACC_LINEAR_SUPER_HIGH_EXPIRIMENT  // expirimental acceleration change to very HIGH Setting to stop very fast
     MST     M_linearMotor
     WAIT    TICKS, M_linearMotor, 69    // wait for motor to stop
+    // SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR_SUPER_HIGH_EXPIRIMENT  // expirimental acceleration returned to very HIGH Setting
 returnFromMoveLinearMotorIntoSensor:
     RSUB
 
