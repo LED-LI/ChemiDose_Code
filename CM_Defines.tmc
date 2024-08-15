@@ -458,17 +458,19 @@ GB_69                           =     69
    armMicrostepsPerDeg       = armMicroStepsPerRev / DegreePerRev + 1 // 88.889
    armMicroStepsPerMM        = armMicroStepsPerRev /(2 * armRotationRadius * 314 / 100)  /// 32 [us/mm]
 
+   // ACC_ARM_SUPER_HIGH_EXPIRIMENT                   =     2  //  60  
+   // MAX_POS_SPEED_ARM_SUPER_HIGH_EXPIRIMENT         =   200  // 400 
+   // SEARCH_SPEED_ARM_SUPER_HIGH_EXPIRIMENT          =   200  // 400 
+   // SWITCH_SPEED_ARM_SUPER_HIGH_EXPIRIMENT          =    50 
+
    STBY_CUR_ARM              =    80  // 100  //  25 
    STBY_CUR_ARM_HIGH         =   200
-   MAX_POS_SPEED_ARM         =   200  // 400 
-   ARM_DISPOSE_SPEED         =   400  // wasn't here ... ? why did i make it ?!
-   ACC_ARM                   =     2  //  60  
+   MAX_POS_SPEED_ARM         =   800 // 200  // 400 
+   // ARM_DISPOSE_SPEED         =   400  // 
+   ACC_ARM                   =    25 //   2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
    SWITCH_SPEED_ARM          =    50 
    MAX_CURRENT_ARM           =   255  // 200 
-   ARM_DROP_FROM_VIAL        =  -100
-//   limitUMbentNeedleArm    =  3000  // 2000 // [um]
-//   limitArmBentMicroS      = armMicroStepsPerMM * limitUMbentNeedleArm / 1000  /// 3.00 [mm] // 2.00 [mm] = 81 us
 
 GB_ArmDropVials456Pos        =    24           // arm at disposal position for vials 4 5 6 
 

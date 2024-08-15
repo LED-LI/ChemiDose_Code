@@ -50,8 +50,10 @@ FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
 
     RSGP    GB_currentVersion, GPbank_2
     
+    GGP     GB_currentVersion, GPbank_2
+    CALCV   COMP, GB_currentVersion, 0
+    JC      EQ, setOutOfTheBox
     CALCV   COMP, GB_currentVersion, CURRENT_VERSION
-    JC      ZE, setOutOfTheBox
     JC      NE, SetcurrentVersion
     JA      skipSetVer
     
@@ -413,7 +415,6 @@ initLinearMotor:
 initArmMotor:
     MST     M_armMotor                                        // Motor stop
     SGP     GB_armMicroStepsPerMM, GPbank_2, armMicroStepsPerMM   // just to see on line
-//    SGP     GB_limitarmBentMicroS, GPbank_2, limitarmBentMicroS   // just to see on line
     SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM   // speed for search
     SAP     AP_RefSwitchSpeed, M_armMotor, SWITCH_SPEED_ARM   // speed for final search
     SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM // Set maximum positioning speed
