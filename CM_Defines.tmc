@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-14                              +
+//+ last edited : 2024-08-15                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240814
+CURRENT_VERSION      =  20240815
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -413,7 +413,7 @@ GB_64                            = 64
    STBY_CURRENT_LINEAR          =     25 //
    STBY_CURRENT_LINEAR_HIGH     =    150
    MAX_POS_SPEED_LINEAR         =    500 //
-   ACC_LINEAR                   =      4 //  10 // 12
+   ACC_LINEAR                   =      7 // 4 //  10 // 12
    SEARCH_SPEED_LINEAR_HOME     =    400 // 100 // 125 // 400 // 50
    SWITCH_SPEED_LINEAR_HOME     =    200 // 100 //  20 // 200
    SEARCH_SPEED_LINEAR_BOTTLE   =    150 // 100 // 200
