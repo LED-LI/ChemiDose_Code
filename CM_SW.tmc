@@ -452,7 +452,8 @@ fillVials:
     GGP     GB_verticalCapPos, GPbank_2     // moved to after linear
     MVPA    ABS, M_verticalMotor            // move, wait later
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // emptySyringeFast
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // emptySyringeFast
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     GGP     GB_PistonHomePos, GPbank_2                                      // emptySyringe
     MVPA    ABS, M_pistonMotor                                              // move, wait later
 
@@ -530,24 +531,6 @@ resumeEmptySyringeToBag:
 returnemptySyringeToFillVial:
     RSUB
 
-// // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// pushPullSrng50Percent:
-    // GGP     GB_pistonMicroStepPer100microL, GPbank_2                             // load to A conversion units
-    // CALCAV  MUL, GB_microLtoFill_current                                         // A <multiply by the amount of units
-    // CALC    DIV, 100                                                             // now in uSteps
-    // CALC    MUL, 50                                                              // multiply by "50%"
-    // CALC    DIV, -100                                                            // uSteps to PUSH
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW  // Set maximum positioning speed
-    // MVPA    REL, M_pistonMotor                                                   // move, wait later 
-    // CSUB    waitPistonDraw                                                       
-    
-    // CALC    MUL, -1                                                              // uSteps to PULL
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW       // Set maximum positioning speed
-    // MVPA    REL, M_pistonMotor                                                   // move, wait later 
-    // CSUB    waitPistonDraw                                                       
-
-    // RSUB
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pullPush5mL:
     CSUB    pull5mL
@@ -555,7 +538,8 @@ pullPush5mL:
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pull5mL:
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed to fast
     CALC    LOAD,  5000                                            // open syringe by 5 mL
     CSUB    movePiston_REL_uL
     CSUB    waitPiston
@@ -1336,6 +1320,7 @@ startPullAir70:  //  pull 70% of the air
     CALCAV  MUL, GB_airToPullBefore                                    // multiply by "20%"
     CALC    DIV, 100                                                   // A = 70% in uSteps
  //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
+   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     MVPA    REL, M_pistonMotor                                         // move, wait later 
     // CSUB    waitPiston  // separated from startPullAir70 for speeding up the DRAW procedure
     RSUB
@@ -1344,7 +1329,7 @@ startPullAir70:  //  pull 70% of the air
 
 pull1ml:  //  pull 1ml  //// L.E.D ////
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // _FAST // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed
     CALC    LOAD, 1000                                      // A multiply by 10 => 100microL*10 = 1 ml to pull
     CSUB    movePiston_REL_uL
     RSUB
@@ -1352,7 +1337,7 @@ pull1ml:  //  pull 1ml  //// L.E.D ////
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push1ml:  //  push 1ml  //// L.E.D ////
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // _FAST // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
     CALC    LOAD, 1000                                      // A multiply by 10 => 100microL*10 = 1 ml to pull
     CSUB    movePiston_REL_uL
     RSUB
@@ -1387,7 +1372,6 @@ getWaterFromBag:  // go below Bag to fill syringe
     CSUB    PositionHeadRotateMotorToTop
     
     CSUB    goIntoBag
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED        // Set maximum positioning speed to MED
     CSUB    emptySyringeToBag
     CSUB    waitArmMotorRfs
     GGP     GB_armAtBottom, GPbank_2             // load to A
@@ -1425,7 +1409,7 @@ push70air:
     CALC    DIV, 100                                    // now in uSteps
     CALCAV  MUL, GB_airToPullBefore                     // multiply by "70%"
     CALC    DIV, -100                                   // A = 70% in uSteps
-//    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed
+//    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
     MVPA    REL, M_pistonMotor                          // move, wait later
     CSUB    waitPiston
     RSUB
@@ -1520,12 +1504,12 @@ insertNeedleIntoVialBelow:    //
 
 drawVial:    // just pull to required volume
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
-    CSUB    waitAfterDraw
+    CSUB    waitAfterVialDraw
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED    // return positioning speed to default   /// maybe change every end of func to run a func to reset all axiss parameters
 
 returnDrawVial:
     RSUB
@@ -1534,7 +1518,8 @@ returnDrawVial:
 
 drawVialMoreBack:    // just pull to required volume
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW // MAX_POS_SPEED_PIST // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SLOW // MAX_POS_SPEED_PIST // Set positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW
 // always push for later bump
     CALC    LOAD, -BUMP_DOWN_REL
     CSUB    movePiston_REL
@@ -1544,22 +1529,12 @@ drawVialMoreBack:    // just pull to required volume
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-waitAfterDraw:
-
-    // GGP     GB_DrawWaitTime, GPbank_2                   // get time in [100ms] // wait period set by needle specs after drawing to allow pressure to balance
-    // CALC    LOAD, 200                                   // wait 2 sec till SW calculate
-    // WAIT    TICKS, 0, ACCUMULATOR_WAIT                  // wait ticks as in A
-    WAIT    TICKS, 0, 200                               // wait 2 sec
-    RSUB
-
-                  
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 waitAfterVialDraw:
 
-    // GGP     GB_DrawWaitTime, GPbank_2                // get time in [100ms]
-   // wait period set by needle specs after drawing to allow pressure to balance
-    WAIT    TICKS, 0, DRAWFROMVIAL_WAITTIME             // ACCUMULATOR_WAIT // wait ticks as in A
+    // wait to allow pressure to balance
+    // WAIT    TICKS, 0, DRAWFROMVIAL_WAITTIME             // ACCUMULATOR_WAIT // wait ticks as in A
+    
+    WAIT    TICKS, 0, DRAWFROMVIAL_WAITTIME_SUPER_HIGH_EXPIRIMENT
 
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1615,7 +1590,8 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 drawFromBag: 
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW // FAST // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW // FAST // Set maximum positioning speed
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
 
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -1624,7 +1600,6 @@ drawFromBag:
     CALC    DIV, 100                                    // now in uSteps
     MVPA    REL, M_pistonMotor                          // move, wait later // draw required volume
     CSUB    waitPistonDraw
-    // CSUB    waitAfterDraw 
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
     CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     CALC    DIV, 100                                    // now in uSteps
@@ -2338,7 +2313,8 @@ waitDrawFromBag:    //// L.E.D ////
 
     // GGP     GB_DrawWaitTime, GPbank_2
     // CALC    DIV, 3                                   // wait shorter time - easier to pull from the bag 
-    WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME              // ACCUMULATOR_WAIT // wait period set by needle specs after drawing to allow pressure to balance
+    WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME_SUPER_HIGH_EXPIRIMENT
+    // WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME              // ACCUMULATOR_WAIT // wait period set by needle specs after drawing to allow pressure to balance
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

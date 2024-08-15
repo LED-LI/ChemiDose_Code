@@ -496,12 +496,22 @@ GB_74                        =    74
     PISTON_BACKLASH               =     0 // (done) will be added to the "70%" push back = 60[uL]
     PISTON_MORE                   =     0 // 300 // (done) to the draw and then pushed back    = 400[uL]
     STBY_CURRENT_PIST             =    25 
+    
+    ACC_PIST_SUPER_HIGH_EXPIRIMENT              =  255
+    SEARCH_SPEED_PIST_SUPER_HIGH_EXPIRIMENT     = 1200
+    SWITCH_SPEED_PIST_SUPER_HIGH_EXPIRIMENT     =   50
+    MAX_CURRENT_PIST_SUPER_HIGH_EXPIRIMENT      =  255
+
+    DRAWFROMVIAL_WAITTIME_SUPER_HIGH_EXPIRIMENT =   250 // 2.5s
+    DRAWFROMBAG_WAITTIME_SUPER_HIGH_EXPIRIMENT  =   400 // 4s
+    
+    MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT    = 1200
     MAX_POS_SPEED_PIST_FAST       =   800 
     MAX_POS_SPEED_PIST            =   600 // 800 // 600 
     MAX_POS_SPEED_PIST_MED        =   400
     MAX_POS_SPEED_PIST_SLOW       =   100
     MAX_POS_SPEED_PIST_VERY_SLOW  =    50 // 100 // 50
-    ACC_PIST                      =   200 
+    ACC_PIST                      =   100 // 200 
     SEARCH_SPEED_PIST             =   800 
     SWITCH_SPEED_PIST             =    40 
     MAX_CURRENT_PIST              =   200        // 128
