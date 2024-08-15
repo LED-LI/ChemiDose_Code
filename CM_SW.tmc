@@ -1360,13 +1360,15 @@ push1ml:  //  push 1ml  //// L.E.D ////
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveBelowVial:   // go under current vial
 
-    CSUB    FINDHOMELinearMotor
+    CSUB    moveLinearMotorIntoSensor
+    CSUB    PositionHeadRotateMotorToTop    
+    CSUB    FINDHOMELinearMotorAfterMovingIntoSensor
 
     GGP     GB_currentVialLinearLocation, GPBank_2    
     MVPA    ABS, M_linearMotor                          // move, wait later
 
     // CSUB    HomeHeadRotateMotor
-    CSUB    PositionHeadRotateMotorToTop    
+    // CSUB    PositionHeadRotateMotorToTop    
 
     CALCAV  LOAD, GB_BumpPosVert
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                   // load Vial1 position
@@ -1518,7 +1520,7 @@ insertNeedleIntoVialBelow:    //
 
 drawVial:    // just pull to required volume
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW   // Set maximum positioning speed //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_MED // _SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
     CSUB    waitAfterDraw
@@ -2061,11 +2063,11 @@ positionLinearMotorToSyringeLoading:   // func 56 // recomended to use after RFS
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-FINDHOMELinearMotor:    // motor 1   func 42
 
+moveLinearMotorIntoSensor:
     GAP     AP_LeftLimitSwitchState, M_linearMotor   // check RFS sensor - avoid BOOM procedure
     COMP    AXIS_IN_SENSOR // linear 'head' is in the sensor
-    JC      EQ, resumeFINDHOMELinearMotor
+    JC      EQ, returnFromMoveLinearMotorIntoSensor
     
     SAP     AP_MaxPositioningSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
     MVP     REL, M_linearMotor, -50000
@@ -2078,7 +2080,15 @@ moveIntoSensor:
 LinearMotorReachedSensor:
     MST     M_linearMotor
     WAIT    TICKS, M_linearMotor, 69    // wait for motor to stop
-resumeFINDHOMELinearMotor:
+returnFromMoveLinearMotorIntoSensor:
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+FINDHOMELinearMotor:    // motor 1   func 42
+
+    CSUB    moveLinearMotorIntoSensor
+FINDHOMELinearMotorAfterMovingIntoSensor:
     SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
     SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
     SAP     AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
