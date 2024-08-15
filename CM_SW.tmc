@@ -131,7 +131,7 @@ setTestParams:   //  98
     SGP    GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
 
     SGP    GB_microLtoWithdraw_1,GPbank_2,00000
-    SGP    GB_microLtoWithdraw_2,GPbank_2,00000
+    SGP    GB_microLtoWithdraw_2,GPbank_2,03000
     SGP    GB_microLtoWithdraw_3,GPbank_2,00000
 
     SGP    GB_microLtoWithdraw_4,GPbank_2,03000
@@ -1520,7 +1520,7 @@ insertNeedleIntoVialBelow:    //
 
 drawVial:    // just pull to required volume
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_MED // _SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
     CSUB    waitAfterDraw
