@@ -2078,6 +2078,9 @@ moveIntoSensor:
     JA      moveIntoSensor
 
 LinearMotorReachedSensor:
+
+    // SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR 
+    SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR_SUPER_HIGH_EXPIRIMENT  // expirimental acceleration change to very HIGH Setting
     MST     M_linearMotor
     WAIT    TICKS, M_linearMotor, 69    // wait for motor to stop
 returnFromMoveLinearMotorIntoSensor:
@@ -2089,8 +2092,10 @@ FINDHOMELinearMotor:    // motor 1   func 42
 
     CSUB    moveLinearMotorIntoSensor
 FINDHOMELinearMotorAfterMovingIntoSensor:
-    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
-    SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
+    // SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME   // speed for search
+    // SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME   // speed for final search
+    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT // expirimental acceleration change to very HIGH Setting
+    SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT // expirimental acceleration change to very HIGH Setting
     SAP     AP_RefSearchMode, M_linearMotor, APV_RefLeftSwitch
     RFS     START, M_linearMotor                                         // Start reference search
     CSUB    waitLinearMotorRfs

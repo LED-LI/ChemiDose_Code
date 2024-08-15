@@ -410,10 +410,19 @@ GB_64                            = 64
    linearMicrostepsPerMM        =  1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
    MAX_CURRENT_LINEAR           =    128 //
    MAX_CURRENT_LINEAR_HIGH      =    200
+   MAX_CURRENT_LINEAR_SUPER_HIGH_EXPIRIMENT =    255
    STBY_CURRENT_LINEAR          =     25 //
    STBY_CURRENT_LINEAR_HIGH     =    150
    MAX_POS_SPEED_LINEAR         =    500 //
    ACC_LINEAR                   =      7 // 4 //  10 // 12
+   
+   
+   MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT = 1500
+   ACC_LINEAR_SUPER_HIGH_EXPIRIMENT = 33 //// expirimental accelerationchange to very HIGH Setting ////
+   SEARCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT = 1500
+   SWITCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT = 1000
+   
+   
    SEARCH_SPEED_LINEAR_HOME     =    400 // 100 // 125 // 400 // 50
    SWITCH_SPEED_LINEAR_HOME     =    200 // 100 //  20 // 200
    SEARCH_SPEED_LINEAR_BOTTLE   =    150 // 100 // 200

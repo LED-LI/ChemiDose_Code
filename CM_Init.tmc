@@ -385,11 +385,16 @@ initVerticalMotor:
 
 initLinearMotor:
     MST     M_linearMotor                                            // Motor stop
-    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME  // speed for search
-    SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME  // speed for final search
-    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR            // Set maximum acceleration
+    // SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME  // speed for search
+    // SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME  // speed for final search
+    // SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR // Set maximum positioning speed
+    // SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR            // Set maximum acceleration
+    SAP     AP_RefSearchSpeed, M_linearMotor, SEARCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT  // expiriment of super fast speeds
+    SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT  // expiriment of super fast speeds
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT // expiriment of super fast speeds
+    SAP     AP_MaxAcceleration, M_linearMotor, ACC_LINEAR_SUPER_HIGH_EXPIRIMENT               // expiriment of super fast speeds
     SAP     AP_MaxCurrent, M_linearMotor, MAX_CURRENT_LINEAR         // Set absolute max. current
+    SAP     AP_MaxCurrent, M_linearMotor, MAX_CURRENT_LINEAR_SUPER_HIGH_EXPIRIMENT // Set absolute max. current
     SAP     AP_StandbyCurrent, M_linearMotor, STBY_CURRENT_LINEAR    // Set standby current (the current limit two seconds after the motor has stopped)
     SAP     AP_BoostCurrent, M_linearMotor, 255                      // while acceleration of decelaration
     SAP     AP_RightLimitSwitchDisable, M_linearMotor, clr           // Enable right limit switch
