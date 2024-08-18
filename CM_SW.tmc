@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-15                              +
+//+ last edited : 2024-08-18                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -449,6 +449,7 @@ fillVials:
     GGP     GB_HeadRotatePointLeft, GPbank_2    // start moving to point left with the syringe
     MVPA    ABS, M_headRotateMotor              // move, wait later
 
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH
     GGP     GB_verticalCapPos, GPbank_2     // moved to after linear
     MVPA    ABS, M_verticalMotor            // move, wait later
 
@@ -474,7 +475,8 @@ ReturnFillVials:
 exitFromVialBelow:
 
     CSUB    calcTopVertNeedleDown
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, (2 * MAX_POS_SPEED_VER_TO_VIAL)
     MVPA    ABS, M_verticalMotor                         // move now, wait later
     CSUB    bumpPlunger
     CSUB    pull1ml                                     // get rid of the last drop
@@ -504,6 +506,11 @@ calcTopVertNeedleDown:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
 
+    GAP     AP_ActualPosition, M_verticalMotor          // get current position of piston
+    COMP    SYRINGE_IN_BAG_ABS                          // testing if syring is where it needs to be in order to empty the syringe
+    JC      EQ, resumeEmptySyringeToBag                 // close enough
+    MVP     ABS, M_verticalMotor, SYRINGE_IN_BAG_ABS
+    CSUB    waitVertical
     GAP     AP_ActualPosition, M_verticalMotor          // get current position of piston
     COMP    SYRINGE_IN_BAG_ABS                          // testing if syring is where it needs to be in order to empty the syringe
     JC      EQ, resumeEmptySyringeToBag                 // close enough
@@ -1477,10 +1484,10 @@ insertNeedleIntoVial:    //
     CALC    ADD, DITANCE_TO_AVOID_BRONZE_BLOCKS            // adding some ditance to avoid bumping into the bronze blocks of vials 456
     MVPA    ABS, M_verticalMotor                           // move to location
     CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
     MVP     REL, M_verticalMotor, VERTICAL_IN_VIAL         // insert needle into vial
     CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     CSUB    checkVialPoppedOut                           // verify that the vial did not pop out
     RSUB
 
@@ -1493,11 +1500,11 @@ insertNeedleIntoVialBelow:    //
     MVPA    ABS, M_verticalMotor                           // move to location
     CSUB    waitVertical
     CSUB    pull1ml
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // Set maximum positioning speed
     MVP     REL, M_verticalMotor, VERTICAL_IN_VIAL_BELOW  // insert needle into vial
     CSUB    waitPiston
     CSUB    waitVertical
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // Set maximum positioning speed
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1541,6 +1548,7 @@ waitAfterVialDraw:
 
 moveSlowlyBottom:    //
 
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL
     GGP     GB_BumpPosVert, GPbank_2               // go to required height
     CSUB    moveVertical                           // move, wait and error if delay
     RSUB
@@ -1580,7 +1588,7 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
     CALC    ADD, BAG_ENTRY_BELOW_BUMP                  // load Vial1 position
     CSUB    moveVertical                               // move head up to sensor, wait later
 
-    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_TO_VIAL // MAX_POS_SPEED_VER_INTO_BAG // INTO_BAG // MAX_POS_SPEED_VER_INTO_BAG // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH // MAX_POS_SPEED_VER_TO_VIAL // MAX_POS_SPEED_VER_INTO_BAG // INTO_BAG // MAX_POS_SPEED_VER_INTO_BAG // Set maximum positioning speed
     MVP     ABS, M_verticalMotor, SYRINGE_IN_BAG_ABS                            // move to location
     CSUB    waitVertical
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_HIGH     // Set maximum positioning speed   /// maybe change every end of func to run a func to reset all axiss parameters
@@ -1953,11 +1961,11 @@ positionVerticalMotor:          // motor 0   30
     RSUB
 
 homeVerticalMotor:          // 102  to home switch upwards
-    SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH         // Set maximum acceleration
+    // SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH         // Set maximum acceleration
     SAP       AP_RefSearchMode,  M_verticalMotor, APV_RefLeftSwitch      // set the kind of search just go up
     RFS       START, M_verticalMotor                                     // Start home sw search UP, then' if reached ref, Down
     CSUB      waitVerticalRfs
-    SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT              // Set maximum acceleration
+    // SAP       AP_MaxAcceleration, M_verticalMotor, ACC_VERT              // Set maximum acceleration
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

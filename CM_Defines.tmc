@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-15                              +
+//+ last edited : 2024-08-18                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240815
+CURRENT_VERSION      =  20240818
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -1044,9 +1044,9 @@ func_166:  CSUB checkSyringeContent
            JA     backGroundProcess
 func_168:  CSUB dummy_sub
            JA     backGroundProcess
-func_170:  CSUB dummy_sub
+func_170:  CSUB setOutOfTheBox
            JA     backGroundProcess
-func_172:  CSUB dummy_sub
+func_172:  CSUB setToDevMode
            JA     backGroundProcess
 func_174:  CSUB dummy_sub
            JA     backGroundProcess

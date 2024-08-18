@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-15                              +
+//+ last edited : 2024-08-18                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -23,7 +23,7 @@ ABORT:
     // STGP    GB_errors_syringe_bag, GPbank_2          // and store it
 
 ABORT_NoReport:
-    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH     // stop quicker
+    // SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH     // stop quicker
     MST     M_verticalMotor                             // Stop up down
     MST     M_linearMotor                               // Stop
     MST     M_armMotor                                  // Stop
@@ -40,53 +40,25 @@ ABORT_NoReport:
     CSUB    RED_ON                                      // red LED
     WAIT    TICKS, 0, 100                                                // wait one second for all the motors to stop
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_LOW    // Set standby current low to enable moving the rotation down
-    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT                // Set maximum acceleration
+    // SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT                // Set maximum acceleration
     RST     backGroundProcess                         // Stop a running TMCL program. Reset program counter and stack pointer
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Summary: first run after power up  (func 0)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-FIRST_RUN:    // func 0; Do not use frequently, save EEPROM
+FIRST_RUN:    // func 0
 
     RSGP    GB_currentVersion, GPbank_2
-    
     GGP     GB_currentVersion, GPbank_2
-    CALCV   COMP, GB_currentVersion, 0
-    JC      EQ, setOutOfTheBox
     CALCV   COMP, GB_currentVersion, CURRENT_VERSION
-    JC      NE, SetcurrentVersion
-    JA      skipSetVer
-    
-    setOutOfTheBox:
-    CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_N
-    CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_N
-    CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_N
-    CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_N
-    CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_N
-    CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE
-    CALCV   LOAD, GB_accepted_diviation_range, DEFAULT_ACCEPTED_DIVIATION_RANGE
-    CALCV   LOAD, GB_liquid_detection_border_aval, DEFAULT_LIQUID_DETECTION_BORDER_AVAL
-    CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
-    // CALCV   LOAD, GB_linearSpaceBetweenVialsuM, DEFAULT_LINEARSPACEBETWEENVIALSUM
-    CALCV   LOAD, GB_disposeYN, DISPOSE_Y
-    
-    STGP    GB_skipCheckVial456, GPbank_2
-    STGP    GB_skipCheckBag, GPbank_2
-    STGP    GB_bypassSlidingDoorYN, GPbank_2
-    STGP    GB_bypassDrawerClosedAndCheckOverFlowYN, GPbank_2
-    STGP    GB_bypassBannerSensorsYN, GPbank_2
-    STGP    GB_piston_defined_vol_uL, GPbank_2
-    STGP    GB_accepted_diviation_range, GPbank_2
-    STGP    GB_liquid_detection_border_aval, GPbank_2
-    STGP    GB_ShowOverride, GPbank_2
-    // STGP    GB_linearSpaceBetweenVialsuM, GPbank_2
-    STGP    GB_disposeYN, GPbank_2
-    
-    SetcurrentVersion:
+    // JC      NE, SetcurrentVersion
+    // JA      skipSetVersion
+    JC      EQ, skipSetVersion
+    // SetcurrentVersion:
     SGP     GB_currentVersion, GPbank_2, CURRENT_VERSION        // Write version number
     STGP    GB_currentVersion, GPbank_2                         // Write version number
     
-    skipSetVer:
+    skipSetVersion:
     // SGP     GB_RS485BaudRate, GPbank_0, baud_rate_9600         // Set baudrate to 9600 - for interfacing with andoid UI purposes  - fixed issue once changed BlueTooth Technologie to BT 5.0 with BLE
     SGP     GB_RS485BaudRate, GPbank_0, baud_rate_57600         // Set baudrate to 57600
     SGP     GB_CoordinateStorage, GPbank_0, 0                   // 0=RAM only; 1=always also in EEPROM
@@ -106,6 +78,60 @@ continueClearErrors:    // stack is now empty
     // CSUB    INIT_MOTORS
     // CSUB    ClearErrorsRAM
     JA      ABORT_NoReport                                     // no return stack
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+setOutOfTheBox: // func_170
+    
+    CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_N
+    CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_N
+    CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_N
+    CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_N
+    CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_N
+    CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE
+    CALCV   LOAD, GB_accepted_diviation_range, DEFAULT_ACCEPTED_DIVIATION_RANGE
+    CALCV   LOAD, GB_liquid_detection_border_aval, DEFAULT_LIQUID_DETECTION_BORDER_AVAL
+    CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
+    CALCV   LOAD, GB_disposeYN, DISPOSE_Y
+    
+    STGP    GB_skipCheckVial456, GPbank_2
+    STGP    GB_skipCheckBag, GPbank_2
+    STGP    GB_bypassSlidingDoorYN, GPbank_2
+    STGP    GB_bypassDrawerClosedAndCheckOverFlowYN, GPbank_2
+    STGP    GB_bypassBannerSensorsYN, GPbank_2
+    STGP    GB_piston_defined_vol_uL, GPbank_2
+    STGP    GB_accepted_diviation_range, GPbank_2
+    STGP    GB_liquid_detection_border_aval, GPbank_2
+    STGP    GB_ShowOverride, GPbank_2
+    STGP    GB_disposeYN, GPbank_2
+
+    RSUB
+
++++++++++++++++++++++++++++++++
+setToDevMode: // func_172 // for development enviorement only !!!
+    
+    CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_Y
+    CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_Y
+    CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_Y
+    CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_Y
+    CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_Y
+    CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE // 15000
+    CALCV   LOAD, GB_accepted_diviation_range, 95 // 
+    CALCV   LOAD, GB_liquid_detection_border_aval, 500 
+    CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
+    CALCV   LOAD, GB_disposeYN, DISPOSE_N
+    
+    STGP    GB_skipCheckVial456, GPbank_2
+    STGP    GB_skipCheckBag, GPbank_2
+    STGP    GB_bypassSlidingDoorYN, GPbank_2
+    STGP    GB_bypassDrawerClosedAndCheckOverFlowYN, GPbank_2
+    STGP    GB_bypassBannerSensorsYN, GPbank_2
+    STGP    GB_piston_defined_vol_uL, GPbank_2
+    STGP    GB_accepted_diviation_range, GPbank_2
+    STGP    GB_liquid_detection_border_aval, GPbank_2
+    STGP    GB_ShowOverride, GPbank_2
+    STGP    GB_disposeYN, GPbank_2
+
+    RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Summary: Performs initialization  (func 16)
@@ -363,7 +389,7 @@ initVerticalMotor:
     SAP     AP_RefSearchSpeed, M_verticalMotor, SEARCH_SPEED_VERT       // speed for search
     SAP     AP_RefSwitchSpeed, M_verticalMotor, SWITCH_SPEED_VERT       // speed for final search
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER  // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT               // Set maximum acceleration
+    SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT_HIGH          // Set maximum acceleration
     SAP     AP_MaxCurrent, M_verticalMotor, MAX_CURRENT_VERT            // Set absolute max. current
     SAP     AP_StandbyCurrent, M_verticalMotor, STBY_CURRENT_VERT       // Set standby current (the current limit two seconds after the motor has stopped)
     SAP     AP_BoostCurrent, M_verticalMotor, 255                       // while acceleration of decelaration
