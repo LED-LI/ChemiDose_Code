@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-18                              +
+//+ last edited : 2024-09-12                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -106,7 +106,7 @@ setOutOfTheBox: // func_170
 
     RSUB
 
-+++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++
 setToDevMode: // func_172 // for development enviorement only !!!
     
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_Y

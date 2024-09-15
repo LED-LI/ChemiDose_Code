@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-08-18                              +
+//+ last edited : 2024-09-12                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1165,6 +1165,13 @@ verifyVIAL:  // func 34
 //GB_vialSize_microL_4             = 104
 //GB_vialSize_microL_5             = 105
 //GB_vialSize_microL_6             = 106
+
+    SGP     GB_errors_Vial_1, GPbank_2, clr               // 37
+    SGP     GB_errors_Vial_2, GPbank_2, clr               // 38
+    SGP     GB_errors_Vial_3, GPbank_2, clr               // 39
+    SGP     GB_errors_Vial_4, GPbank_2, clr               // 40
+    SGP     GB_errors_Vial_5, GPbank_2, clr               // 41
+    SGP     GB_errors_Vial_6, GPbank_2, clr               // 42
 
 // --------------------
 verify_vial_1:
@@ -2941,12 +2948,14 @@ GREEN_ON:
 RED_ON:
     SIO     Out_RedLED, OutBank_2, LED_ON                    // turn on red led
     SIO     Out_GreenLED, OutBank_2, LED_OFF                 // turn off green led
+    SGP     GB_CmdInProcess, GPbank_2, clr                    // there is no commeand running with the Red light on //// L.E.D ////
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 YELLOW_ON:
     SIO     Out_RedLED, OutBank_2, LED_ON                     // turn on red led
     SIO     Out_GreenLED, OutBank_2, LED_ON                   // turn on green led
+    SGP     GB_CmdInProcess, GPbank_2, clr                    // there is no commeand running with the Yellow light on //// L.E.D ////
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
