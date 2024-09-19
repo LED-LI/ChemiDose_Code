@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-12                              +
+//+ last edited : 2024-09-16                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240912
+CURRENT_VERSION      =  20240916
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -417,9 +417,9 @@ GB_64                            = 64
    ACC_LINEAR                   =      7 // 4 //  10 // 12
    
    
-   MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT = 1500
-   ACC_LINEAR_SUPER_HIGH_EXPIRIMENT = 33 //// expirimental accelerationchange to very HIGH Setting ////
-   SEARCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT = 1500
+   MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT = 1300
+   ACC_LINEAR_SUPER_HIGH_EXPIRIMENT = 30 //// expirimental accelerationchange to VERY HIGH Setting ////
+   SEARCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT = 1300
    SWITCH_SPEED_LINEAR_HOME_SUPER_HIGH_EXPIRIMENT = 1000
    
    

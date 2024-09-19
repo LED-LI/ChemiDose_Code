@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-12                              +
+//+ last edited : 2024-09-16                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -453,8 +453,8 @@ fillVials:
     GGP     GB_verticalCapPos, GPbank_2     // moved to after linear
     MVPA    ABS, M_verticalMotor            // move, wait later
 
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // emptySyringeFast
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // emptySyringeFast
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     GGP     GB_PistonHomePos, GPbank_2                                      // emptySyringe
     MVPA    ABS, M_pistonMotor                                              // move, wait later
 
@@ -525,6 +525,7 @@ resumeEmptySyringeToBag:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed //// L.E.D //// _MED ??? MAYB
     CSUB    positionPistonMotor // empty Syringe
     // WAIT    TICKS, 0, WAIT_TICKS_200ms
+    CSUB    waitDrawFromBag                             // wait period of 2sec after drawing to allow pressure to balance
 
     RSUB
 
@@ -545,8 +546,8 @@ pullPush5mL:
     RSUB
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 pull5mL:
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed to fast
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed to fast
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed to fast
     CALC    LOAD,  5000                                            // open syringe by 5 mL
     CSUB    movePiston_REL_uL
     CSUB    waitPiston
@@ -1333,8 +1334,8 @@ startPullAir70:  //  pull 70% of the air
     CALC    DIV, 100                                                   // now in uSteps
     CALCAV  MUL, GB_airToPullBefore                                    // multiply by "20%"
     CALC    DIV, 100                                                   // A = 70% in uSteps
- //   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
-   SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     MVPA    REL, M_pistonMotor                                         // move, wait later 
     // CSUB    waitPiston  // separated from startPullAir70 for speeding up the DRAW procedure
     RSUB
@@ -1423,7 +1424,7 @@ push70air:
     CALC    DIV, 100                                    // now in uSteps
     CALCAV  MUL, GB_airToPullBefore                     // multiply by "70%"
     CALC    DIV, -100                                   // A = 70% in uSteps
-//    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed
     MVPA    REL, M_pistonMotor                          // move, wait later
     CSUB    waitPiston
     RSUB
@@ -1518,8 +1519,9 @@ insertNeedleIntoVialBelow:    //
 
 drawVial:    // just pull to required volume
 
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
     CSUB    waitAfterVialDraw
@@ -1605,9 +1607,9 @@ goIntoBag:   //              //// L.E.D //// maybe possible to reduce function
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 drawFromBag: 
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW // FAST // Set maximum positioning speed
-    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
 
     SGP     GB_MotorIsMoving, GPbank_2, set
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
@@ -2048,8 +2050,10 @@ waitLinearMotorRfs:    //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 positionLinearMotorToSyringeLoading:   // func 56 // recomended to use after RFS of relavent motors
 
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR
     GGP     GB_linearSyringeLoading, GPbank_2
     CSUB    moveLinear
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2059,7 +2063,7 @@ moveLinearMotorIntoSensor:
     COMP    AXIS_IN_SENSOR // linear 'head' is in the sensor
     JC      EQ, returnFromMoveLinearMotorIntoSensor
     
-    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT   // speed for search
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT
     MVP     REL, M_linearMotor, -50000
 moveIntoSensor:
     GAP     AP_LeftLimitSwitchState, M_linearMotor   // check RFS sensor - avoid BOOM procedure
@@ -2328,8 +2332,8 @@ waitDrawFromBag:    //// L.E.D ////
 
     // GGP     GB_DrawWaitTime, GPbank_2
     // CALC    DIV, 3                                   // wait shorter time - easier to pull from the bag 
-    WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME_SUPER_HIGH_EXPIRIMENT
-    // WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME              // ACCUMULATOR_WAIT // wait period set by needle specs after drawing to allow pressure to balance
+    // WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME_SUPER_HIGH_EXPIRIMENT
+    WAIT    TICKS, 0, DRAWFROMBAG_WAITTIME              // ACCUMULATOR_WAIT // wait period set by needle specs after drawing to allow pressure to balance
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
