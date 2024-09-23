@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-16                              +
+//+ last edited : 2024-09-23                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240916
+CURRENT_VERSION      =  20240923
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -525,7 +525,7 @@ GB_74                        =    74
 // GB_piston_defined_vol_uL         =  16    // GB_16
 // GB_accepted_diviation_range      =  17    // GB_17
 // GB_messuredAmountOfLiquid        =  18    // GB_18
-// GB_liquid_detection_border_aval  =  19
+// GB_liquid_detection_border_aval  =  19    // a number used to decide what is the analog data value of the liquid detectors input that beyond it is the point where its considered to be with or without liquid 
 // GB_microL_per_100mm_current      = 161        // 6522
 
 GB_PistonHomePos                 =  48 // uStep value for 0ml in syringe
@@ -1042,7 +1042,7 @@ func_164:  CSUB draw_321 //
            JA     backGroundProcess
 func_166:  CSUB checkSyringeContent
            JA     backGroundProcess
-func_168:  CSUB dummy_sub
+func_168:  CSUB setDefaultParams
            JA     backGroundProcess
 func_170:  CSUB setOutOfTheBox
            JA     backGroundProcess

@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-12                              +
+//+ last edited : 2024-09-23                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -77,9 +77,59 @@ FIRST_RUN:    // func 0
 continueClearErrors:    // stack is now empty
     // CSUB    INIT_MOTORS
     // CSUB    ClearErrorsRAM
+    // ***** // why did i cancel these ????
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+setDefaultParams: // func_168
+    
+    //////////////////////////////////////////////////
+    // vertical /////////////////////////////////////
+    CALCV   LOAD, GB_BumpPosVert,   -5000   //  9 //
+    CALCV   LOAD, GB_verticalCapPos, 6000  //  8 //
+    CALCV   LOAD, GB_setBumpBottom,  7000 // 13 //
+    /////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////
+    // linear ////////////////////////////////////////////////////////
+    CALCV   LOAD, GB_linearCenterOfVial1,            2500    // 53 // 
+    CALCV   LOAD, GB_linearSyringeLoading,          -7000   // 54 //
+    CALCV   LOAD, GB_linearCenterOfVial4AtTop,      22000  // 46 //
+    CALCV   LOAD, GB_linearCenterOfVial4AtBottom,   18000 // 51 // 
+    /////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////
+    // arm ////////////////////////////////////////////////
+    CALCV   LOAD, GB_ArmUnderVialPosition, -300   // 47 //
+    CALCV   LOAD, GB_ArmDropVials456Pos,   -500  // 24 //
+    CALCV   LOAD, GB_armAtBottom,         15000 // 55 //
+    ///////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////
+    // piston ///////////////////////////////////////////////////////
+    CALCV   LOAD, GB_PistonHomePos,               3000      // 48 //
+    CALCV   LOAD, GB_min_vol_laserDist_AVAL,      3500     // 14 //
+    CALCV   LOAD, GB_max_vol_laserDist_AVAL,      1000    // 15 //
+    CALCV   LOAD, GB_accepted_diviation_range,      95   // 17 //
+    CALCV   LOAD, GB_piston_defined_vol_uL,      15000  // 16 //
+    CALCV   LOAD, GB_liquid_detection_border_aval, 500 // 19 //
+    //////////////////////////////////////////////////////////
+    
+    ////////////////////////////////////////////////////////
+    // head rotate ////////////////////////////////////////
+    CALCV   LOAD, GB_HeadRotatePointUp,     100   // 50 //
+    CALCV   LOAD, GB_HeadRotatePointLeft, 16000  // 49 //
+    CALCV   LOAD, GB_HeadRotatePointDown, 32000 // 52 //
+    ///////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////
+    // dispose /////////////////////////////////////////
+    CALCV   LOAD, GB_DisposeDropVialsPos, 4000 // 23 //
+    //////////////////////////////////////////////////
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++
 setOutOfTheBox: // func_170
     
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_N
