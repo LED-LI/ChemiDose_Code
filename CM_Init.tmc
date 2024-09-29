@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-23                              +
+//+ last edited : 2024-09-29                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -75,8 +75,8 @@ FIRST_RUN:    // func 0
     RST     continueClearErrors             
 
 continueClearErrors:    // stack is now empty
-    // CSUB    INIT_MOTORS
-    // CSUB    ClearErrorsRAM
+    CSUB    INIT_MOTORS
+    CSUB    ClearErrorsRAM
     // ***** // why did i cancel these ????
     JA      ABORT_NoReport                                     // no return stack
 
