@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-29                              +
+//+ last edited : 2024-09-30                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -745,6 +745,13 @@ preLoadCurrentParameters:
     CSUB    startPullAir70      // attempt to rid of air in syringe
     CSUB    waitPiston          // attempt to rid of air in syringe
     CSUB    push70air           // attempt to rid of air in syringe
+// verifying the piston didnt lose its place due to the push pull 
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
+    CALCAV  LOAD, GB_microLtoWithdraw_current
+    CALCAV  ADD, GB_PistonHomePos
+    CSUB    movePiston_ABS_uL
+    CSUB    waitAfterVialDraw
+
 
     CSUB    waitAfterVialDraw
     
@@ -1123,6 +1130,7 @@ VERIFY_READY_DRAW:    //  checks if syringe, vail are in place
  // errors
     CSUB    setAnyErrorYellow
     SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
+    // // // CALCV   LOAD, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION // not right now
     RSUB
 returnVerify:
     SGP     GB_readyToDraw, GPbank_2, set               // ready to draw
@@ -1329,14 +1337,15 @@ deCap:    // GB_74
 
 startPullAir70:  //  pull 70% of the air
 
-    GGP     GB_pistonMicroStepPer100microL, GPbank_2                   // load to A
-    CALCAV  MUL, GB_microLtoWithdraw_current                           // A <multiply by the "20%"
-    CALC    DIV, 100                                                   // now in uSteps
-    CALCAV  MUL, GB_airToPullBefore                                    // multiply by "20%"
-    CALC    DIV, 100                                                   // A = 70% in uSteps
+    // GGP     GB_pistonMicroStepPer100microL, GPbank_2                   // load to A
+    // CALC    DIV, 100                                                   // now in uSteps
+    CALCAV  MUL, GB_microLtoWithdraw_current                           // A < to be multiplyed by the "70%"
+    CALCAV  MUL, GB_airToPullBefore                                    // multiply by "70%"
+    CALC    DIV, 100                                                   // A = 70% in uSteps [calc as (X/100)%]
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
-    MVPA    REL, M_pistonMotor                                         // move, wait later 
+    CSUB    movePiston_REL_uL
+    // MVPA    REL, M_pistonMotor                                         // move, wait later 
     // CSUB    waitPiston  // separated from startPullAir70 for speeding up the DRAW procedure
     RSUB
 
@@ -1419,14 +1428,16 @@ moveAboveVial:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 push70air:
 
-    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
-    CALCAV  MUL,  GB_microLtoWithdraw_current           // A <-- A*load the withdraw volume [uL] -> [uSteps*100]
-    CALC    DIV, 100                                    // now in uSteps
+    // GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    // CALCAV  MUL,  GB_microLtoWithdraw_current           // A <-- A*load the withdraw volume [uL] -> [uSteps*100]
+    // CALC    DIV, 100                                    // now in uSteps
+    CALCAV  LOAD,  GB_microLtoWithdraw_current           // A <-- A*load the withdraw volume [uL] -> [uSteps*100]
     CALCAV  MUL, GB_airToPullBefore                     // multiply by "70%"
-    CALC    DIV, -100                                   // A = 70% in uSteps
+    CALC    DIV, -100                                   // A = 70% in uSteps [calc as (X/100)%]
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST // Set maximum positioning speed
-    MVPA    REL, M_pistonMotor                          // move, wait later
-    CSUB    waitPiston
+    CSUB    movePiston_REL_uL
+    // MVPA    REL, M_pistonMotor                          // move, wait later
+    // CSUB    waitPiston
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1520,12 +1531,12 @@ insertNeedleIntoVialBelow:    //
 drawVial:    // just pull to required volume
 
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_MED // _VERY_SLOW   // Set positioning speed to med //     
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
     CALCAV  LOAD, GB_microLtoWithdraw_current            // A = A* [uSteps*100]
     CSUB    movePiston_REL_uL
     CSUB    waitAfterVialDraw
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
 
 returnDrawVial:
     RSUB
@@ -1612,16 +1623,19 @@ drawFromBag:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
 
     SGP     GB_MotorIsMoving, GPbank_2, set
-    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
-    CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
-    CALC    DIV, 100                                    // now in uSteps
-    MVPA    REL, M_pistonMotor                          // move, wait later // draw required volume
+    CALCAV  LOAD, GB_microLtoFill_current
+    // GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    // CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
+    // CALC    DIV, 100                                    // now in uSteps
+    // MVPA    REL, M_pistonMotor                          // move, wait later // draw required volume
+    CSUB    movePiston_REL_uL
     CSUB    waitPistonDraw
-    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
     CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
+    GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
     CALC    DIV, 100                                    // now in uSteps
     CALCAV  ADD, GB_PistonHomePos                       // consider starting point of syringes calibration - to start the ABS movement
-    MVPA    ABS, M_pistonMotor                          // remove excess content
+    CSUB    movePiston_ABS
+    // MVPA    ABS, M_pistonMotor                          // remove excess content
     CSUB    waitPistonDraw
     CSUB    waitDrawFromBag                             // wait period of 2sec after drawing to allow pressure to balance
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2213,6 +2227,17 @@ armMotorTOerr:
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// replacment for MAX_PIST_IN_USTEPS
+calcMaxPistUStepsDefined:
+    
+    CALCVV  LOAD, GB_calcedMaxPistUStepsDefined, GB_piston_defined_vol_uL
+    CALCVV  MUL, GB_calcedMaxPistUStepsDefined, GB_pistonMicroStepPer100microL
+    CALCV   DIV, GB_calcedMaxPistUStepsDefined, 100
+
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 PistonManual:    // func 142
 
@@ -2256,9 +2281,13 @@ pistCoordAreAboveMin:
     // // // // // // // // // // // // // // CALCAV  MUL, GB_PistonFactor                                  // calc factor for adjustment of difference between machine (100 is no change)
     // // // // // // // // // // // // // // CALC    DIV, 100
     CALCAV  LOAD, GB_TempNumHolder
-    COMP    MAX_PIST_IN_USTEPS
+// CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
+// JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
+    // COMP    MAX_PIST_IN_USTEPS
+    CALCAV  COMP, GB_calcedMaxPistUStepsDefined
     JC      LE, pistUSeptsInRange
-    CALC    LOAD, MAX_PIST_IN_USTEPS
+    CALCAV  LOAD, GB_calcedMaxPistUStepsDefined
+    // CALC    LOAD, MAX_PIST_IN_USTEPS
 pistUSeptsInRange:
     SGP     GB_MotorIsMoving, GPbank_2, set
     MVPA    ABS, M_pistonMotor                            // move, wait later
@@ -2273,9 +2302,11 @@ movePiston_REL:    //
     CALCVA  LOAD, GB_TempNumHolder
     GAP     AP_ActualPosition, M_pistonMotor            // get current position of piston
     CALCAV  ADD, GB_TempNumHolder
-    COMP    MAX_PIST_IN_USTEPS                          // comparing to top range of the piston axis
+    // COMP    MAX_PIST_IN_USTEPS                          // comparing to top range of the piston axis
+    CALCAV  COMP, GB_calcedMaxPistUStepsDefined
     JC      LE, RELpistUSeptsUnderMax
-    CALC    LOAD, MAX_PIST_IN_USTEPS
+    CALCAV  LOAD, GB_calcedMaxPistUStepsDefined
+    // CALC    LOAD, MAX_PIST_IN_USTEPS
     CSUB    movePiston_ABS
     JA      RELpistUSeptsAdjusted
 RELpistUSeptsUnderMax:
@@ -2998,20 +3029,28 @@ ejectSyringeFromBottomVial: // FUNC_110
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration location
     
+    // // // CALCV   COMP, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION
+    JC      NE, returnFromMoveToLDcalibLocation
     CSUB    verifySyringe
     CSUB    decap
     CSUB    goIntoBag
+    
+returnFromMoveToLDcalibLocation:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib location back to loading position
     
+    // // // CALCV   COMP, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION
+    JC      EQ, returnFromMoveFromLDcalibLocation
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
     CSUB    HomeHeadRotateMotor
     // CSUB    PositionHeadRotateMotorToLeft
     // CSUB    positionLinearMotorToSyringeLoading
     CSUB    recapSyringe
+    
+returnFromMoveFromLDcalibLocation:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++

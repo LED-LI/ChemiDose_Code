@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-29                              +
+//+ last edited : 2024-09-30                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -212,6 +212,7 @@ INIT_MOTORS:       // func 16  Init user variables
     SGP     GB_HomingDone, GPbank_2, clr
     // SGP     GB_InitDone, GPbank_2, set                       // init done
     SGP     GB_MotorIsMoving, GPbank_2, clr                    //  16
+    CSUB    calcMaxPistUStepsDefined                           // make sure the maximun defined volume set for the syringe is the max allowed for the piston to move
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
