@@ -734,24 +734,38 @@ preLoadCurrentParameters:
     CSUB    insertNeedleIntoVial
 
    // pushAir
-    CSUB    push70air 
-
-    CSUB    startPullAir70      // attempt to rid of air in syringe
+    CSUB    pull1ml
     CSUB    waitPiston          // attempt to rid of air in syringe
-    CSUB    push70air           // attempt to rid of air in syringe
+
+    // CSUB    push1ml
+    // CSUB    push70air 
+    
+    CSUB    positionPistonMotor // reposition piston to empty syringe position // replace push70air
+
+
+    // CSUB    startPullAir70      // attempt to rid of air in syringe
+    // CSUB    waitPiston          // attempt to rid of air in syringe
+    // CSUB    push70air           // attempt to rid of air in syringe
 
     CSUB    drawVial
 
-    CSUB    startPullAir70      // attempt to rid of air in syringe
+    CSUB    pull1ml
     CSUB    waitPiston          // attempt to rid of air in syringe
-    CSUB    push70air           // attempt to rid of air in syringe
+    CSUB    push1ml
+    
+    // CSUB    startPullAir70      // attempt to rid of air in syringe
+    // CSUB    waitPiston          // attempt to rid of air in syringe
+    // CSUB    push70air           // attempt to rid of air in syringe
+    
 // verifying the piston didnt lose its place due to the push pull 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST          // Set maximum positioning speed
-    CALCAV  LOAD, GB_microLtoWithdraw_current
-    CALCAV  ADD, GB_PistonHomePos
-    CSUB    movePiston_ABS_uL
-    CSUB    waitAfterVialDraw
 
+    CALCAV  LOAD, GB_microLtoWithdraw_current
+    CALCAV  MUL, GB_pistonMicroStepPer100microL
+    CALC    DIV, 100
+
+    CALCAV  ADD, GB_PistonHomePos
+    CSUB    movePiston_ABS
 
     CSUB    waitAfterVialDraw
     
@@ -1340,7 +1354,8 @@ startPullAir70:  //  pull 70% of the air
 
     // GGP     GB_pistonMicroStepPer100microL, GPbank_2                   // load to A
     // CALC    DIV, 100                                                   // now in uSteps
-    CALCAV  MUL, GB_microLtoWithdraw_current                           // A < to be multiplyed by the "70%"
+    // CALCAV  MUL, GB_microLtoWithdraw_current                           // A < to be multiplyed by the "70%"
+    CALCAV  LOAD, GB_microLtoWithdraw_current                           // A < to be multiplyed by the "70%"
     CALCAV  MUL, GB_airToPullBefore                                    // multiply by "70%"
     CALC    DIV, 100                                                   // A = 70% in uSteps [calc as (X/100)%]
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // _FAST  // Set maximum positioning speed //  //// L.E.D ///     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
@@ -1354,7 +1369,8 @@ startPullAir70:  //  pull 70% of the air
 
 pull1ml:  //  pull 1ml  //// L.E.D ////
 
-    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed
+    // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT  // Set maximum positioning speed
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST // Set maximum positioning speed
     CALC    LOAD, 1000                                      // A multiply by 10 => 100microL*10 = 1 ml to pull
     CSUB    movePiston_REL_uL
     RSUB
@@ -1363,7 +1379,7 @@ pull1ml:  //  pull 1ml  //// L.E.D ////
 push1ml:  //  push 1ml  //// L.E.D ////
 
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST // Set maximum positioning speed
-    CALC    LOAD, 1000                                      // A multiply by 10 => 100microL*10 = 1 ml to pull
+    CALC    LOAD, -1000                                      // A multiply by 10 => 100microL*10 = 1 ml to pull
     CSUB    movePiston_REL_uL
     RSUB
 
@@ -1445,6 +1461,7 @@ push70air:
 
 findCenterOfNeedleSensor:
 
+    CSUB    checkSyrPoppedOut                         // verify that the syringe did not pop out = no needle will be detected by the sensor => STOP !!! 
     // CSUB    PositionHeadRotateMotorToTop
     GGP     GB_linearCenterOfVial1, GPbank_2           // load Vial1 position
     CALC    ADD, LINEAR_VIAL1_TO_BAG_RFS               // start of needle RFS posotion
@@ -1745,7 +1762,7 @@ checkVialPoppedOut:
     CALC    OR, BitEr_VialPoppedOut              // add the error bit
     AIV                                          // and copied back to vial errors
     //STGP    GB_errors_syringe_bag, GPbank_2    // cannot store it
-    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    CSUB    setStateSTOPPED_ON_ERROR_RED
     JA      ABORT
 
 returnVialPoppedOut:
@@ -1789,7 +1806,7 @@ verifyNoSyringe:
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
-    JA      ABORT
+    JA      ABORT_NoReport
 
 returnverifyNoSyringe:
     RSUB
@@ -1887,7 +1904,7 @@ checkDoorOpen:       // check if door closed
     AGP     GB_special_Error, GPbank_2             // and write again
     // STGP    GB_special_Error, GPbank_2             // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
-    JA      ABORT
+    JA      ABORT_NoReport
 
 returnCheckDoor:
     RSUB
@@ -2285,7 +2302,7 @@ pistCoordAreAboveMin:
 // CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
 // JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
     // COMP    MAX_PIST_IN_USTEPS
-    CALCAV  COMP, GB_calcedMaxPistUStepsDefined
+    CALCVV  COMP, GB_TempNumHolder, GB_calcedMaxPistUStepsDefined // COMP – compare <var1> with <var2>
     JC      LE, pistUSeptsInRange
     CALCAV  LOAD, GB_calcedMaxPistUStepsDefined
     // CALC    LOAD, MAX_PIST_IN_USTEPS
@@ -2304,7 +2321,7 @@ movePiston_REL:    //
     GAP     AP_ActualPosition, M_pistonMotor            // get current position of piston
     CALCAV  ADD, GB_TempNumHolder
     // COMP    MAX_PIST_IN_USTEPS                          // comparing to top range of the piston axis
-    CALCAV  COMP, GB_calcedMaxPistUStepsDefined
+    CALCVV  COMP, GB_TempNumHolder, GB_calcedMaxPistUStepsDefined // COMP – compare <var1> with <var2>
     JC      LE, RELpistUSeptsUnderMax
     CALCAV  LOAD, GB_calcedMaxPistUStepsDefined
     // CALC    LOAD, MAX_PIST_IN_USTEPS

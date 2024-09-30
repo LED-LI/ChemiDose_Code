@@ -516,8 +516,8 @@ initArmMotor:
 initPistonMotor:
     MST     M_pistonMotor                                         // Motor stop
     // SGP     GB_EndSwitchPolarity, GPbank_0, reversePolarity3to5    // set in motor 5. reverse polarity for motors 3-5
-    // SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST   // speed for search
-    SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
+    SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST   // speed for search
+    // SAP     AP_RefSearchSpeed, M_pistonMotor, SEARCH_SPEED_PIST_SUPER_HIGH_EXPIRIMENT
     SAP     AP_RefSwitchSpeed, M_pistonMotor, SWITCH_SPEED_PIST // _MED // speed for final search  //// L.E.D //// MAX_POS_SPEED_PIST_MED  //// L.E.D ////
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST  // Set maximum positioning speed
     SAP     AP_MaxAcceleration, M_pistonMotor,  ACC_PIST          // Set maximum acceleration

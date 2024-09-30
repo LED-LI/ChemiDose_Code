@@ -513,12 +513,12 @@ GB_74                        =    74
     MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT    = 1200
     MAX_POS_SPEED_PIST_FAST       =   800 
     MAX_POS_SPEED_PIST            =   600 // 800 // 600 
-    MAX_POS_SPEED_PIST_FOR_CALIBRATION =   600 // 800 // 600 
+    MAX_POS_SPEED_PIST_FOR_CALIBRATION =   300
     MAX_POS_SPEED_PIST_MED        =   400
     MAX_POS_SPEED_PIST_SLOW       =   100
     MAX_POS_SPEED_PIST_VERY_SLOW  =    50 // 100 // 50
     ACC_PIST                      =   100 // 200 
-    SEARCH_SPEED_PIST             =   800 
+    SEARCH_SPEED_PIST             =   500 
     SWITCH_SPEED_PIST             =    40 
     MAX_CURRENT_PIST              =   200        // 128
     MAX_PIST_IN_USTEPS            = 45000        //  = ~20mL
