@@ -1133,6 +1133,7 @@ VERIFY_READY_DRAW:    //  checks if syringe, vail are in place
     // // // CALCV   LOAD, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION // not right now
     RSUB
 returnVerify:
+    SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
     SGP     GB_readyToDraw, GPbank_2, set               // ready to draw
     RSUB
 
@@ -3036,6 +3037,7 @@ moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration 
     CSUB    goIntoBag
     
 returnFromMoveToLDcalibLocation:
+    SGP     GB_CurrentState, GPbank_2, LDCALIBRATESTATE
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -3051,6 +3053,7 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     CSUB    recapSyringe
     
 returnFromMoveFromLDcalibLocation:
+    SGP     GB_CurrentState, GPbank_2, LDCALIBRATESTATE
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
