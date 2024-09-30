@@ -4,7 +4,7 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-23                              +
+//+ last edited : 2024-09-29                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -355,66 +355,68 @@ LoadingDistance_4    =  69000  // [usteps]
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_0 = M_verticalMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   verticalFeedPerRevolution       =   4877  /// micrometer
-   verticalMicrosteps              =     16  ///
-   verticalStepsPerRev             =    200  ///
-   verticalMicroStepsPerRev        = verticalMicrosteps * verticalStepsPerRev  /// = 3200 [uS/rev]
-   verticalMicroStepsPerMM         =   1000 * verticalMicroStepsPerRev / verticalFeedPerRevolution /// = 656.141
-   VERTICAL_BACK_TO_CENTER         =   -945  // move head down into cap, where we adjust back to center
-//   VERTICAL_FOR_ROTATION         =  14500  /// ABS
-   //VERTICAL_NEEDLE_RFS           =  -7000  // ABS
-   VER_NEEDLE_RFS_BELOW_BUMP       =   5500  // REL
-   //VERTICAL_IN_VIAL_MM           =     -7  // milimeters to penetrate into the vial
-   VERTICAL_IN_VIAL                = -8500 // with Atraumatic 38mm needle  //// L.E.D //// what is this parameter ? why is it a constant and not a variable that i calibrate ?? or a relative value for movement
-   // VERTICAL_IN_VIAL                =  -4850  // VERTICAL_IN_VIAL_MM * verticalMicroStepsPerMM  //-7 * 656 = -4592 // -8000  // ABS  -4000  //-3800  // up 175[uS]=1.4[mm]//-3625  //z REL
-   VERTICAL_IN_VIAL_BELOW          =   7070  // !!!! CHECK CORRECTION !!!! a relative value for movement – also – turn into a relative value for movement
-   MAX_CURRENT_VERT                =    200
-   MAX_CURRENT_VERT_HIGH           =    255
-   STBY_CURRENT_VERT               =    100  ///
-   MAX_POS_SPEED_VER               =   1300
-   MAX_POS_SPEED_VER_INTO_CAP      =    600  // MAX_POS_SPEED_VER_INTO_BAG      =    600  //
-   MAX_POS_SPEED_VER_TO_VIAL       =    300
-   MAX_POS_SPEED_VER_DOWN          =   1200
-   MAX_POS_SPEED_VER_HIGH          =   1000
-   ACC_VERT                        =     10  ///
-   ACC_VERT_HIGH                   =     40
-   SEARCH_SPEED_VERT               =    400  ///
-   SWITCH_SPEED_VERT               =    400  ///
-   // SYRINGE_IN_BAG_ABS              = -15000 // only with atraumatic 38mm needle 
-   SYRINGE_IN_BAG_ABS              = -14000
-   BAG_ENTRY_BELOW_BUMP            =   8000  // REL
-   TOP_VERTICAL_NEEDLE_DOWN_FULL   =   1100 // 1500
-   TOP_VERTICAL_NEEDLE_DOWN_EMPTY  = -12000
-   DITANCE_TO_AVOID_BRONZE_BLOCKS  =   2750 // 3000
+   verticalFeedPerRevolution            =   4877  /// micrometer
+   verticalMicrosteps                   =     16  ///
+   verticalStepsPerRev                  =    200  ///
+   verticalMicroStepsPerRev             = verticalMicrosteps * verticalStepsPerRev  /// = 3200 [uS/rev]
+   verticalMicroStepsPerMM              =   1000 * verticalMicroStepsPerRev / verticalFeedPerRevolution /// = 656.141
+   VERTICAL_BACK_TO_CENTER              =   -945  // move head down into cap, where we adjust back to center
+//   VERTICAL_FOR_ROTATION              =  14500  /// ABS
+   //VERTICAL_NEEDLE_RFS                =  -7000  // ABS
+   VER_NEEDLE_RFS_BELOW_BUMP            =   5500  // REL
+   //VERTICAL_IN_VIAL_MM                =     -7  // milimeters to penetrate into the vial
+   VERTICAL_IN_VIAL                     = -8500 // with Atraumatic 38mm needle  //// L.E.D //// what is this parameter ? why is it a constant and not a variable that i calibrate ?? or a relative value for movement
+   // VERTICAL_IN_VIAL                  =  -4850  // VERTICAL_IN_VIAL_MM * verticalMicroStepsPerMM  //-7 * 656 = -4592 // -8000  // ABS  -4000  //-3800  // up 175[uS]=1.4[mm]//-3625  //z REL
+   VERTICAL_IN_VIAL_BELOW               =   7070  // !!!! CHECK CORRECTION !!!! a relative value for movement – also – turn into a relative value for movement
+   MAX_CURRENT_VERT                     =    200
+   MAX_CURRENT_VERT_HIGH                =    255
+   STBY_CURRENT_VERT                    =    100  ///
+   MAX_POS_SPEED_VER                    =   1300
+   MAX_POS_SPEED_VER_FOR_CALIBRATION    =  500  // slower speed for calibration - for inexperienced users 
+   MAX_POS_SPEED_VER_INTO_CAP           =    600  // MAX_POS_SPEED_VER_INTO_BAG      =    600  //
+   MAX_POS_SPEED_VER_TO_VIAL            =    300
+   MAX_POS_SPEED_VER_DOWN               =   1200
+   MAX_POS_SPEED_VER_HIGH               =   1000
+   ACC_VERT                             =     10  ///
+   ACC_VERT_HIGH                        =     40
+   SEARCH_SPEED_VERT                    =    400  ///
+   SWITCH_SPEED_VERT                    =    400  ///
+   // SYRINGE_IN_BAG_ABS                = -15000 // only with atraumatic 38mm needle 
+   SYRINGE_IN_BAG_ABS                   = -14000
+   BAG_ENTRY_BELOW_BUMP                 =   8000  // REL
+   TOP_VERTICAL_NEEDLE_DOWN_FULL        =   1100 // 1500
+   TOP_VERTICAL_NEEDLE_DOWN_EMPTY       = -12000
+   DITANCE_TO_AVOID_BRONZE_BLOCKS       =   2750 // 3000
 
-GB_verticalCapPos                =   8 // syringe loading  380
-GB_BumpPosVert                   =   9 // needle touches the vial 1 rubber at top ~ -8792
+GB_verticalCapPos                       =   8 // syringe loading  380
+GB_BumpPosVert                          =   9 // needle touches the vial 1 rubber at top ~ -8792
 
-GB_setBumpBottom                 =  13 // needle touches the vial 4 rubber at bottom 
+GB_setBumpBottom                        =  13 // needle touches the vial 4 rubber at bottom 
 
 
-GB_60                            =  60 // was GB_needleLengthInMicroSteps =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
+GB_60                                   =  60 // was GB_needleLengthInMicroSteps =  60 // verticalMicroStepsPerMM * GB_needleLength = 5039 [steps] for 40 [mm]
 
-GB_Calced_Top_Vert_Needle_Down_Allowed =  61 // GB_61 = 61
-GB_62                            = 62
-GB_63                            = 63
-GB_64                            = 64
+GB_Calced_Top_Vert_Needle_Down_Allowed  =  61 // GB_61 = 61
+GB_62                                   =  62
+GB_63                                   =  63
+GB_64                                   =  64
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Motor_1 = M_linearMotor
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   linearFeedPerRevolution      =  25400 // micrometer  
-   linearMicrosteps             =     16 //
-   linearStepsPerRev            =    200 //
-   linearMicroStepsPerRev       =  linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
-   linearMicrostepsPerMM        =  1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
-   MAX_CURRENT_LINEAR           =    128 //
-   MAX_CURRENT_LINEAR_HIGH      =    200
+   linearFeedPerRevolution                  =  25400 // micrometer  
+   linearMicrosteps                         =     16 //
+   linearStepsPerRev                        =    200 //
+   linearMicroStepsPerRev                   =  linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
+   linearMicrostepsPerMM                    =  1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
+   MAX_CURRENT_LINEAR                       =    128 //
+   MAX_CURRENT_LINEAR_HIGH                  =    200
    MAX_CURRENT_LINEAR_SUPER_HIGH_EXPIRIMENT =    255
-   STBY_CURRENT_LINEAR          =     25 //
-   STBY_CURRENT_LINEAR_HIGH     =    150
-   MAX_POS_SPEED_LINEAR         =    500 //
-   ACC_LINEAR                   =      7 // 4 //  10 // 12
+   STBY_CURRENT_LINEAR                      =     25 //
+   STBY_CURRENT_LINEAR_HIGH                 =    150
+   MAX_POS_SPEED_LINEAR_FOR_CALIBRATION     =    650  // slower speed for calibration - for inexperienced users 
+   MAX_POS_SPEED_LINEAR                     =    500 //
+   ACC_LINEAR                               =      7 // 4 //  10 // 12
    
    
    MAX_POS_SPEED_LINEAR_SUPER_HIGH_EXPIRIMENT = 1300
@@ -466,6 +468,7 @@ GB_69                           =     69
    STBY_CUR_ARM              =    80  // 100  //  25 
    STBY_CUR_ARM_HIGH         =   200
    MAX_POS_SPEED_ARM         =   800 // 200  // 400 
+   MAX_POS_SPEED_ARM_FOR_CALIBRATION =   500 // 200  // 400 
    // ARM_DISPOSE_SPEED         =   400  // 
    ACC_ARM                   =    25 //   2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
@@ -508,6 +511,7 @@ GB_74                        =    74
     MAX_POS_SPEED_PIST_SUPER_HIGH_EXPIRIMENT    = 1200
     MAX_POS_SPEED_PIST_FAST       =   800 
     MAX_POS_SPEED_PIST            =   600 // 800 // 600 
+    MAX_POS_SPEED_PIST_FOR_CALIBRATION =   600 // 800 // 600 
     MAX_POS_SPEED_PIST_MED        =   400
     MAX_POS_SPEED_PIST_SLOW       =   100
     MAX_POS_SPEED_PIST_VERY_SLOW  =    50 // 100 // 50
@@ -559,6 +563,7 @@ GB_liquidPresence                =  79 // In_liquidPresence
    STBY_CUR_ROTATE_HIGH          =    200 // while syringe loading
    MAX_POS_SPEED_ROT             =   1300 /// needs same speed for vertical and rotation for coordinated move
    MAX_POS_SPEED_ROT_FAST        =   1000
+   MAX_POS_SPEED_ROT_FOR_CALIBRATION = 600
    SEARCH_SPEED_ROT              =    400 ///
    SWITCH_SPEED_ROT              =     50 ///
    SEARCH_SPEED_ROT_SLOW         =    100

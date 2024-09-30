@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-16                              +
+//+ last edited : 2024-09-29                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1682,6 +1682,7 @@ FIND_HOMES:
     GGP     GB_any_Error, GPbank_2                  // get any error status
     COMP    ANY_ERROR_EXISTS                        // exists?
     JC      EQ, return_FIND_HOME                    // yes, return
+
     CSUB    startHomePistonMotor
     CSUB    startHomeDisposeMotor
     // CSUB    homeCapHolderMotor                   // Linear and Cap holders first to clear the way for vertical
@@ -1896,6 +1897,7 @@ checkSyringeSensor:
 VerticalManual:    // func 136    motor 0
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
     CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
     CALC    MUL, verticalMicroStepsPerMM              
@@ -1912,6 +1914,7 @@ VerticalManual:    // func 136    motor 0
 VerticalManualAbsolute:    // FUNC_146 motor 0
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
     MVPA    ABS, M_verticalMotor                          // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -1994,6 +1997,7 @@ verticalMotorTOerr:
 LinearMotorManual:    //   func 138
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
     CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
     CALC    MUL, linearMicrostepsPerMM                
@@ -2010,6 +2014,7 @@ LinearMotorManual:    //   func 138
 LinearMotorManualAbsolute:    //   FUNC_148
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2             // load the movement [uMeter] into A
     MVPA    ABS, M_linearMotor                           // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
@@ -2113,6 +2118,7 @@ LinearMotorTOerr:
 armMotorManual:    //   func 140
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM_FOR_CALIBRATION // Set slower positioning speed for clibration
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_UnitsToMoveManual, GPbank_2        // load the movement [mDeg] into A
@@ -2131,6 +2137,7 @@ armMotorManual:    //   func 140
 armMotorManualAbsolute:    //   FUNC_150
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM_FOR_CALIBRATION // Set slower positioning speed for clibration
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     GGP     GB_GoToAbsoluteInSteps, GPbank_2        // load the movement [mDeg] into A
     MVPA    ABS, M_armMotor                         // move, wait later
@@ -2210,6 +2217,7 @@ armMotorTOerr:
 PistonManual:    // func 142
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_UnitsToMoveManual, GPbank_2              // load the movement [uMeter] into A
     CALCAV  MUL, GB_moveManualBackwards                 // 1 = forward,  -1 = backward
     CALC    MUL, pistonMicroStepsPerMM           
@@ -2226,6 +2234,7 @@ PistonManual:    // func 142
 PistonManualAbsolute:    // FUNC_152
 
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
+    SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
     MVPA    ABS, M_pistonMotor                            // move, wait later
     SGP     GB_MotorIsMoving, GPbank_2, set
