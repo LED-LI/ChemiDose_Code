@@ -104,7 +104,7 @@ continue_init_cm:
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM  //   5
     SGP     GB_initialVolume, GPbank_2, clr             //  15
     CSUB    checkOkToInitDrawDoze            // check if in right state,         sets STOPPED_ON_ERROR state
-    CSUB    checkNoSyringe                 // check syringe exists,            sets STOPPED_ON_ERROR state //// L.E.D
+    CSUB    verifyNoSyringe                 // check syringe exists,            sets STOPPED_ON_ERROR state //// L.E.D
     CSUB    checkDrawer                      // check if closed and not full and door closed
     CSUB    checkOverFlow         // check if closed and not full and door closed
     CSUB    checkDoorOpen                    // sliding door has to be closed
@@ -518,8 +518,8 @@ emptySyringeToBag:      // empty syringe into the bag //// L.E.D ////
     CALC    OR, BitEr_SyringeNotInBag                   // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
-    CSUB    setStateSTOPPED_ON_ERROR
-    CSUB    setAnyError
+    CSUB    setStateSTOPPED_ON_ERROR_RED
+    CSUB    setAnyErrorRed
     JA      ABORT_NoReport
 resumeEmptySyringeToBag:
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST            // Set maximum positioning speed //// L.E.D //// _MED ??? MAYB
@@ -798,7 +798,7 @@ testLiquidPresence:
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
     CALC    OR, BitEr_SyringeContent_Error              // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    CSUB    setStateSTOPPED_ON_ERROR 
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT_NoReport
    
 Return_testLiquidPresence:   
@@ -884,7 +884,7 @@ measuredIsOutOfAcceptedRange: // Syringe Volume incorrect ( SyringeVolume_Error 
     GGP     GB_errors_syringe_bag, GPbank_2             // load error word
     CALC    OR, BitEr_SyringeVolume_Error               // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
-    CSUB    setStateSTOPPED_ON_ERROR
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT_NoReport
     
 Return_testSyringesVolume:   
@@ -1133,7 +1133,7 @@ VERIFY_READY_DRAW:    //  checks if syringe, vail are in place
     // // // CALCV   LOAD, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION // not right now
     RSUB
 returnVerify:
-    SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
+    // SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
     SGP     GB_readyToDraw, GPbank_2, set               // ready to draw
     RSUB
 
@@ -1778,11 +1778,11 @@ returnCheckInitDraw:
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-checkNoSyringe:
+verifyNoSyringe:
 
     CSUB    checkSyringeSensor                          // put syringe status in A
     COMP    SYRINGE_IN_PLACE                            // is the syringe in?
-    JC      NE, returnCheckNoSyringe                    // if not, continue
+    JC      NE, returnverifyNoSyringe                    // if not, continue
     // syringe found, signal errors
     GGP     GB_special_Error, GPbank_2                  // load the error word
     CALC    OR, BitEr_SyringeIsIn                       // add the error bit
@@ -1791,7 +1791,7 @@ checkNoSyringe:
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT
 
-returnCheckNoSyringe:
+returnverifyNoSyringe:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1807,7 +1807,7 @@ checkNoSyringeFH:
     AGP     GB_errors_findHome, GPbank_2                // and write again
     // STGP    GB_errors_findHome, GPbank_2                // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
-    JA      returnCheckNoSyringeFH
+    JA      returncheckNoSyringeFH
 
 noSyringeFH:
     GGP     GB_errors_findHome, GPbank_2                // load piston error word
@@ -1816,7 +1816,7 @@ noSyringeFH:
     AGP     GB_errors_findHome, GPbank_2                // and write again
     // STGP    GB_errors_findHome, GPbank_2                // and store it
 
-returnCheckNoSyringeFH:
+returncheckNoSyringeFH:
     RSUB
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1830,7 +1830,7 @@ checkSyrPoppedOut:
     CALC    OR, BitEr_syringePoppedOut                  // add the error bit
     AGP     GB_errors_syringe_bag, GPbank_2             // and write again
     // STGP    GB_errors_syringe_bag, GPbank_2             // and store it
-    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    CSUB    setStateSTOPPED_ON_ERROR_RED
     JA      ABORT
 
 returnSyrPoppedOut:
@@ -1999,7 +1999,7 @@ homeVerticalMotor:          // 102  to home switch upwards
 
 verticalMotorTOerr:  
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_verticalMotor, GPbank_2         // load piston error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_verticalMotor, GPbank_2         // and write again
@@ -2120,7 +2120,7 @@ FINDHOMELinearMotorAfterMovingIntoSensor:
 
 LinearMotorTOerr:   
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_linearMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                        // add the error bit
     AGP     GB_errors_M_linearMotor, GPbank_2        // and write again
@@ -2218,7 +2218,7 @@ homeArmMotor:  // 50
 
 armMotorTOerr:  
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_armMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                     // add the error bit
     AGP     GB_errors_M_armMotor, GPbank_2        // and write again
@@ -2397,7 +2397,7 @@ homePistonMotor:     // motor 3   104 // not recomended to use during a RUN afte
     RSUB
 
 startHomePistonMotor:  // 124
-    CSUB    checkNoSyringe                 // stops if syringe is inserted (RFS goes beyond the 0ml of the syringe)
+    CSUB    verifyNoSyringe                 // stops if syringe is inserted (because RFS goes beyond the 0ml of the syringe)
     SAP     AP_RefSearchMode,  M_pistonMotor, APV_RefLeftSwitch  
     RFS     START, M_pistonMotor                                          // Start reference search
     RSUB
@@ -2411,7 +2411,7 @@ positionPistonMotor:       // func 106                                          
 
 pistonMotorTOerr:   
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_pistonMotor, GPbank_2           // load piston error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_pistonMotor, GPbank_2           // and write again
@@ -2566,7 +2566,7 @@ homeHeadRotateMotorFast:
 
 headRotateMotorTOerr:
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_headRotateMotor, GPbank_2        // load piston error word
     CALC    OR, BitEr_TimeOut                            // add the error bit
     AGP     GB_errors_M_headRotateMotor, GPbank_2        // and write again
@@ -2655,7 +2655,7 @@ waitHomeDisposeMotor:
 
 disposeMotorTOerr:
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_disposeMotor, GPbank_2         // load disposal error word
     CALC    OR, BitEr_TimeOut                          // add the error bit
     AGP     GB_errors_M_disposeMotor, GPbank_2         // and write again
@@ -2752,7 +2752,7 @@ holdCap:  // func 118
 
 capHolderMotorTOerr:
 
-    CSUB    setAnyError
+    CSUB    setAnyErrorRed
     GGP     GB_errors_M_capHolderMotor, GPbank_2        // load cap holder error word
     CALC    OR, BitEr_TimeOut                           // add the error bit
     AGP     GB_errors_M_capHolderMotor, GPbank_2        // and write again
@@ -2868,7 +2868,7 @@ errorVibrateParameter:
     CALC    OR, BitEr_vibrateParemeterError             // add the error bit
     AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
     // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
-    CSUB    setStateSTOPPED_ON_ERROR
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT_NoReport
     
 endVibrate:
@@ -2942,22 +2942,37 @@ returnHomeCalibration:
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-setStateSTOPPED_ON_ERROR:
+// setStateSTOPPED_ON_ERROR:
 
-    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
-    CSUB    setAnyError
+    // SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    // CSUB    setAnyError
+    // RSUB
+// // ++++++++++++++++++++++++++++++++++++
+setStateSTOPPED_ON_ERROR_RED:
+
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR_RED
+    CSUB    setAnyErrorRed
     RSUB
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 setStateSTOPPED_ON_ERROR_Yellow:
 
-    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR
+    SGP     GB_CurrentState, GPbank_2, STOPPED_ON_ERROR_YELLOW
     // STGP    GB_CurrentState, GPbank_2
     CSUB    setAnyErrorYellow
     RSUB
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-setAnyError:
+// setAnyError:
+
+    // SGP     GB_any_Error, GPbank_2, set                  // signal error: general
+    // // STGP    GB_any_Error, GPbank_2                       // declare any error  
+    // CSUB    RED_ON
+    // RSUB
+
+// // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+setAnyErrorRed:
 
     SGP     GB_any_Error, GPbank_2, set                  // signal error: general
     // STGP    GB_any_Error, GPbank_2                       // declare any error  
