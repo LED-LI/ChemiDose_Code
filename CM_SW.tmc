@@ -3063,7 +3063,7 @@ ejectSyringeFromBottomVial: // FUNC_110
 moveToLDcalibLocation: // func_130 // positioning to Laser distance calicration location
     
     // // // CALCV   COMP, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION
-    JC      NE, returnFromMoveToLDcalibLocation
+    // JC      NE, retu rnFromMoveToLDcalibLocation
     CSUB    verifySyringe
     CSUB    decap
     CSUB    goIntoBag
@@ -3076,7 +3076,7 @@ returnFromMoveToLDcalibLocation:
 moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib location back to loading position
     
     // // // CALCV   COMP, GB_isSyringeLinearAxisInCapLocation, SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION
-    JC      EQ, returnFromMoveFromLDcalibLocation
+    // JC      EQ, returnFromMoveFromLDcalibLocation
     CSUB    positionVerticalMotor // includes home to vertical inside
     CSUB    FINDHOMELinearMotor
     CSUB    HomeHeadRotateMotor
