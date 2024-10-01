@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-30                              +
+//+ last edited : 2024-10-01                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1648,8 +1648,8 @@ drawFromBag:
     // MVPA    REL, M_pistonMotor                          // move, wait later // draw required volume
     CSUB    movePiston_REL_uL
     CSUB    waitPistonDraw
-    CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
+    CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
     CALC    DIV, 100                                    // now in uSteps
     CALCAV  ADD, GB_PistonHomePos                       // consider starting point of syringes calibration - to start the ABS movement
     CSUB    movePiston_ABS
