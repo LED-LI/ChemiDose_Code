@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-10-01                              +
+//+ last edited : 2024-10-02                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -261,7 +261,9 @@ fillandVibrate_456:
     JC      NE, checkVibrate_456                                    // if no filling is needed, skip to check if vibrations ar needed
 
 // ------------------------------------------------------------
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM_SLOWER          // lower arm acceleration for travel whole holding vials
     // CSUB    lower_arm
+    SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM_FAST   // very fast speed for search only for fill procedure process
     CSUB    startHomeArmMotor                                          // complete the lower arm in 'fillvials'
 // ------------------------------------------------------------
 
@@ -309,6 +311,9 @@ checkVibrate_456:
 raiseArmIfOnlyFilledVials:
     CSUB    raise_arm
 returnfillandVibrate_456:
+    // return to normal arm axis settings
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM
+    SAP     AP_RefSearchSpeed, M_armMotor, SEARCH_SPEED_ARM
     RSUB
 
 
@@ -408,6 +413,8 @@ exitcheckFillingAndVibrationNeeded:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 lower_arm:    
 
+    CALC    LOAD, 0
+    CSUB    moveArmMotor
     CSUB    homeArmMotor                                          // to home switch upwards
     GGP     GB_armAtBottom, GPbank_2             // load to A
     CSUB    moveArmMotor
@@ -689,7 +696,7 @@ returnloadCurrentParameters:
     CALCVV  LOAD, GB_currentVialLinearLocation, GB_linearCenterOfVial4AtBottom
     CALCAV  LOAD, GB_current_Vial                // load the vial number 1 -> 6 
     CALC    SUB, 4                               // now 0 -> 2 for vials 4 -> 6 
-    CALC    MUL, LINEAR_VIALS_SPACE              // multiply by the space between vials 
+    CALC    MUL, (LINEAR_VIALS_SPACE - linearMicrostepsPerMM) // multiply by the space between vials (minus - 1mm)
     CALCVA  ADD, GB_currentVialLinearLocation    // add to the initial vial 4 location (GB_currentVialLinearLocation), result of total distance goes to A
 
 returnloadCurrentParametersFill:   // for GB_current_Vial

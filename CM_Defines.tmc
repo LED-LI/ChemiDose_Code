@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-30                              +
+//+ last edited : 2024-10-02                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20240930
+CURRENT_VERSION      =  20241002
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -473,7 +473,9 @@ GB_69                           =     69
    MAX_POS_SPEED_ARM_FOR_CALIBRATION =   500 // 200  // 400 
    // ARM_DISPOSE_SPEED         =   400  // 
    ACC_ARM                   =    25 //   2  //  60  
+   ACC_ARM_SLOWER            =    10 //   2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
+   SEARCH_SPEED_ARM_FAST     =   500
    SWITCH_SPEED_ARM          =    50 
    MAX_CURRENT_ARM           =   255  // 200 
 
