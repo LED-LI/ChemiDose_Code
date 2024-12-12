@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-09-30                              +
+//+ last edited : 2024-12-12                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -83,49 +83,75 @@ continueClearErrors:    // stack is now empty
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 setDefaultParams: // func_168
     
-    //////////////////////////////////////////////////
-    // vertical /////////////////////////////////////
-    CALCV   LOAD, GB_BumpPosVert,   -5000   //  9 //
-    CALCV   LOAD, GB_verticalCapPos, 6000  //  8 //
-    CALCV   LOAD, GB_setBumpBottom,  7000 // 13 //
-    /////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////
-    // linear ////////////////////////////////////////////////////////
-    CALCV   LOAD, GB_linearCenterOfVial1,            2500    // 53 // 
-    CALCV   LOAD, GB_linearSyringeLoading,          -7000   // 54 //
-    CALCV   LOAD, GB_linearCenterOfVial4AtTop,      22000  // 46 //
-    CALCV   LOAD, GB_linearCenterOfVial4AtBottom,   18000 // 51 // 
-    /////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////
-    // arm ////////////////////////////////////////////////
-    CALCV   LOAD, GB_ArmUnderVialPosition, -300   // 47 //
-    CALCV   LOAD, GB_ArmDropVials456Pos,   -500  // 24 //
-    CALCV   LOAD, GB_armAtBottom,         15000 // 55 //
-    ///////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////
-    // piston ///////////////////////////////////////////////////////
-    CALCV   LOAD, GB_PistonHomePos,               3000      // 48 //
-    CALCV   LOAD, GB_min_vol_laserDist_AVAL,      3500     // 14 //
-    CALCV   LOAD, GB_max_vol_laserDist_AVAL,      1000    // 15 //
-    CALCV   LOAD, GB_accepted_diviation_range,      95   // 17 //
-    CALCV   LOAD, GB_piston_defined_vol_uL,      15000  // 16 //
-    CALCV   LOAD, GB_liquid_detection_border_aval, 500 // 19 //
-    //////////////////////////////////////////////////////////
-    
-    ////////////////////////////////////////////////////////
-    // head rotate ////////////////////////////////////////
-    CALCV   LOAD, GB_HeadRotatePointUp,     100   // 50 //
-    CALCV   LOAD, GB_HeadRotatePointLeft, 16000  // 49 //
-    CALCV   LOAD, GB_HeadRotatePointDown, 32000 // 52 //
-    ///////////////////////////////////////////////////
-
     /////////////////////////////////////////////////////
-    // dispose /////////////////////////////////////////
-    CALCV   LOAD, GB_DisposeDropVialsPos, 4000 // 23 //
+    // vertical ////////////////////////////////////////
+    CALCV   LOAD, GB_BumpPosVert,   -5000   //  GB_9 //
+    CALCV   LOAD, GB_verticalCapPos, 6000  //  GB_8 //
+    CALCV   LOAD, GB_setBumpBottom,  7000 // GB_13 //
+    ////////////////////////////////////////////////
+    STGP    GB_BumpPosVert,    GPbank_2          //
+    STGP    GB_verticalCapPos, GPbank_2         //
+    STGP    GB_setBumpBottom,  GPbank_2        //
+    ////////////////////////////////////////////
+                                             
+    //////////////////////////////////////////////////////////////////////
+    // linear ///////////////////////////////////////////////////////////
+    CALCV   LOAD, GB_linearCenterOfVial1,            2500    // GB_53 // 
+    CALCV   LOAD, GB_linearSyringeLoading,          -7000   // GB_54 //
+    CALCV   LOAD, GB_linearCenterOfVial4AtTop,      22000  // GB_46 //
+    CALCV   LOAD, GB_linearCenterOfVial4AtBottom,   18000 // GB_51 // 
+    ////////////////////////////////////////////////////////////////
+    STGP    GB_linearCenterOfVial1,         GPbank_2             //
+    STGP    GB_linearSyringeLoading,        GPbank_2            //
+    STGP    GB_linearCenterOfVial4AtTop,    GPbank_2           //
+    STGP    GB_linearCenterOfVial4AtBottom, GPbank_2          // 
+    ///////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////
+    // arm ///////////////////////////////////////////////////
+    CALCV   LOAD, GB_ArmUnderVialPosition, -300   // GB_47 //
+    CALCV   LOAD, GB_ArmDropVials456Pos,   -500  // GB_24 //
+    CALCV   LOAD, GB_armAtBottom,         15000 // GB_55 //
+    //////////////////////////////////////////////////////
+    STGP    GB_ArmUnderVialPosition, GPbank_2          //
+    STGP    GB_ArmDropVials456Pos,   GPbank_2         //
+    STGP    GB_armAtBottom,          GPbank_2        //
     //////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    // piston //////////////////////////////////////////////////////////
+    CALCV   LOAD, GB_PistonHomePos,               3000      // GB_48 //
+    CALCV   LOAD, GB_min_vol_laserDist_AVAL,      3500     // GB_14 //
+    CALCV   LOAD, GB_max_vol_laserDist_AVAL,      1000    // GB_15 //
+    CALCV   LOAD, GB_accepted_diviation_range,      95   // GB_17 //
+    CALCV   LOAD, GB_piston_defined_vol_uL,      15000  // GB_16 //
+    CALCV   LOAD, GB_liquid_detection_border_aval, 500 // GB_19 //
+    /////////////////////////////////////////////////////////////
+    STGP    GB_PistonHomePos,                GPbank_2         //
+    STGP    GB_min_vol_laserDist_AVAL,       GPbank_2        //
+    STGP    GB_max_vol_laserDist_AVAL,       GPbank_2       //
+    STGP    GB_accepted_diviation_range,     GPbank_2      //
+    STGP    GB_piston_defined_vol_uL,        GPbank_2     //
+    STGP    GB_liquid_detection_border_aval, GPbank_2    //
+    //////////////////////////////////////////////////////
+    
+    ///////////////////////////////////////////////////////////
+    // head rotate ///////////////////////////////////////////
+    CALCV   LOAD, GB_HeadRotatePointUp,     100   // GB_50 //
+    CALCV   LOAD, GB_HeadRotatePointLeft, 16000  // GB_49 //
+    CALCV   LOAD, GB_HeadRotatePointDown, 32000 // GB_52 //
+    //////////////////////////////////////////////////////
+    STGP    GB_HeadRotatePointUp,   GPbank_2           //
+    STGP    GB_HeadRotatePointLeft, GPbank_2          //
+    STGP    GB_HeadRotatePointDown, GPbank_2         //
+    //////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////
+    // dispose ////////////////////////////////////////////
+    CALCV   LOAD, GB_DisposeDropVialsPos, 4000 // GB_23 //
+    /////////////////////////////////////////////////////
+    STGP    GB_DisposeDropVialsPos, GPbank_2          //
+    ///////////////////////////////////////////////////
 
     RSUB
 
@@ -165,7 +191,7 @@ setToDevMode: // func_172 // for development enviorement only !!!
     CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_Y
     CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_Y
     CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE // 15000
-    CALCV   LOAD, GB_accepted_diviation_range, 95 // 
+    CALCV   LOAD, GB_accepted_diviation_range, BYPASS_ACCEPTED_DIVIATION_RANGE_VALUE // an arbitrary number that will cause the robot to skip the diviation test
     CALCV   LOAD, GB_liquid_detection_border_aval, 500 
     CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
     CALCV   LOAD, GB_disposeYN, DISPOSE_N

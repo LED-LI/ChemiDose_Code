@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-10-02                              +
+//+ last edited : 2024-12-12                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241002
+CURRENT_VERSION      =  20241212
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -138,6 +138,7 @@ GB_bypassDrawerClosedAndCheckOverFlowYN =  5
 GB_bypassBannerSensorsYN                =  6 
     BYPASS_Y =    1 // when value is set (1) -> ignore sensor
     BYPASS_N =    0 // when value is set (0) -> dont ignore sensor
+BYPASS_ACCEPTED_DIVIATION_RANGE_VALUE   = 666
 
 GB_RobotSerialNumber         =   7 // 6    // (2030006)  2 = CM, 03 = HW ver,  0006 = machine #) // Write serial number -> will be set by calibration on GB_6
 

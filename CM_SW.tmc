@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-10-02                              +
+//+ last edited : 2024-12-12                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -881,6 +881,10 @@ testSyringesVolume:
     
 // step #3 : calculate if the measured amount of liquid is in the accepted range
 // [ GB_microLtoWithdraw_current * ( 100 - GB_accepted_diviation_range )% ] / 100 < GB_messuredAmountOfLiquid < [ GB_microLtoWithdraw_current * ( 100 + GB_accepted_diviation_range )% ] / 100
+    
+    // bypass and skip the diviation test if set to do so
+    CALCV   COMP, GB_accepted_diviation_range, BYPASS_ACCEPTED_DIVIATION_RANGE_VALUE // Mnemonic: CALCV <operation>, <var>, <value>  // COMP – compare <var> with <value>
+    JC      EQ, Return_testSyringesVolume               // Mnemonic: JC <condition>, <label>    // EQ - equal
     
     // [ GB_microLtoWithdraw_current * ( 100 - GB_accepted_diviation_range )% ] / 100 < GB_messuredAmountOfLiquid
     CALC    LOAD, 100                                   // load 100(%) to A
@@ -2306,8 +2310,6 @@ pistCoordAreAboveMin:
     // // // // // // // // // // // // // // CALCAV  MUL, GB_PistonFactor                                  // calc factor for adjustment of difference between machine (100 is no change)
     // // // // // // // // // // // // // // CALC    DIV, 100
     CALCAV  LOAD, GB_TempNumHolder
-// CALCVV  COMP, GB_current_diviation, GB_accepted_diviation_range
-// JC      GE, Return_testSyringesVolume               // if accepted_diviation is greater than or equal to the current_diviation
     // COMP    MAX_PIST_IN_USTEPS
     CALCVV  COMP, GB_TempNumHolder, GB_calcedMaxPistUStepsDefined // COMP – compare <var1> with <var2>
     JC      LE, pistUSeptsInRange
