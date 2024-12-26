@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-12                              +
+//+ last edited : 2024-12-26                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -295,8 +295,13 @@ checkVibrate_456:
 ///////////////////////////////// L.E.D ////////////////////// TODO - ADD - where and to vibrate ( up / down / middle / while swinging up and down / shake ?! )
  
 // ------------------------------------------------------------
-    CSUB    Vibrate              // run the vibration. Returns immediately
-// ----------------------        // vibration is stopped by timer interrupts
+    CSUB    Tilt // substitute to the vibration. does not return immediately. (Blocking, it is possible to change it in the future to a non-blocking method)
+
+
+
+
+    // CSUB    Vibrate               // run the vibration. Returns immediately
+    // ----------------------        // vibration is stopped by timer interrupts
 
 
 // ------------------------------------------------------------
@@ -306,7 +311,7 @@ checkVibrate_456:
 
 
 
-    CSUB    waitDoneVibrate  
+    // CSUB    waitDoneVibrate  
 
 raiseArmIfOnlyFilledVials:
     CSUB    raise_arm
@@ -2810,94 +2815,228 @@ StopVibrate:   // FUNC 120
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Vibrate:   // FUNC 114   
+Tilt:   // FUNC 174
 
-// GB_vibrationTime_4           = 114        // Input: in seconds
-// GB_vibrationTime_4_calc      = 115
-// GB_vibrationTime_56          = 116        // Input: in seconds
-// GB_vibrationTime_56_calc     = 117
-// GB_vibrationDutyCyclePercent = 123        // 10/20/30/40/.../100
-// GB_vibrStrengthPercentCalc   = 119        // Input: %  vibrationStrength
-// GB_PwmDutyCycleMS            = 120        // calculated [ms]
-// GB_vibrator4done             = 121
-// GB_vibrator56done            = 122
-// GB_vibrationCycleMS          = 124        // ms
-// GB_vibrationHz               = 125        // Input: data input
-
-//  reset current vibration
-    CSUB   StopVibrate
-
-// check strength validity                       // acceptable values 10-100
-    GGP     GB_vibrationDutyCyclePercent, GPbank_2
-    COMP    10               
-    JC      LT, errorVibrateParameter
-    //GGP      GB_vibrationDutyCyclePercent, GPbank_2
-    COMP    100
-    JC      GT, errorVibrateParameter
-
-// check HZ validity                       // acceptable values 4-100 HZ
-    GGP     GB_vibrationHz, GPbank_2
-    COMP    100
-    JC      GT, errorVibrateParameter
-    //GGP      GB_vibrationHz, GPbank_2
-    COMP    4
-    JC      LT, errorVibrateParameter
-
-// check TIME validity                       // acceptable values > 0 [s]
-    GGP     GB_vibrationTime_4, GPbank_2
-    COMP    0
-    JC      LT, errorVibrateParameter
-    SGP     GB_vibrator4done, GPbank_2, 0     // assume, will sign when it finished
-    JC      NE, check56
-    SGP     GB_vibrator4done, GPbank_2, 1     // will sign when it finished
-check56:
-    GGP     GB_vibrationTime_56, GPbank_2
-    COMP    0
-    JC      LT, errorVibrateParameter
-    SGP     GB_vibrator56done, GPbank_2, 0    // assume, will sign when it finished
-    JC      NE, loadParameters
-    SGP     GB_vibrator56done, GPbank_2, 1    // will sign when it finished
- 
-loadParameters:
-
-    GGP     GB_vibration4IsNeeded, GPbank_2
-    COMP    clr
-    JC      EQ, setVibration56Time
-    CALCVV  LOAD, GB_vibrationTime_4_calc, GB_vibrationTime_4
-    
-  setVibration56Time:
-    GGP     GB_vibration56IsNeeded, GPbank_2
-    COMP    clr
-    JC      EQ, doneSetVibrationTime
-    CALCVV  LOAD, GB_vibrationTime_56_calc, GB_vibrationTime_56
-
-  doneSetVibrationTime:
-// calculate cycle time from HZ
-    CALC    LOAD, 500                     // load 500 to A
-    CALCAV  DIV, GB_vibrationHz           // cycle MS = 500(=A) / HZ = 1000/Hz/2
-    CALCVA  LOAD, GB_vibrationCycleMS     // load into GB
-
-// calculate duty cycle time:  pecentage of the full cycle
-    CALCVV  LOAD, GB_vibrStrengthPercentCalc, GB_vibrationDutyCyclePercent
-    //CALCV    MUL, GB_vibrStrengthPercentCalc, 10                  // 1->10 ... 10->100 
-    CALCVV  LOAD, GB_PwmDutyCycleMS, GB_vibrationCycleMS           // ms
-    CALCVV  MUL, GB_PwmDutyCycleMS, GB_vibrStrengthPercentCalc     // ms * % *100
-    CALCV   DIV, GB_PwmDutyCycleMS, 100                            // :100 = ms
-
-    // ----- RUN VIBRATIONS ------
-    CSUB   initInterrups                     // re-initialize
     // ---------------------------
-    JA     endVibrate
+    // CALCVV  LOAD, GB_tiltsCounter, GB_numberOfTilts // sets tilts amount in the tilt counter
+    // ---------------------------
 
-errorVibrateParameter:
+    // ---------------------------
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
+    // ---------------------------
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM
+    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    // ---------------------------
+
+    // ---------------------------
+    CALCV   LOAD, GB_tiltsCounter, 3 // for initial purposes test
+    // ---------------------------
+
+  LoopTilts:
+    // CALCV   COMP, GB_numberOfTilts, 0 // exits loop if wrong inputs of tilts amount
+    // JC      LE, endTilt
+    // ---------------------------
+    CALC    LOAD, 15000
+    CSUB    moveArmMotor
+    // ---------------------------
+    CALC    LOAD, -100
+    CSUB    moveArmMotor
+    // ---------------------------
+    
+    // ---------------------------
+    CSUB    Shake
+    // ---------------------------
+    
+    DJNZ GB_tiltsCounter, LoopTilts
+    // ---------------------------
+    JA     endTilt
+
+errorTiltParameter: // not used yet
     GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
-    CALC    OR, BitEr_vibrateParemeterError             // add the error bit
+    CALC    OR, BitEr_tiltParemeterError             // add the error bit
     AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
     // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT_NoReport
     
-endVibrate:
+endTilt:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Shake:   // FUNC 176
+
+    // ---------------------------
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
+    // ---------------------------
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM
+    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    // ---------------------------
+    
+    // ---------------------------
+    CALCV   LOAD, GB_shakeTravelDistance, 1000 // for initial purposes test
+    CALCV   LOAD, GB_numberOfShakes,         3 // for initial purposes test
+    CALCV   LOAD, GB_shakesCounter,           3 // for initial purposes test
+    // ---------------------------
+
+    // ---------------------------
+    // -- if error --
+    // CALCV   COMP, GB_numberOfShakes, 0 // exits loop if wrong inputs of shakes amount
+    // JC      LE, endShake
+    // ---------------------------
+
+    // ---------------------------
+    // goto bottom for first shake = GO DOWN
+    CALCAV  LOAD, GB_armAtBottom
+    CALCAV  SUB, GB_shakeTravelDistance // avoid bottom axis edge 
+    CALCAV  SUB, GB_shakeTravelDistance // double the distance
+    CSUB    moveArmMotor
+    // ---------------------------
+
+    CALCVV  LOAD, GB_shakesCounter, GB_numberOfShakes // load amount of shakes requested
+  LoopShakesBottom:
+    // ---------------------------
+    CALCAV  LOAD, GB_shakeTravelDistance
+    MVPA    REL, M_armMotor
+    CSUB    waitArmMotor
+    // ---------------------------
+    // CALCAV  LOAD, GB_shakeTravelDistance // not sure if needed
+    CALC    MUL, -1
+    MVPA    REL, M_armMotor
+    CSUB    waitArmMotor
+    // ---------------------------
+    DJNZ GB_shakesCounter, LoopShakesBottom
+    // ---------------------------
+
+
+    // ---------------------------
+    // goto top for second shake = GO UP
+    CALCAV  LOAD, GB_ArmUnderVialPosition
+    CALCAV  ADD, GB_shakeTravelDistance // avoid top axis edge 
+    CALCAV  ADD, GB_shakeTravelDistance // double the distance
+    CSUB    moveArmMotor
+    // ---------------------------
+
+    CALCVV  LOAD, GB_shakesCounter, GB_numberOfShakes // load amount of shakes requested
+  LoopShakesTop:
+    // ---------------------------
+    CALCAV  LOAD, GB_shakeTravelDistance
+    MVPA    REL, M_armMotor
+    CSUB    waitArmMotor
+    // ---------------------------
+    // CALCAV  LOAD, GB_shakeTravelDistance // not sure if needed
+    CALC    MUL, -1
+    MVPA    REL, M_armMotor
+    CSUB    waitArmMotor
+    // ---------------------------
+    DJNZ GB_shakesCounter, LoopShakesTop
+    // ---------------------------
+
+    JA     endShake
+
+errorShakeParameter: // not used yet
+    GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
+    CALC    OR, BitEr_shakeParemeterError             // add the error bit
+    AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
+    // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
+    CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    JA      ABORT_NoReport
+    
+endShake:
+    RSUB
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Vibrate:   // FUNC 114   
+
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationTime_4           = 114        // Input: in seconds
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationTime_4_calc      = 115
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationTime_56          = 116        // Input: in seconds
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationTime_56_calc     = 117
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationDutyCyclePercent = 123        // 10/20/30/40/.../100
+// // // // // // // // // // // // // // // // // // // // // GB_vibrStrengthPercentCalc   = 119        // Input: %  vibrationStrength
+// // // // // // // // // // // // // // // // // // // // // GB_PwmDutyCycleMS            = 120        // calculated [ms]
+// // // // // // // // // // // // // // // // // // // // // GB_vibrator4done             = 121
+// // // // // // // // // // // // // // // // // // // // // GB_vibrator56done            = 122
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationCycleMS          = 124        // ms
+// // // // // // // // // // // // // // // // // // // // // GB_vibrationHz               = 125        // Input: data input
+
+// // // // // // // // // // // // // // // // // // // // //  reset current vibration
+    // // // // // // // // // // // // // // // // // // // // CSUB   StopVibrate
+
+// // // // // // // // // // // // // // // // // // // // // check strength validity                       // acceptable values 10-100
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibrationDutyCyclePercent, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    10               
+    // // // // // // // // // // // // // // // // // // // // JC      LT, errorVibrateParameter
+    // // // // // // // // // // // // // // // // // // // // //GGP      GB_vibrationDutyCyclePercent, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    100
+    // // // // // // // // // // // // // // // // // // // // JC      GT, errorVibrateParameter
+
+// // // // // // // // // // // // // // // // // // // // // check HZ validity                       // acceptable values 4-100 HZ
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibrationHz, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    100
+    // // // // // // // // // // // // // // // // // // // // JC      GT, errorVibrateParameter
+    // // // // // // // // // // // // // // // // // // // // //GGP      GB_vibrationHz, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    4
+    // // // // // // // // // // // // // // // // // // // // JC      LT, errorVibrateParameter
+
+// // // // // // // // // // // // // // // // // // // // // check TIME validity                       // acceptable values > 0 [s]
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibrationTime_4, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    0
+    // // // // // // // // // // // // // // // // // // // // JC      LT, errorVibrateParameter
+    // // // // // // // // // // // // // // // // // // // // SGP     GB_vibrator4done, GPbank_2, 0     // assume, will sign when it finished
+    // // // // // // // // // // // // // // // // // // // // JC      NE, check56
+    // // // // // // // // // // // // // // // // // // // // SGP     GB_vibrator4done, GPbank_2, 1     // will sign when it finished
+// // // // // // // // // // // // // // // // // // // // check56:
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibrationTime_56, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    0
+    // // // // // // // // // // // // // // // // // // // // JC      LT, errorVibrateParameter
+    // // // // // // // // // // // // // // // // // // // // SGP     GB_vibrator56done, GPbank_2, 0    // assume, will sign when it finished
+    // // // // // // // // // // // // // // // // // // // // JC      NE, loadParameters
+    // // // // // // // // // // // // // // // // // // // // SGP     GB_vibrator56done, GPbank_2, 1    // will sign when it finished
+ 
+// // // // // // // // // // // // // // // // // // // // loadParameters:
+
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibration4IsNeeded, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    clr
+    // // // // // // // // // // // // // // // // // // // // JC      EQ, setVibration56Time
+    // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_vibrationTime_4_calc, GB_vibrationTime_4
+    
+  // // // // // // // // // // // // // // // // // // // // setVibration56Time:
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_vibration56IsNeeded, GPbank_2
+    // // // // // // // // // // // // // // // // // // // // COMP    clr
+    // // // // // // // // // // // // // // // // // // // // JC      EQ, doneSetVibrationTime
+    // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_vibrationTime_56_calc, GB_vibrationTime_56
+
+  // // // // // // // // // // // // // // // // // // // // doneSetVibrationTime:
+// // // // // // // // // // // // // // // // // // // // // calculate cycle time from HZ
+    // // // // // // // // // // // // // // // // // // // // CALC    LOAD, 500                     // load 500 to A
+    // // // // // // // // // // // // // // // // // // // // CALCAV  DIV, GB_vibrationHz           // cycle MS = 500(=A) / HZ = 1000/Hz/2
+    // // // // // // // // // // // // // // // // // // // // CALCVA  LOAD, GB_vibrationCycleMS     // load into GB
+
+// // // // // // // // // // // // // // // // // // // // // calculate duty cycle time:  pecentage of the full cycle
+    // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_vibrStrengthPercentCalc, GB_vibrationDutyCyclePercent
+    // // // // // // // // // // // // // // // // // // // // //CALCV    MUL, GB_vibrStrengthPercentCalc, 10                  // 1->10 ... 10->100 
+    // // // // // // // // // // // // // // // // // // // // CALCVV  LOAD, GB_PwmDutyCycleMS, GB_vibrationCycleMS           // ms
+    // // // // // // // // // // // // // // // // // // // // CALCVV  MUL, GB_PwmDutyCycleMS, GB_vibrStrengthPercentCalc     // ms * % *100
+    // // // // // // // // // // // // // // // // // // // // CALCV   DIV, GB_PwmDutyCycleMS, 100                            // :100 = ms
+
+    // // // // // // // // // // // // // // // // // // // // // ----- RUN VIBRATIONS ------
+    // // // // // // // // // // // // // // // // // // // // CSUB   initInterrups                     // re-initialize
+    // // // // // // // // // // // // // // // // // // // // // ---------------------------
+    // // // // // // // // // // // // // // // // // // // // JA     endVibrate
+
+// // // // // // // // // // // // // // // // // // // // errorVibrateParameter:
+    // // // // // // // // // // // // // // // // // // // // GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
+    // // // // // // // // // // // // // // // // // // // // CALC    OR, BitEr_vibrateParemeterError             // add the error bit
+    // // // // // // // // // // // // // // // // // // // // AGP     GB_errors_wrong_PC_command, GPbank_2        // and write again
+    // // // // // // // // // // // // // // // // // // // // // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
+    // // // // // // // // // // // // // // // // // // // // CSUB    setStateSTOPPED_ON_ERROR_Yellow
+    // // // // // // // // // // // // // // // // // // // // JA      ABORT_NoReport
+    
+// // // // // // // // // // // // // // // // // // // // endVibrate:
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

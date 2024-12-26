@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-12                              +
+//+ last edited : 2024-12-26                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241212
+CURRENT_VERSION      =  20241226
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -248,8 +248,8 @@ GB_errors_wrong_PC_command      = 44
     BitEr_expecting_WAITING_DISPENSE    =  %00000010 // bit   2
     BitEr_c3                            =  %00000100 // bit   4
     BitEr_vibrateParemeterError         =  %00001000 // bit   8
-    BitEr_c5                            =  %00010000 // bit  16
-    BitEr_c6                            =  %00100000 // bit  32
+    BitEr_tiltParemeterError            =  %00010000 // bit  16
+    BitEr_shakeParemeterError           =  %00100000 // bit  32
     BitEr_c7                            =  %01000000 // bit  64
     BitEr_c8                            =  %10000000 // bit 128
 
@@ -849,12 +849,12 @@ GB_243                           =   243
 GB_244                           =   244
 GB_245                           =   245
 GB_246                           =   246
-GB_247                           =   247
-GB_248                           =   248
-GB_249                           =   249
+GB_shakeTravelDistance           =   247
+GB_numberOfShakes                =   248
+GB_shakesCounter                 =   249
 
-GB_250                           =   250
-GB_251                           =   251
+GB_numberOfTilts                 =   250
+GB_tiltsCounter                  =   251
 
 // GB_skipCheckVial456                     =   250
 // GB_skipCheckBag                         =   251
@@ -1060,7 +1060,91 @@ func_170:  CSUB setOutOfTheBox
            JA     backGroundProcess
 func_172:  CSUB setToDevMode
            JA     backGroundProcess
-func_174:  CSUB dummy_sub
+func_174:  CSUB Tilt
+           JA     backGroundProcess
+func_176:  CSUB Shake
+           JA     backGroundProcess
+
+
+
+// not used - reserved for future use
+func_178:  CSUB dummy_sub
+           JA     backGroundProcess
+func_180:  CSUB dummy_sub
+           JA     backGroundProcess
+func_182:  CSUB dummy_sub
+           JA     backGroundProcess
+func_184:  CSUB dummy_sub
+           JA     backGroundProcess
+func_186:  CSUB dummy_sub
+           JA     backGroundProcess
+func_188:  CSUB dummy_sub
+           JA     backGroundProcess
+func_190:  CSUB dummy_sub
+           JA     backGroundProcess
+func_192:  CSUB dummy_sub
+           JA     backGroundProcess
+func_194:  CSUB dummy_sub
+           JA     backGroundProcess
+func_196:  CSUB dummy_sub
+           JA     backGroundProcess
+func_198:  CSUB dummy_sub
+           JA     backGroundProcess
+func_200:  CSUB dummy_sub
+           JA     backGroundProcess
+func_202:  CSUB dummy_sub
+           JA     backGroundProcess
+func_204:  CSUB dummy_sub
+           JA     backGroundProcess
+func_206:  CSUB dummy_sub
+           JA     backGroundProcess
+func_208:  CSUB dummy_sub
+           JA     backGroundProcess
+func_210:  CSUB dummy_sub
+           JA     backGroundProcess
+func_212:  CSUB dummy_sub
+           JA     backGroundProcess
+func_214:  CSUB dummy_sub
+           JA     backGroundProcess
+func_216:  CSUB dummy_sub
+           JA     backGroundProcess
+func_218:  CSUB dummy_sub
+           JA     backGroundProcess
+func_220:  CSUB dummy_sub
+           JA     backGroundProcess
+func_222:  CSUB dummy_sub
+           JA     backGroundProcess
+func_224:  CSUB dummy_sub
+           JA     backGroundProcess
+func_226:  CSUB dummy_sub
+           JA     backGroundProcess
+func_228:  CSUB dummy_sub
+           JA     backGroundProcess
+func_230:  CSUB dummy_sub
+           JA     backGroundProcess
+func_232:  CSUB dummy_sub
+           JA     backGroundProcess
+func_234:  CSUB dummy_sub
+           JA     backGroundProcess
+func_236:  CSUB dummy_sub
+           JA     backGroundProcess
+func_238:  CSUB dummy_sub
+           JA     backGroundProcess
+func_240:  CSUB dummy_sub
+           JA     backGroundProcess
+func_242:  CSUB dummy_sub
+           JA     backGroundProcess
+func_244:  CSUB dummy_sub
+           JA     backGroundProcess
+func_246:  CSUB dummy_sub
+           JA     backGroundProcess
+func_248:  CSUB dummy_sub
+           JA     backGroundProcess
+func_250:  CSUB dummy_sub
+           JA     backGroundProcess
+func_252:  CSUB dummy_sub
+           JA     backGroundProcess
+func_254:  CSUB dummy_sub
            JA     backGroundProcess
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
