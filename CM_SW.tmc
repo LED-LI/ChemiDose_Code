@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-26                              +
+//+ last edited : 2024-12-30                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -250,7 +250,7 @@ continueAfterDraw:
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-fillandVibrate_456:
+fillandVibrate_456: // // // will now be fill and tilt .. 
 
  // check if any vibration is needed, if no, return.
     CSUB    checkFillingAndVibrationNeeded
@@ -365,14 +365,14 @@ waitDoneVibrate:
 checkFillingAndVibrationNeeded:
 
     SGP    GB_vibrationIsNeeded, GPbank_2, clr               // reset need of vibrating
-    SGP    GB_vibration4IsNeeded, GPbank_2, clr              // assume no need to vibrate vial 4
-    SGP    GB_vibration56IsNeeded, GPbank_2, clr             // assume no need to vibrate vials 5&6
+    // SGP    GB_vibration4IsNeeded, GPbank_2, clr              // assume no need to vibrate vial 4
+    // SGP    GB_vibration56IsNeeded, GPbank_2, clr             // assume no need to vibrate vials 5&6
     
   //// L.E.D
     SGP    GB_FillingIsNeeded, GPbank_2, clr                 // reset need of filling
-    SGP    GB_Filling4IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 4
-    SGP    GB_Filling5IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 5
-    SGP    GB_Filling6IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 6
+    // SGP    GB_Filling4IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 4
+    // SGP    GB_Filling5IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 5
+    // SGP    GB_Filling6IsNeeded, GPbank_2, clr                // assume no filling is needed for vial 6
 
     CSUB    verify_vial_4 // ?
   // check if needs to vibrate vial 4
@@ -380,13 +380,13 @@ checkFillingAndVibrationNeeded:
     COMP   0
     JC     EQ, checkFill4                       //// L.E.D //// no need in vial 4 check next (5) vial
     SGP    GB_vibrationIsNeeded, GPbank_2, set               // needed
-    SGP    GB_vibration4IsNeeded, GPbank_2, set              // vial 4 needs vibrating
+    // SGP    GB_vibration4IsNeeded, GPbank_2, set              // vial 4 needs vibrating
 checkFill4:    
     GGP    GB_microLtoFill_4, GPbank_2
     COMP   0
     JC     EQ, check56IsNeeded
     SGP    GB_FillingIsNeeded, GPbank_2, set                 // needed
-    SGP    GB_Filling4IsNeeded, GPbank_2, set                // vial 4 needs filling
+    // SGP    GB_Filling4IsNeeded, GPbank_2, set                // vial 4 needs filling
 
 check56IsNeeded:
   // check if needs to vibrate vial 5
@@ -394,7 +394,7 @@ check56IsNeeded:
     COMP   0
     JC     EQ, checkFill56                // jumps to check if filling is needed without vibrating
     SGP    GB_vibrationIsNeeded, GPbank_2, set               // needed
-    SGP    GB_vibration56IsNeeded, GPbank_2, set             // vials 5&6 needs vibrating
+    // SGP    GB_vibration56IsNeeded, GPbank_2, set             // vials 5&6 needs vibrating
 
   // check fill for 5 & 6
 checkFill56:
@@ -402,7 +402,7 @@ checkFill56:
     COMP   0
     JC     EQ, checkFill6
     SGP    GB_FillingIsNeeded, GPbank_2, set                 // needed
-    SGP    GB_Filling5IsNeeded, GPbank_2, set                // vial 5 needs filling
+    // SGP    GB_Filling5IsNeeded, GPbank_2, set                // vial 5 needs filling
 
 checkFill6:
     // check if needs to vibrate vial 6
@@ -410,7 +410,7 @@ checkFill6:
     COMP   0
     JC     EQ, exitcheckFillingAndVibrationNeeded
     SGP    GB_FillingIsNeeded, GPbank_2, set                 // needed
-    SGP    GB_Filling6IsNeeded, GPbank_2, set                // vial 6 needs filling
+    // SGP    GB_Filling6IsNeeded, GPbank_2, set                // vial 6 needs filling
 
 exitcheckFillingAndVibrationNeeded:
     RSUB
@@ -585,30 +585,30 @@ push5mL:
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 draw_321:
 
-    GGP     GB_vibrationIsNeeded, GPbank_2
-    COMP    set
-    JC      NE, skipDraw_321
+    // GGP     GB_vibrationIsNeeded, GPbank_2
+    // COMP    set
+    // JC      NE, skipDraw_321
 
-   // attempt to avoid the BOOM sound when homing linear
-    SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR // Set maximum positioning speed
-    CALC    LOAD, -100
-    CSUB    moveLinear
+   // // attempt to avoid the BOOM sound when homing linear
+    // SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR // Set maximum positioning speed
+    // CALC    LOAD, -100
+    // CSUB    moveLinear
 
-    SGP     GB_current_Vial, GPbank_2, 3         // starting with vial 3 while vibrating 456
-drawNextVial_321:
-    CALC    LOAD, GB_microLtoWithdraw_1 - 1      // copy GB address minus 1 to A
-    CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
-    CALCX   LOAD                                 // the address is in X
-    GIV                                          // the content of the vial withdraw is copied into A
-    COMP    0
-    JC      LE, decrementCurrentVial_321
-    CSUB    Draw_654321                          // loop on all vials
+    // SGP     GB_current_Vial, GPbank_2, 3         // starting with vial 3 while vibrating 456
+// drawNextVial_321:
+    // CALC    LOAD, GB_microLtoWithdraw_1 - 1      // copy GB address minus 1 to A
+    // CALCAV  ADD, GB_current_Vial                 // add vial number  0 -> 5
+    // CALCX   LOAD                                 // the address is in X
+    // GIV                                          // the content of the vial withdraw is copied into A
+    // COMP    0
+    // JC      LE, decrementCurrentVial_321
+    // CSUB    Draw_654321                          // loop on all vials
 
-decrementCurrentVial_321:
+// decrementCurrentVial_321:
     
-    DJNZ    GB_current_Vial, drawNextVial_321    // done all vials?
+    // DJNZ    GB_current_Vial, drawNextVial_321    // done all vials?
 
-skipDraw_321:
+// skipDraw_321:
     
     RSUB
     
@@ -2795,62 +2795,90 @@ capHolderMotorTOerr:
 // VIBRATE
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 defaultVibrate:   // func 126
-    SGP     GB_vibrationTime_4, GPbank_2, 3
-    SGP     GB_vibrationTime_56, GPbank_2, 2
-    SGP     GB_vibrationHz, GPbank_2, 25
-    SGP     GB_vibrationDutyCyclePercent, GPbank_2, 40
+    // SGP     GB_vibrationTime_4, GPbank_2, 3
+    // SGP     GB_vibrationTime_56, GPbank_2, 2
+    // SGP     GB_vibrationHz, GPbank_2, 25
+    // SGP     GB_vibrationDutyCyclePercent, GPbank_2, 40
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 StopVibrate:   // FUNC 120   
-    DI      TI_TIMER0     
-    DI      TI_TIMER1 
-    DI      TI_TIMER2 
-    SGP     GB_vibrator4done, GPbank_2, 1
-    SGP     GB_vibrator56done, GPbank_2, 1
-    CALCV   LOAD, GB_vibrationTime_4_calc, 0
-    CALCV   LOAD, GB_vibrationTime_56_calc, 0
-    SIO     Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
-    SIO     Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
+    // DI      TI_TIMER0     
+    // DI      TI_TIMER1 
+    // DI      TI_TIMER2 
+    // SGP     GB_vibrator4done, GPbank_2, 1
+    // SGP     GB_vibrator56done, GPbank_2, 1
+    // CALCV   LOAD, GB_vibrationTime_4_calc, 0
+    // CALCV   LOAD, GB_vibrationTime_56_calc, 0
+    // SIO     Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
+    // SIO     Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Tilt:   // FUNC 174
+Tilt:   // FUNC 174 
 
+    // could also use loop lower_arm and raise_arm
+
+    // move arm up and down to mix the vials content
+    
+    CALCV   COMP, GB_numberOfTilts, 0               // COMP – compare <var> with <value>
+    JC      LE, endOfTilt
+    
     // ---------------------------
-    // CALCVV  LOAD, GB_tiltsCounter, GB_numberOfTilts // sets tilts amount in the tilt counter
+    CALCVV  LOAD, GB_TiltsCounter, GB_numberOfTilts // sets tilts amount in the tilt counter
     // ---------------------------
 
     // ---------------------------
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
     // ---------------------------
-    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM
-    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
+    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    CALCAV  LOAD, GB_axisSpeedForTilts  
+    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    CALCAV  LOAD, GB_axisCurrentForTilts
+    AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
 
     // ---------------------------
-    CALCV   LOAD, GB_tiltsCounter, 3 // for initial purposes test
+    // CALCAV   LOAD, GB_TiltsCounter, 3 // for initial purposes test
     // ---------------------------
+
+// GB_shakeInitDirByTiltLocation = 252  // start shaking in oposite direction from location:
+//                                      // 0 (if arm is up start first shake downwards),
+//                                      // 1 (if arm is down start first shake upwards)
 
   LoopTilts:
-    // CALCV   COMP, GB_numberOfTilts, 0 // exits loop if wrong inputs of tilts amount
-    // JC      LE, endTilt
-    // ---------------------------
-    CALC    LOAD, 15000
+    //      ----------------------------------------
+    //      goto bottom for first shake = GO DOWN
+    //      ----------------------------------------
+    CALCAV  LOAD, GB_armAtBottom
+    CALCAV  SUB, GB_ShakeTravelDistance // avoid bottom axis edge 
     CSUB    moveArmMotor
-    // ---------------------------
-    CALC    LOAD, -100
-    CSUB    moveArmMotor
-    // ---------------------------
-    
-    // ---------------------------
+    //      ----------------------------------------
+    CALCV   LOAD, GB_shakeInitDirByTiltLocation, ARM_IS_DOWN
     CSUB    Shake
-    // ---------------------------
+    //      ----------------------------------------
     
-    DJNZ GB_tiltsCounter, LoopTilts
-    // ---------------------------
-    JA     endTilt
+    //      ----------------------------------------
+    // goto top for second shake = GO UP
+    //      ----------------------------------------
+    CALCAV  LOAD, GB_ArmUnderVialPosition
+    CALCAV  ADD, GB_ShakeTravelDistance // avoid top axis edge 
+    CSUB    moveArmMotor
+    //      ----------------------------------------
+    CALCV   LOAD, GB_shakeInitDirByTiltLocation, ARM_IS_UP
+    CSUB    Shake
+    //      ----------------------------------------
+    
+    // -------------------------------
+    DJNZ GB_TiltsCounter, LoopTilts
+    // -------------------------------
+    
+    JA     endOfTilt
 
+    //      -----------------------------
+    //      - not sure if really needed -
+    //      -----------------------------
 errorTiltParameter: // not used yet
     GGP     GB_errors_wrong_PC_command, GPbank_2        // load Ver002 error word
     CALC    OR, BitEr_tiltParemeterError             // add the error bit
@@ -2858,8 +2886,18 @@ errorTiltParameter: // not used yet
     // STGP    GB_errors_wrong_PC_command, GPbank_2        // and store it
     CSUB    setStateSTOPPED_ON_ERROR_Yellow
     JA      ABORT_NoReport
+    //      ----------------------------------------
     
-endTilt:
+endOfTilt:
+    //      -----------------------------------
+    //      - return to default Axis settings -
+    //      -----------------------------------
+    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM // Set maximum positioning speed
+    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM               // Set maximum acceleration
+    SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM            // Set absolute max. current 
+    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM           // Set standby current (the current limit two seconds after the motor has stopped) //  //// L.E.D //// STBY_CUR_ARM_HIGH  //// L.E.D ////
+
+
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2867,70 +2905,76 @@ endTilt:
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Shake:   // FUNC 176
 
+    CALCV   COMP, GB_numberOfShakes, 0 // exits shake func if inputs for shakes is 0
+    JC      LE, endShake
+    
     // ---------------------------
-    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
+    CALCVV  LOAD, GB_ShakesCounter, GB_numberOfShakes // sets tilts amount in the tilt counter
     // ---------------------------
-    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM
-    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+
+    // ---------------------------
+    CALCAV  LOAD, GB_axisAccelerationForShakes      // load value set in UI to A
+    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    CALCAV  LOAD, GB_axisSpeedForShakes  
+    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    CALCAV  LOAD, GB_axisCurrentForShakes
+    AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
     
     // ---------------------------
-    CALCV   LOAD, GB_shakeTravelDistance, 1000 // for initial purposes test
-    CALCV   LOAD, GB_numberOfShakes,         3 // for initial purposes test
-    CALCV   LOAD, GB_shakesCounter,           3 // for initial purposes test
+    // CALCV   LOAD, GB_ShakeTravelDistance, 1000 // for initial purposes test
+    // CALCV   LOAD, GB_numberOfShakes,         3 // for initial purposes test
+    // CALCV   LOAD, GB_ShakesCounter,          3 // for initial purposes test
     // ---------------------------
 
-    // ---------------------------
-    // -- if error --
-    // CALCV   COMP, GB_numberOfShakes, 0 // exits loop if wrong inputs of shakes amount
-    // JC      LE, endShake
-    // ---------------------------
+// GB_shakeInitDirByTiltLocation = 252  // start shaking in oposite direction from location:
+//                                      // 0 (if arm is up start first shake downwards),
+//                                      // 1 (if arm is down start first shake upwards)
 
-    // ---------------------------
-    // goto bottom for first shake = GO DOWN
-    CALCAV  LOAD, GB_armAtBottom
-    CALCAV  SUB, GB_shakeTravelDistance // avoid bottom axis edge 
-    CALCAV  SUB, GB_shakeTravelDistance // double the distance
-    CSUB    moveArmMotor
-    // ---------------------------
+    CALCV   COMP, GB_shakeInitDirByTiltLocation, ARM_IS_DOWN
+    JC      NE, ShakeAtTop
 
-    CALCVV  LOAD, GB_shakesCounter, GB_numberOfShakes // load amount of shakes requested
+
+  ShakeAtBottom:
+    CALCVV  LOAD, GB_ShakesCounter, GB_numberOfShakes // load amount of shakes requested
   LoopShakesBottom:
     // ---------------------------
-    CALCAV  LOAD, GB_shakeTravelDistance
+    CALCAV  LOAD, GB_ShakeTravelDistance
     MVPA    REL, M_armMotor
     CSUB    waitArmMotor
     // ---------------------------
-    // CALCAV  LOAD, GB_shakeTravelDistance // not sure if needed
+    // CALCAV  LOAD, GB_ShakeTravelDistance // not sure if needed
     CALC    MUL, -1
     MVPA    REL, M_armMotor
     CSUB    waitArmMotor
     // ---------------------------
-    DJNZ GB_shakesCounter, LoopShakesBottom
+    DJNZ GB_ShakesCounter, LoopShakesBottom
     // ---------------------------
+    
+    JA      endShake
 
+ShakeAtTop:
+    // // ---------------------------
+    // // goto top for second shake = GO UP
+    // CALCAV  LOAD, GB_ArmUnderVialPosition
+    // CALCAV  ADD, GB_ShakeTravelDistance // avoid top axis edge 
+    // CALCAV  ADD, GB_ShakeTravelDistance // double the distance
+    // CSUB    moveArmMotor
+    // // ---------------------------
 
-    // ---------------------------
-    // goto top for second shake = GO UP
-    CALCAV  LOAD, GB_ArmUnderVialPosition
-    CALCAV  ADD, GB_shakeTravelDistance // avoid top axis edge 
-    CALCAV  ADD, GB_shakeTravelDistance // double the distance
-    CSUB    moveArmMotor
-    // ---------------------------
-
-    CALCVV  LOAD, GB_shakesCounter, GB_numberOfShakes // load amount of shakes requested
+    CALCVV  LOAD, GB_ShakesCounter, GB_numberOfShakes // load amount of shakes requested
   LoopShakesTop:
     // ---------------------------
-    CALCAV  LOAD, GB_shakeTravelDistance
+    CALCAV  LOAD, GB_ShakeTravelDistance
     MVPA    REL, M_armMotor
     CSUB    waitArmMotor
     // ---------------------------
-    // CALCAV  LOAD, GB_shakeTravelDistance // not sure if needed
+    // CALCAV  LOAD, GB_ShakeTravelDistance // not sure if needed
     CALC    MUL, -1
     MVPA    REL, M_armMotor
     CSUB    waitArmMotor
     // ---------------------------
-    DJNZ GB_shakesCounter, LoopShakesTop
+    DJNZ GB_ShakesCounter, LoopShakesTop
     // ---------------------------
 
     JA     endShake
@@ -2944,6 +2988,17 @@ errorShakeParameter: // not used yet
     JA      ABORT_NoReport
     
 endShake:
+    // --------------------------------
+    // - return to Tilt Axis settings -
+    // --------------------------------
+    CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
+    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    CALCAV  LOAD, GB_axisSpeedForTilts  
+    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    CALCAV  LOAD, GB_axisCurrentForTilts
+    AAP     AP_MaxCurrent, M_verticalMotor
+    // ---------------------------
+
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

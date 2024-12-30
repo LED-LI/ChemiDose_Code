@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-29                              +
+//+ last edited : 2024-12-30                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241229
+CURRENT_VERSION      =  20241230
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -65,36 +65,39 @@ Out_Multiplexer        = 7 //  1A AND drawer enable
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Defines
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-VIAL_IS_LOADED        =    1
-SYRINGE_IN_PLACE      =    1
-ANY_ERROR_EXISTS      =    1
-WAIT_TICKS_200ms      =   20 // [200ms]
-WAIT_TICKS_VERY_SHORT =  100 // [ 1s]
-WAIT_NEEDLE_REF       =  110 // [1.1s]   //  90 // 0.8 [S] //  //// L.E.D ////   30 // 0.3 [S]
-WAIT_TICKS_2S         =  200 // [ 2s]
-WAIT_TICKS_DISPOSE    =  300 // [ 3s]
-WAIT_TICKS_4S         =  400 // [ 4s]
-WAIT_TICKS_6S         =  600 // [ 4s]
-WAIT_TICKS            = 1000 // [10s]
-WAIT_TICKS_LINEAR     = 1500 // [15s]
-WAIT_TICKS_LONG       = 1500 // [15s]
-WAIT_TICKS_ARM        = 3000 // [30s]
-WAIT_TICKS_FILL_VIAL  = 4000 // [40s]
-WAIT_TICKS_DRAW       = 4000 // [40s]
-LED_ON                =    1
-LED_OFF               =    0
-DEF_DRAW_WAIT_TIME_25M_22G    =  200   // default for 25 mm needle length and 22 Gauge = 2[s]
-DEFAULT_NEEDLE_LENGTH =   25
-DEFAULT_DRAW_VOLUME   = 1000  // 1[ml]
-CAP_SENSOR_BLOCKED    =    0
-MINIMUM_DRAW_VOLUME   =  500  // not less than 0.1 ml
-LAST_VIAL             =    6
-FIRST_VIAL_FILL       =    4
-FIRST_VIAL_VIBRATE    =    4
-OVERFLOW              =    0 // the sesor sees vials in the drawer
-DRAWER_IS_CLOSED      =    1
-DOOR_IS_CLOSED        =    1
-AXIS_IN_SENSOR       =    1
+VIAL_IS_LOADED              =       1
+SYRINGE_IN_PLACE            =       1
+ANY_ERROR_EXISTS            =       1
+WAIT_TICKS_200ms            =      20 // [200ms]
+WAIT_TICKS_VERY_SHORT       =     100 // [ 1s]
+WAIT_NEEDLE_REF             =     110 // [1.1s]   //  90 // 0.8 [S] //  //// L.E.D ////   30 // 0.3 [S]
+WAIT_TICKS_2S               =     200 // [ 2s]
+WAIT_TICKS_DISPOSE          =     300 // [ 3s]
+WAIT_TICKS_4S               =     400 // [ 4s]
+WAIT_TICKS_6S               =     600 // [ 4s]
+WAIT_TICKS                  =    1000 // [10s]
+WAIT_TICKS_LINEAR           =    1500 // [15s]
+WAIT_TICKS_LONG             =    1500 // [15s]
+WAIT_TICKS_ARM              =    3000 // [30s]
+WAIT_TICKS_FILL_VIAL        =    4000 // [40s]
+WAIT_TICKS_DRAW             =    4000 // [40s]
+LED_ON                      =       1
+LED_OFF                     =       0
+DEF_DRAW_WAIT_TIME_25M_22G  =     200   // default for 25 mm needle length and 22 Gauge = 2[s]
+DEFAULT_NEEDLE_LENGTH       =      25
+DEFAULT_DRAW_VOLUME         =    1000  // 1[ml]
+CAP_SENSOR_BLOCKED          =       0
+MINIMUM_DRAW_VOLUME         =     500  // not less than 0.1 ml
+LAST_VIAL                   =       6
+FIRST_VIAL_FILL             =       4
+FIRST_VIAL_VIBRATE          =       4
+OVERFLOW                    =       0 // the sesor sees vials in the drawer
+DRAWER_IS_CLOSED            =       1
+DOOR_IS_CLOSED              =       1
+AXIS_IN_SENSOR              =       1
+        
+ARM_IS_UP                   =       0
+ARM_IS_DOWN                 =       1
 
 // default values to set an out of the box machine
 
@@ -718,9 +721,9 @@ GB_FillingIsNeeded           = 140
 GB_141                          = 141
 GB_142                          = 142
 GB_143                          = 143
-GB_Filling4IsNeeded          = 144
-GB_Filling5IsNeeded          = 145
-GB_Filling6IsNeeded          = 146
+GB_Filling4IsNeeded             = 144  // not used
+GB_Filling5IsNeeded             = 145  // not used
+GB_Filling6IsNeeded             = 146  // not used
 
 GB_147                          = 147
 GB_148                          = 148
@@ -842,46 +845,43 @@ GB_microLbagToFill           =  237    // microL to withdraw in BAG
 
 GB_238                           =   238
 GB_239                           =   239
-GB_240                           =   240
+GB_foundCenterOfNeedle           =   240
 
-// -----------------------------------------------------------------------
-// - shakes and tilts - to replace the vibrators -------------------------
-// -----------------------------------------------------------------------
-
-// -----------------------------------------------------------------------
-// -----------------------------------------------------------------------
-
-///////////
-// Tilts //
-///////////
-
-GB_axisAccelerationForTilts      =   241
-GB_axisCurrentForTilts           =   242
-GB_axisSpeedForTilts             =   243
-
-GB_numberOfTilts                 =   244
-GB_tiltsCounter                  =   245
-
-// -----------------------------------------------------------------------
-
-////////////
-// Shakes //
-////////////
-
-GB_axisAccelerationForShakes     =   246
-GB_axisCurrentForShakes          =   247
-GB_axisSpeedForShakes            =   248
-
-GB_numberOfShakes                =   249
-GB_shakesCounter                 =   250
-
-GB_shakeTravelDistance           =   251
-
-// -----------------------------------------------------------------------
-// -----------------------------------------------------------------------
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+// ----------- shakes and tilts - to replace the vibrators ------------ //
+///////////                                                       // -- //
+// Tilts //                                                       // -- //
+///////////                                                       // -- //
+GB_axisAccelerationForTilts      =   241                          // -- //
+GB_axisCurrentForTilts           =   242                          // -- //
+GB_axisSpeedForTilts             =   243                          // -- //
+// -------------------------------------                          // -- //
+GB_numberOfTilts                 =   244                          // -- //
+GB_TiltsCounter                  =   245                          // -- //
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+////////////                                                      // -- //
+// Shakes //                                                      // -- //
+////////////                                                      // -- //
+GB_axisAccelerationForShakes     =   246                          // -- //
+GB_axisCurrentForShakes          =   247                          // -- //
+GB_axisSpeedForShakes            =   248                          // -- //
+// -------------------------------------                          // -- //
+GB_numberOfShakes                =   249                          // -- //
+GB_ShakesCounter                 =   250                          // -- //
+// -------------------------------------                          // -- //
+GB_ShakeTravelDistance           =   251                          // -- //
+GB_shakeInitDirByTiltLocation    =   252                          // -- // start shaking in oposite direction from location - 0 (if arm is up start first shake downwards), 1 (if arm is down start first shake upwards)
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
+// -------------------------------------------------------------------- //
 
 
-GB_foundCenterOfNeedle           =   252 // not needed
+
 GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
 GB_vialsToDrawFromCounter        =   254    // temporary variable  //// L.E.D ////
 
