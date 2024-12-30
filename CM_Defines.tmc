@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-26                              +
+//+ last edited : 2024-12-29                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241226
+CURRENT_VERSION      =  20241229
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -843,21 +843,43 @@ GB_microLbagToFill           =  237    // microL to withdraw in BAG
 GB_238                           =   238
 GB_239                           =   239
 GB_240                           =   240
-GB_241                           =   241
-GB_242                           =   242
-GB_243                           =   243
-GB_244                           =   244
-GB_245                           =   245
-GB_246                           =   246
-GB_shakeTravelDistance           =   247
-GB_numberOfShakes                =   248
-GB_shakesCounter                 =   249
 
-GB_numberOfTilts                 =   250
-GB_tiltsCounter                  =   251
+// -----------------------------------------------------------------------
+// - shakes and tilts - to replace the vibrators -------------------------
+// -----------------------------------------------------------------------
 
-// GB_skipCheckVial456                     =   250
-// GB_skipCheckBag                         =   251
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+
+///////////
+// Tilts //
+///////////
+
+GB_axisAccelerationForTilts      =   241
+GB_axisCurrentForTilts           =   242
+GB_axisSpeedForTilts             =   243
+
+GB_numberOfTilts                 =   244
+GB_tiltsCounter                  =   245
+
+// -----------------------------------------------------------------------
+
+////////////
+// Shakes //
+////////////
+
+GB_axisAccelerationForShakes     =   246
+GB_axisCurrentForShakes          =   247
+GB_axisSpeedForShakes            =   248
+
+GB_numberOfShakes                =   249
+GB_shakesCounter                 =   250
+
+GB_shakeTravelDistance           =   251
+
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+
 
 GB_foundCenterOfNeedle           =   252 // not needed
 GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
