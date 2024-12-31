@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-12                              +
+//+ last edited : 2024-12-31                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -156,7 +156,11 @@ setDefaultParams: // func_168
     RSUB
 
 // +++++++++++++++++++++++++++++++
-setOutOfTheBox: // func_170
+// GB_SafetyMode                   =  21 
+// +++++++++++++++++++++++++++++++
+setOutOfTheBox: // func_170 // client mode
+    
+    CALCV   LOAD, GB_SafetyMode, CLIENT_MODE
     
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_N
     CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_N
@@ -169,6 +173,7 @@ setOutOfTheBox: // func_170
     CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
     CALCV   LOAD, GB_disposeYN, DISPOSE_Y
     
+    STGP    GB_SafetyMode, GPbank_2
     STGP    GB_skipCheckVial456, GPbank_2
     STGP    GB_skipCheckBag, GPbank_2
     STGP    GB_bypassSlidingDoorYN, GPbank_2
@@ -185,6 +190,8 @@ setOutOfTheBox: // func_170
 // +++++++++++++++++++++++++++++++
 setToDevMode: // func_172 // for development enviorement only !!!
     
+    CALCV   LOAD, GB_SafetyMode, DEV_MODE
+
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_Y
     CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_Y
     CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_Y
@@ -196,6 +203,7 @@ setToDevMode: // func_172 // for development enviorement only !!!
     CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
     CALCV   LOAD, GB_disposeYN, DISPOSE_N
     
+    STGP    GB_SafetyMode, GPbank_2
     STGP    GB_skipCheckVial456, GPbank_2
     STGP    GB_skipCheckBag, GPbank_2
     STGP    GB_bypassSlidingDoorYN, GPbank_2

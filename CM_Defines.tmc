@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-30                              +
+//+ last edited : 2024-12-31                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241230
+CURRENT_VERSION      =  20241231
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -99,6 +99,7 @@ AXIS_IN_SENSOR              =       1
 ARM_IS_UP                   =       0
 ARM_IS_DOWN                 =       1
 
+
 // default values to set an out of the box machine
 
 DEFAULT_MAX_VOL_OF_SYRINGE = 15000
@@ -167,14 +168,18 @@ GB_liquid_detection_border_aval =  19
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 GB_ShowOverride                 =  20    // 1 = will not dispose vials and also loop DRAW_DOSE function // ??? (GP 28  error)
-    SHOW_OVERRIDE = 1
-    NORMAL_RUN = 0
-// GB_linearSpaceBetweenVialsuM =  21
-GB_disposeYN                 =  22    // 
+    SHOW_OVERRIDE       = 1
+    NORMAL_RUN          = 0
+
+GB_SafetyMode                   =  21 // GB_linearSpaceBetweenVialsuM
+    CLIENT_MODE         = 0
+    DEV_MODE            = 1
+
+GB_disposeYN                    =  22    // 
     DISPOSE_Y = 1
     DISPOSE_N = 0
 
-// GB_DisposeDropVialsPos    =  23    // 
+// GB_DisposeDropVialsPos       =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
 
 GB_25                           =    25        
@@ -819,7 +824,7 @@ GB_220                          = 220
 GB_221                          = 221
 GB_222                          = 222
 
-// GB_currentVersion            =   222    // Current SW version
+// GB_currentVersion            = 222    // Current SW version
 
 GB_223                          = 223
 
@@ -836,7 +841,7 @@ GB_HomingDone                   = 228    //
 GB_UnitsToMoveManual         =  229    // for manual movement, put here the microMeter or Mili Degree to move (+/-)
 GB_TempNumHolder             =  230
 GB_airToPullBefore           =  231    // 20 in Percentage. Should be reduced when vial is full
-GB_232                       =  232
+GB_TempForSafety             =  232
 GB_233                       =  233
 GB_234                       =  234
 GB_motorNumForHome           =  235    // 0=vertical, 1=linear, 2=arm, 3=piston, 4=rotate, 5=dispose, 6=capHolder

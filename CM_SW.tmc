@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-30                              +
+//+ last edited : 2024-12-31                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -95,25 +95,24 @@ continue_init_cm:
     CSUB    ClearRunningErrors
     SGP     GB_CmdInProcess, GPbank_2, set                //   //// L.E.D ////
 
-    CSUB    homeCapHolderMotor                      // first thing - release the syringe and/or the cap to enable extraction in case of errors
-
     // // // CSUB    screenAllVials             // put all vials state into data Base
-    // // // SIO     Out_Multiplexer, OutBank_2, 0            // change relays to watch inputs from watching vials //// L.E.D ////
-    // // // WAIT    TICKS, 0, 100/10                         // 100 ms  //// L.E.D ////
+    // // // SIO     Out_Multiplexer, OutBank_2, 0                      // change relays to watch inputs from watching vials //// L.E.D ////
+    // // // WAIT    TICKS, 0, 100/10                                   // 100 ms  //// L.E.D ////
 
-    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM  //   5
-    SGP     GB_initialVolume, GPbank_2, clr             //  15
-    CSUB    checkOkToInitDrawDoze            // check if in right state,         sets STOPPED_ON_ERROR state
-    CSUB    verifyNoSyringe                 // check syringe exists,            sets STOPPED_ON_ERROR state //// L.E.D
-    CSUB    checkDrawer                      // check if closed and not full and door closed
-    CSUB    checkOverFlow         // check if closed and not full and door closed
-    CSUB    checkDoorOpen                    // sliding door has to be closed
-    GGP     GB_any_Error, GPbank_2           // get any error status
-    COMP    ANY_ERROR_EXISTS                 // exists?
-    JC      EQ, returnInitDraw               // error, return (keeps STATE WAITING_INIT_CM)
+    SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM                  //   5
+    CSUB    homeCapHolderMotor                                          // first thing - release the syringe and/or the cap to enable extraction in case of errors
+    SGP     GB_initialVolume, GPbank_2, clr                             //  15
+    CSUB    checkOkToInitDrawDoze                                       // check if in right state,         sets STOPPED_ON_ERROR state
+    CSUB    verifyNoSyringe                                             // check syringe exists,            sets STOPPED_ON_ERROR state //// L.E.D
+    CSUB    checkDrawer                                                 // check if closed and not full and door closed
+    CSUB    checkOverFlow                                               // check if closed and not full and door closed
+    CSUB    checkDoorOpen                                               // sliding door has to be closed
+    GGP     GB_any_Error, GPbank_2                                      // get any error status
+    COMP    ANY_ERROR_EXISTS                                            // exists?
+    JC      EQ, returnInitDraw                                          // error, return (keeps STATE WAITING_INIT_CM)
     CSUB    FIND_HOMES
 // ---- ADD DRAW VOLUME INITIALIZATION ----
-    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH   // Set standby current
+    SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_HIGH  // Set standby current
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH             // Set standby current
     SGP     GB_CurrentState, GPbank_2, WAITING_DISPENSE
     CSUB    setTestParams
@@ -1498,7 +1497,7 @@ findCenterOfNeedleSensor:
     SAP     AP_RefSwitchSpeed, M_linearMotor, SWITCH_SPEED_LINEAR_BOTTLE      // speed for final search
     SAP     AP_RefSearchMode,  M_linearMotor, APV_RefHomeLeft                 // search needle mode
     RFS     START, M_linearMotor                                              // Start reference search
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_linearMotor, WAIT_NEEDLE_REF      // wait end of reference search 1.5 seconds
     JC      ETO, secondRFSback                           // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -1508,7 +1507,7 @@ secondRFSback:
     WAIT    RFS, M_linearMotor, WAIT_TICKS_2S        // wait till stops or 2 seconds
     SAP     AP_RefSearchMode,  M_linearMotor, APV_RefHomeRight  // search needle
     RFS     START, M_linearMotor                    // Start reference search
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_linearMotor, WAIT_NEEDLE_REF      // wait end of reference search 1.5 seconds
     JC      ETO, LinearMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -1656,7 +1655,7 @@ drawFromBag:
     // SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_VERY_SLOW // FAST // Set maximum positioning speed
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FAST  // Set maximum positioning speed
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     CALCAV  LOAD, GB_microLtoFill_current
     // GGP     GB_pistonMicroStepPer100microL, GPbank_2    // load to A
     // CALCAV  MUL, GB_microLtoFill_current                // A = A* [uSteps*100]
@@ -1951,7 +1950,7 @@ VerticalManual:    // func 136    motor 0
     CALC    MUL, verticalMicroStepsPerMM              
     CALC    DIV, 1000                                   // now in uSteps
     MVPA    REL, M_verticalMotor                         // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_verticalMotor, WAIT_TICKS_2S      // wait till reaches location or 2 seconds
     JC      ETO, verticalMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -1965,7 +1964,7 @@ VerticalManualAbsolute:    // FUNC_146 motor 0
     SAP     AP_MaxPositioningSpeed, M_verticalMotor, MAX_POS_SPEED_VER_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
     MVPA    ABS, M_verticalMotor                          // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_verticalMotor, WAIT_TICKS_2S           // wait till reaches location or 2 seconds
     JC      ETO, verticalMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -1983,7 +1982,7 @@ moveVertical:    //
 
 waitVertical:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_verticalMotor, WAIT_TICKS            // wait till reaches location or 10 seconds
     JC      ETO, verticalMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -1994,7 +1993,7 @@ waitVertical:    //
 
 waitVerticalLong:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_verticalMotor, WAIT_TICKS_LONG        // wait till reaches location or 15 seconds
     JC      ETO, verticalMotorTOerr                      // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2005,7 +2004,7 @@ waitVerticalLong:    //
 
 waitVerticalRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_verticalMotor, WAIT_TICKS_LONG         // wait end of reference search 15 seconds
     JC      ETO, verticalMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2051,7 +2050,7 @@ LinearMotorManual:    //   func 138
     CALC    MUL, linearMicrostepsPerMM                
     CALC    DIV, 1000                                   // now in mDeg
     MVPA    REL, M_linearMotor                          // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR       // wait till reaches location or 2 second
     JC      ETO, linearMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2065,7 +2064,7 @@ LinearMotorManualAbsolute:    //   FUNC_148
     SAP     AP_MaxPositioningSpeed, M_linearMotor, MAX_POS_SPEED_LINEAR_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2             // load the movement [uMeter] into A
     MVPA    ABS, M_linearMotor                           // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR        // wait till reaches location or 2 second
     JC      ETO, linearMotorTOerr                        // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2083,7 +2082,7 @@ moveLinear:    //
 
 waitLinearMotor:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_linearMotor, WAIT_TICKS_LINEAR    // wait till reaches location or 20 seconds
     JC      ETO, LinearMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2093,7 +2092,7 @@ waitLinearMotor:    //
 
 waitLinearMotorRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_linearMotor, WAIT_TICKS           // wait end of reference search 10 seconds
     JC      ETO, LinearMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2174,7 +2173,7 @@ armMotorManual:    //   func 140
     CALC    MUL, ArmMicrostepsPerDeg                
     CALC    DIV, 1000                             // now in mDeg
     MVPA    REL, M_armMotor                         // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_armMotor, WAIT_TICKS_ARM // wait till reaches location or 30 seconds // why was it on 2 seconds ?!
     JC      ETO, armMotorTOerr              // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2189,7 +2188,7 @@ armMotorManualAbsolute:    //   FUNC_150
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH      // Set standby current
     GGP     GB_GoToAbsoluteInSteps, GPbank_2        // load the movement [mDeg] into A
     MVPA    ABS, M_armMotor                         // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_armMotor, WAIT_TICKS_ARM     // wait till reaches location or 30 seconds
     JC      ETO, armMotorTOerr              // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2209,7 +2208,7 @@ moveArmMotor:    //
 
 waitArmMotor:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_armMotor, WAIT_TICKS_ARM //// wait upto 30 seconds for travel of arm        // wait till reaches location or 10 seconds
     JC      ETO, armMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2219,7 +2218,7 @@ waitArmMotor:    //
 
 waitArmMotorRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_armMotor, WAIT_TICKS_ARM //// wait upto 30 seconds for travel of arm
     JC      ETO, armMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2282,7 +2281,7 @@ PistonManual:    // func 142
     CALC    MUL, pistonMicroStepsPerMM           
     CALC    DIV, 1000                                   // now in uSteps
     MVPA    REL, M_pistonMotor                            // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_pistonMotor, WAIT_TICKS_DRAW        // wait till reaches location or 2 seconds
     JC      ETO, pistonMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2296,7 +2295,7 @@ PistonManualAbsolute:    // FUNC_152
     SAP     AP_MaxPositioningSpeed, M_pistonMotor, MAX_POS_SPEED_PIST_FOR_CALIBRATION // Set slower positioning speed for clibration
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
     MVPA    ABS, M_pistonMotor                            // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_pistonMotor, WAIT_TICKS_DRAW        // wait till reaches location or 2 seconds
     JC      ETO, pistonMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2321,7 +2320,7 @@ pistCoordAreAboveMin:
     CALCAV  LOAD, GB_calcedMaxPistUStepsDefined
     // CALC    LOAD, MAX_PIST_IN_USTEPS
 pistUSeptsInRange:
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     MVPA    ABS, M_pistonMotor                            // move, wait later
     CSUB    waitPiston
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2352,7 +2351,7 @@ RELpistUSeptsUnderMax:
     JA      RELpistUSeptsAdjusted
 movePiston_REL_InRange:                                 // the relative movment wont leave the axis edges
     CALCAV  LOAD, GB_TempNumHolder
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     MVPA    REL, M_pistonMotor                            // move, wait later
     CSUB    waitPiston
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2381,7 +2380,7 @@ movePiston_REL_uL:    //
 
 waitPiston:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_pistonMotor, WAIT_TICKS_DRAW              // wait till reaches location or 10 seconds
     JC      ETO, pistonMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2391,7 +2390,7 @@ waitPiston:    //
 
 waitPistonDraw:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_pistonMotor, WAIT_TICKS_DRAW         // wait till reaches location or 40 seconds
     JC      ETO, pistonMotorTOerr                       // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2412,7 +2411,7 @@ waitDrawFromBag:    //// L.E.D ////
 
 waitPistonRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_pistonMotor, WAIT_TICKS             // wait end of reference search 15 seconds
     JC      ETO, pistonMotorTOerr                      // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2462,7 +2461,7 @@ RotationManual:    //   func 144
     CALC    MUL, rotateMicrostepsPerDeg                 // 
     CALC    DIV, 1000                                   // now in mDeg
     MVPA    REL, M_headRotateMotor                        // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_headRotateMotor, WAIT_TICKS    // wait till reaches location or 2 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2477,7 +2476,7 @@ RotationManualAbsolute:    //   FUNC_154
     SAP     AP_LeftLimitSwitchDisable, M_headRotateMotor, set           // Disable left limit switch
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [mDeg] into A
     MVPA    ABS, M_headRotateMotor                        // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_headRotateMotor, WAIT_TICKS    // wait till reaches location or 2 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2495,7 +2494,7 @@ moveRotate:    //
 
 waitRotate:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_headRotateMotor, WAIT_TICKS          // wait till reaches location or 10 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2503,56 +2502,18 @@ waitRotate:    //
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// waitRotateLong:    // 
-
-    // SGP     GB_MotorIsMoving, GPbank_2, set
-    // WAIT    POS, M_headRotateMotor, WAIT_TICKS_LONG     // wait till reaches location or 15 seconds
-    // JC      ETO, headRotateMotorTOerr                   // timeout occured
-    // SGP     GB_MotorIsMoving, GPbank_2, clr
-    // RSUB
-
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 waitRotateRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_headRotateMotor, WAIT_TICKS_LONG     // wait end of reference search 15 seconds
     JC      ETO, headRotateMotorTOerr                   // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
     RSUB
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// waitRotateRfsShort:    // 
-
-    // SGP     GB_MotorIsMoving, GPbank_2, set
-    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_2S   // wait end of reference search 15 seconds
-    // JC      ETO, headRotateMotorTOerr                  // timeout occured
-    // SGP     GB_MotorIsMoving, GPbank_2, clr
-    // RSUB
-
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// waitRotateRfsNeedle:    // 
-
-    // SGP     GB_MotorIsMoving, GPbank_2, set
-    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_4S       // wait end of reference search 4 seconds
-    // JC      ETO, headRotateMotorTOerr                   // timeout occured
-    // SGP     GB_MotorIsMoving, GPbank_2, clr
-    // RSUB
-
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// waitRotateRfsVeryShort:    // 
-
-    // SGP     GB_MotorIsMoving, GPbank_2, set
-    // WAIT    RFS, M_headRotateMotor, WAIT_TICKS_VERY_SHORT   // wait end of reference search 15 seconds
-    // JC      ETO, headRotateMotorTOerr                       // timeout occured
-    // SGP     GB_MotorIsMoving, GPbank_2, clr
-    // RSUB
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 PositionHeadRotateMotorToTop:   // motor 4  func_64
     GGP     GB_HeadRotatePointUp, GPbank_2                                // go to required height
@@ -2615,7 +2576,7 @@ DisposeManual:    //   func 158
     CALC    MUL, disposeMicroStepsPerMM           
     CALC    DIV, 1000                                   // now in uSteps
     MVPA    REL, M_disposeMotor                        // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_disposeMotor, WAIT_TICKS_2S    // wait till reaches location or 2 seconds
     JC      ETO, disposeMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2628,7 +2589,7 @@ DisposeManualAbsolute:    //   FUNC_156
     SGP     GB_CurrentState, GPbank_2, WAITING_INIT_CM
     GGP     GB_GoToAbsoluteInSteps, GPbank_2              // load the movement [uMeter] into A
     MVPA    ABS, M_disposeMotor                        // move, wait later
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_disposeMotor, WAIT_TICKS_2S    // wait till reaches location or 2 seconds
     JC      ETO, disposeMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2648,7 +2609,7 @@ moveDispose:    //
 
 waitDispose:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    POS, M_disposeMotor, WAIT_TICKS          // wait till reaches location or 10 seconds
     JC      ETO, disposeMotorTOerr                     // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2658,7 +2619,7 @@ waitDispose:    //
 
 waitDisposeRfs:    // 
 
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     WAIT    RFS, M_disposeMotor, WAIT_TICKS         // wait end of reference search 15 seconds
     JC      ETO, disposeMotorTOerr                    // timeout occured
     SGP     GB_MotorIsMoving, GPbank_2, clr
@@ -2708,7 +2669,7 @@ CapHolderManual:   // FUNC 160
     CALC    MUL, capHolderMicroStepsPerMM           
     CALC    DIV, 1000                                   // now in uSteps
     CALCVA  LOAD, GB_CapHolderPulses                    // The required pulses in GB
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
 // check direction
     SIO     Out_CAPHolderDIR_Down, OutBank_2, set       // assume "down", positive steps
     GGP     GB_UnitsToMoveManual, GPbank_2              // GB_229 load the movement [uMeter] into A
@@ -2719,7 +2680,7 @@ CapHolderManual:   // FUNC 160
     CALCV   MUL, GB_CapHolderPulses, -1                 // change pulses to absolute
 CapGoDownwards:
 // move the motor
-    SGP     GB_MotorIsMoving, GPbank_2, set
+    CSUB    SetMotorIsMoving
     SGP     GB_capWaitLoops, GPbank_2, CAP_WAIT_LOOPS
 
 nextStep:   //  loop
@@ -2834,7 +2795,7 @@ Tilt:   // FUNC 174
     CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
     AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
     CALCAV  LOAD, GB_axisSpeedForTilts  
-    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    AAP     AP_MaxPositioningSpeed, M_armMotor
     CALCAV  LOAD, GB_axisCurrentForTilts
     AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
@@ -2897,6 +2858,7 @@ endOfTilt:
     SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM            // Set absolute max. current 
     SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM           // Set standby current (the current limit two seconds after the motor has stopped) //  //// L.E.D //// STBY_CUR_ARM_HIGH  //// L.E.D ////
 
+    CSUB    raise_arm // is it really needed ???
 
     RSUB
 
@@ -2916,7 +2878,7 @@ Shake:   // FUNC 176
     CALCAV  LOAD, GB_axisAccelerationForShakes      // load value set in UI to A
     AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
     CALCAV  LOAD, GB_axisSpeedForShakes  
-    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    AAP     AP_MaxPositioningSpeed, M_armMotor
     CALCAV  LOAD, GB_axisCurrentForShakes
     AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
@@ -2994,7 +2956,7 @@ endShake:
     CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
     AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
     CALCAV  LOAD, GB_axisSpeedForTilts  
-    AAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM
+    AAP     AP_MaxPositioningSpeed, M_armMotor
     CALCAV  LOAD, GB_axisCurrentForTilts
     AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
@@ -3289,6 +3251,42 @@ moveFromLDcalibLocation: // func_132 // move syringe from Laser Dist calib locat
     
 returnFromMoveFromLDcalibLocation:
     SGP     GB_CurrentState, GPbank_2, LDCALIBRATESTATE
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SetMotorIsMoving:
+
+    // CSUB    SafetyCheck
+    SGP     GB_MotorIsMoving, GPbank_2, set
+
+    RSUB
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SafetyCheck:
+    
+    CALCVA  LOAD, GB_TempForSafety
+    CALCV   COMP, GB_SafetyMode, DEV_MODE
+    JC      EQ, endSafetyCheck // skip safety check
+    
+    CALCV   COMP, GB_CurrentState, LDCALIBRATESTATE         // any kind of aborted reason 
+    JC      GT, endSafetyCheck                              // skip safety check
+    
+    CSUB    checkDrawer
+    CSUB    checkOverFlow
+    CSUB    checkDoorOpen
+    
+    // if running INIT_CM then skip these checks
+    
+    CALCV   COMP, GB_CurrentState, LDCALIBRATESTATE         // any kind of aborted reason 
+    JC      GT, endSafetyCheck                              // skip safety check
+    CALCV   COMP, GB_CurrentState, WAITING_DISPENSE
+    JC      LT, endSafetyCheck // less than 30 (=WAITING or RUNNING INIT_CM)
+    
+    CSUB    checkSyrPoppedOut
+    CSUB    checkVialPoppedOut
+    
+endSafetyCheck:    
+    CALCAV  LOAD, GB_TempForSafety
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
