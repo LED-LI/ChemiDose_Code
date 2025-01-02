@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2024-12-31                              +
+//+ last edited : 2025-01-02                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20241231
+CURRENT_VERSION      =  20250102
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -28,26 +28,26 @@ M_capHolderMotor   = 6    // sensor at In_capHolderHome. separate motor driver
 //Definitions of Inputs
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-In_liquidPresence      = 0 // U10
-In_pwrDrawer           = 1 // U38
-In_NeedleDetected      = 2 // U11
-In_slidingDoor         = 3 // U36
-In_thumbRestDistance   = 4 // U45
-In_drawerOverflow      = 5 // U15
-In_drawerClose         = 6 // U14
-In_capHolderHome       = 7 // U25
+In_capHolderHome       = 0 // U10                     // // // // // // // // In_liquidPresence      = 0 // U10
+In_pwrDrawer           = 1 // U38                     // // // // // // // // In_pwrDrawer           = 1 // U38
+In_NeedleDetected      = 2 // U11                    // // // // // // // // In_NeedleDetected      = 2 // U11
+In_3                   = 3 // U36                    // // // // // // // // In_slidingDoor         = 3 // U36
+In_slidingDoor         = 4 // U45                    // // // // // // // // In_thumbRestDistance   = 4 // U45
+In_drawerOverflow      = 5 // U15                    // // // // // // // // In_drawerOverflow      = 5 // U15
+In_drawerClose         = 6 // U14                    // // // // // // // // In_drawerClose         = 6 // U14
+In_7                   = 7 // U25                    // // // // // // // // In_capHolderHome       = 7 // U25
 
 
 // bottles sensors via relay multiplexers
 
 InX_salineBagIsIn        = 0 // U44
 InX_vialIsIn1            = 1 // U16
-InX_vialIsIn2            = 7 // U30 // replaced with IN7 because of an error in the new distribution board creation (missing pull-up resistor for in_vial2 - U46)
+InX_vialIsIn2            = 2 // U46 // InX_vialIsIn2            = 7 // U30 // replaced with IN7 because of an error in the new distribution board creation (missing pull-up resistor for in_vial2 - U46)
 InX_vialIsIn3            = 3 // U37
 InX_vialIsIn4            = 4 // U47
 InX_vialIsIn5            = 5 // U48
 InX_vialIsIn6            = 6 // U33
-InX_mux7                 = 2 // U46 // input is vacant // was U30 - switched to handle error in dist board development // USING POWER PINS FOR BLUETOOTH MODULE
+InX_mux7                 = 7 // U30 // InX_mux7                 = 2 // U46 // input is vacant // was U30 - switched to handle error in dist board development // USING POWER PINS FOR BLUETOOTH MODULE
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of Outputs
@@ -417,13 +417,13 @@ GB_64                                   =  64
    linearMicrosteps                         =     16 //
    linearStepsPerRev                        =    200 //
    linearMicroStepsPerRev                   =  linearMicrosteps * linearStepsPerRev  /// = 3200 [uS/rev]
-   linearMicrostepsPerMM                    =  1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
+   linearMicrostepsPerMM                    =   1000 * linearMicroStepsPerRev / linearFeedPerRevolution + 1 /// = 125.984
    MAX_CURRENT_LINEAR                       =    128 //
    MAX_CURRENT_LINEAR_HIGH                  =    200
    MAX_CURRENT_LINEAR_SUPER_HIGH_EXPIRIMENT =    255
    STBY_CURRENT_LINEAR                      =     25 //
    STBY_CURRENT_LINEAR_HIGH                 =    150
-   MAX_POS_SPEED_LINEAR_FOR_CALIBRATION     =    650  // slower speed for calibration - for inexperienced users 
+   MAX_POS_SPEED_LINEAR_FOR_CALIBRATION     =    450  // slower speed for calibration - for inexperienced users 
    MAX_POS_SPEED_LINEAR                     =    500 //
    ACC_LINEAR                               =      7 // 4 //  10 // 12
    
@@ -441,7 +441,7 @@ GB_64                                   =  64
    //LINEAR_NEEDLE_RFS          =  -7000 //  ABS from here starts search
    //LINEAR_ROTATE_POS          =   2500
    LINEAR_VIALS_SPACE           =     50 * linearMicrostepsPerMM       // MicroSteps 6300
-   // LINEAR_VIAL3to4SPACE      =     56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
+   // LINEAR_VIAL3to4SPACE      =     55 * linearMicrostepsPerMM      //  56 * linearMicrostepsPerMM       // MicroSteps 7056 // 55 * ....
    // LINEAR_VIAL1_TO_LOADING   = -12694      // -10080  //// L.E.D //// //the linear positioning of the of the syringe placed in its cap//= -10200      // -11750 // -12300  // -12694 // -12694 => resulting in location -10200      // -10080
    LINEAR_VIAL1_TO_BAG_RFS      = -10000      // appr 6.35 mm from center of bag
    SYRINGE_LINEAR_AXIS_IS_IN_CAP_LOCATION            =      1
@@ -478,15 +478,15 @@ GB_69                           =     69
 
    STBY_CUR_ARM              =    80  // 100  //  25 
    STBY_CUR_ARM_HIGH         =   200
-   MAX_POS_SPEED_ARM         =   800 // 200  // 400 
-   MAX_POS_SPEED_ARM_FOR_CALIBRATION =   500 // 200  // 400 
+   MAX_POS_SPEED_ARM         =   700  // 800 // 200  // 400 
+   MAX_POS_SPEED_ARM_FOR_CALIBRATION =   300  // 500 // 200  // 400 
    // ARM_DISPOSE_SPEED         =   400  // 
-   ACC_ARM                   =    25 //   2  //  60  
-   ACC_ARM_SLOWER            =    10 //   2  //  60  
+   ACC_ARM                   =    15  // 25 //   2  //  60  
+   ACC_ARM_SLOWER            =     5  // 10 //   2  //  60  
    SEARCH_SPEED_ARM          =   200  // 400 
-   SEARCH_SPEED_ARM_FAST     =   500
+   SEARCH_SPEED_ARM_FAST     =   400  // 500
    SWITCH_SPEED_ARM          =    50 
-   MAX_CURRENT_ARM           =   255  // 200 
+   MAX_CURRENT_ARM           =   200 //   255  // 200 
 
 GB_ArmDropVials456Pos        =    24           // arm at disposal position for vials 4 5 6 
 
@@ -852,45 +852,46 @@ GB_238                           =   238
 GB_239                           =   239
 GB_foundCenterOfNeedle           =   240
 
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-// ----------- shakes and tilts - to replace the vibrators ------------ //
-///////////                                                       // -- //
-// Tilts //                                                       // -- //
-///////////                                                       // -- //
-GB_axisAccelerationForTilts      =   241                          // -- //
-GB_axisCurrentForTilts           =   242                          // -- //
-GB_axisSpeedForTilts             =   243                          // -- //
-// -------------------------------------                          // -- //
-GB_numberOfTilts                 =   244                          // -- //
-GB_TiltsCounter                  =   245                          // -- //
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-////////////                                                      // -- //
-// Shakes //                                                      // -- //
-////////////                                                      // -- //
-GB_axisAccelerationForShakes     =   246                          // -- //
-GB_axisCurrentForShakes          =   247                          // -- //
-GB_axisSpeedForShakes            =   248                          // -- //
-// -------------------------------------                          // -- //
-GB_numberOfShakes                =   249                          // -- //
-GB_ShakesCounter                 =   250                          // -- //
-// -------------------------------------                          // -- //
-GB_ShakeTravelDistance           =   251                          // -- //
-GB_shakeInitDirByTiltLocation    =   252                          // -- // start shaking in oposite direction from location - 0 (if arm is up start first shake downwards), 1 (if arm is down start first shake upwards)
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
-// -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ----------- shakes and tilts - to replace the vibrators ------------ //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ///////////                                                       // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // Tilts //                                                       // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ///////////                                                       // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisAccelerationForTilts      =   241                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisCurrentForTilts           =   242                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisSpeedForTilts             =   243                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_numberOfTilts                 =   244                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_TiltsCounter                  =   245                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ////////////                                                      // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // Shakes //                                                      // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // ////////////                                                      // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisAccelerationForShakes     =   246                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisCurrentForShakes          =   247                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_axisSpeedForShakes            =   248                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_numberOfShakes                =   249                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_ShakesCounter                 =   250                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_ShakeTravelDistance           =   251                          // -- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // GB_shakeInitDirByTiltLocation    =   252                          // -- // start shaking in oposite direction from location - 0 (if arm is up start first shake downwards), 1 (if arm is down start first shake upwards)
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // -------------------------------------------------------------------- //
 
 
 
 GB_DrawFromVialWaitTime          =   253  //// L.E.D //// - not sure i still want these ...  //// L.E.D ////
 GB_vialsToDrawFromCounter        =   254    // temporary variable  //// L.E.D ////
 
-GB_255                           =   255    // temorary variable 5
+GB_InterruptCount                =  255    // temorary variable 5
+// GB_255                           =   255    // temorary variable 5
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1036,7 +1037,7 @@ func_124:  CSUB startHomePistonMotor
            JA     backGroundProcess
 func_126:  CSUB defaultVibrate
            JA     backGroundProcess
-func_128:  CSUB getLaserDistAVAL
+func_128:  CSUB dummy_sub // getLaserDistAVAL
            JA     backGroundProcess
 func_130:  CSUB moveToLDcalibLocation
            JA     backGroundProcess
@@ -1087,9 +1088,9 @@ func_170:  CSUB setOutOfTheBox
            JA     backGroundProcess
 func_172:  CSUB setToDevMode
            JA     backGroundProcess
-func_174:  CSUB Tilt
+func_174:  CSUB dummy_sub //  CSUB Tilt
            JA     backGroundProcess
-func_176:  CSUB Shake
+func_176:  CSUB dummy_sub //  CSUB Shake
            JA     backGroundProcess
 
 
