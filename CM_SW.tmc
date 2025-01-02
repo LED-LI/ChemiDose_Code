@@ -375,7 +375,8 @@ checkFillingAndVibrationNeeded:
 
     CSUB    verify_vial_4 // ?
   // check if needs to vibrate vial 4
-    GGP    GB_vibrationTime_4, GPbank_2
+    // GGP    GB_vibrationTime_4, GPbank_2
+    GGP    GB_axisSpeedForTilts, GPbank_2
     COMP   0
     JC     EQ, checkFill4                       //// L.E.D //// no need in vial 4 check next (5) vial
     SGP    GB_vibrationIsNeeded, GPbank_2, set               // needed
@@ -389,7 +390,8 @@ checkFill4:
 
 check56IsNeeded:
   // check if needs to vibrate vial 5
-    GGP    GB_vibrationTime_56, GPbank_2
+    // GGP    GB_vibrationTime_56, GPbank_2
+    GGP    GB_numberOfShakes, GPbank_2
     COMP   0
     JC     EQ, checkFill56                // jumps to check if filling is needed without vibrating
     SGP    GB_vibrationIsNeeded, GPbank_2, set               // needed
@@ -2790,14 +2792,14 @@ Tilt:   // FUNC 174
     // ---------------------------
 
     // ---------------------------
-    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
+    // SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM_HIGH
     // ---------------------------
-    CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
-    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
-    CALCAV  LOAD, GB_axisSpeedForTilts  
-    AAP     AP_MaxPositioningSpeed, M_armMotor
-    CALCAV  LOAD, GB_axisCurrentForTilts
-    AAP     AP_MaxCurrent, M_verticalMotor
+    // CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
+    // AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    // CALCAV  LOAD, GB_axisSpeedForTilts  
+    // AAP     AP_MaxPositioningSpeed, M_armMotor
+    // CALCAV  LOAD, GB_axisCurrentForTilts
+    // AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
 
     // ---------------------------
@@ -2853,10 +2855,10 @@ endOfTilt:
     //      -----------------------------------
     //      - return to default Axis settings -
     //      -----------------------------------
-    SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM // Set maximum positioning speed
-    SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM               // Set maximum acceleration
-    SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM            // Set absolute max. current 
-    SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM           // Set standby current (the current limit two seconds after the motor has stopped) //  //// L.E.D //// STBY_CUR_ARM_HIGH  //// L.E.D ////
+    // SAP     AP_MaxPositioningSpeed, M_armMotor, MAX_POS_SPEED_ARM // Set maximum positioning speed
+    // SAP     AP_MaxAcceleration, M_armMotor, ACC_ARM               // Set maximum acceleration
+    // SAP     AP_MaxCurrent, M_armMotor, MAX_CURRENT_ARM            // Set absolute max. current 
+    // SAP     AP_StandbyCurrent, M_armMotor, STBY_CUR_ARM           // Set standby current (the current limit two seconds after the motor has stopped) //  //// L.E.D //// STBY_CUR_ARM_HIGH  //// L.E.D ////
 
     CSUB    raise_arm // is it really needed ???
 
@@ -2875,12 +2877,12 @@ Shake:   // FUNC 176
     // ---------------------------
 
     // ---------------------------
-    CALCAV  LOAD, GB_axisAccelerationForShakes      // load value set in UI to A
-    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
-    CALCAV  LOAD, GB_axisSpeedForShakes  
-    AAP     AP_MaxPositioningSpeed, M_armMotor
-    CALCAV  LOAD, GB_axisCurrentForShakes
-    AAP     AP_MaxCurrent, M_verticalMotor
+    // CALCAV  LOAD, GB_axisAccelerationForShakes      // load value set in UI to A
+    // AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    // CALCAV  LOAD, GB_axisSpeedForShakes  
+    // AAP     AP_MaxPositioningSpeed, M_armMotor
+    // CALCAV  LOAD, GB_axisCurrentForShakes
+    // AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
     
     // ---------------------------
@@ -2953,12 +2955,12 @@ endShake:
     // --------------------------------
     // - return to Tilt Axis settings -
     // --------------------------------
-    CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
-    AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
-    CALCAV  LOAD, GB_axisSpeedForTilts  
-    AAP     AP_MaxPositioningSpeed, M_armMotor
-    CALCAV  LOAD, GB_axisCurrentForTilts
-    AAP     AP_MaxCurrent, M_verticalMotor
+    // CALCAV  LOAD, GB_axisAccelerationForTilts       // load value set in UI to A
+    // AAP     AP_MaxAcceleration, M_armMotor          // send the value from A to the arm motor axis parameter
+    // CALCAV  LOAD, GB_axisSpeedForTilts  
+    // AAP     AP_MaxPositioningSpeed, M_armMotor
+    // CALCAV  LOAD, GB_axisCurrentForTilts
+    // AAP     AP_MaxCurrent, M_verticalMotor
     // ---------------------------
 
     RSUB

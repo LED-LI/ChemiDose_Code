@@ -639,15 +639,15 @@ initCapHolderMotor:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Init initVibrator_4 
 initVibrator_4:
-    SIO     Out_enaVibrate_4, OutBank_2, 1    // 1 => low, source for both outputs, does not move
-    SIO     Out_VibrateDIR, OutBank_2, 1      // set direction
+    // SIO     Out_enaVibrate_4, OutBank_2, 1    // 1 => low, source for both outputs, does not move
+    // SIO     Out_VibrateDIR, OutBank_2, 1      // set direction
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Init initVibrator_56 
 initVibrator_56:
-    SIO     Out_enaVibrate_56, OutBank_2, 1    // 1 => low, source for both outputs, does not move
-    SIO     Out_VibrateDIR, OutBank_2, 1       // set direction
+    // SIO     Out_enaVibrate_56, OutBank_2, 1    // 1 => low, source for both outputs, does not move
+    // SIO     Out_VibrateDIR, OutBank_2, 1       // set direction
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -656,26 +656,26 @@ initVibrator_56:
 
 initInterrups:
 
-// Interrupt vector definition
+// // Interrupt vector definition
   
-// for direction cycle of PWM of vibration
-// initialize at the end of Timer1Irq:
-//    VECT   TI_TIMER0, Timer0Irq
-//    EI     TI_TIMER0  
+// // for direction cycle of PWM of vibration
+// // initialize at the end of Timer1Irq:
+// //    VECT   TI_TIMER0, Timer0Irq
+// //    EI     TI_TIMER0  
 
- // for duty cycle of PWM  (time ON) of vibration --  one way time
-    VECT   TI_TIMER1, Timer1Irq
-    GGP    GB_vibrationCycleMS, GPbank_2     // A holds period time in MS
-    AGP    TI_TIMER1, GPbank_3               // set period interrupt
-    EI     TI_TIMER1                
+ // // for duty cycle of PWM  (time ON) of vibration --  one way time
+    // VECT   TI_TIMER1, Timer1Irq
+    // GGP    GB_vibrationCycleMS, GPbank_2     // A holds period time in MS
+    // AGP    TI_TIMER1, GPbank_3               // set period interrupt
+    // EI     TI_TIMER1                
 
- // for counting 1 second for total vibration time
-    VECT   TI_TIMER2, Timer2Irq
-    SGP    TI_TIMER2, GPbank_3, 1000            // to calculate vibration time 1000 MS 1 sec
-    EI     TI_TIMER2                
+ // // for counting 1 second for total vibration time
+    // VECT   TI_TIMER2, Timer2Irq
+    // SGP    TI_TIMER2, GPbank_3, 1000            // to calculate vibration time 1000 MS 1 sec
+    // EI     TI_TIMER2                
 
-  // enable global
-    EI      TI_GLOBAL  
+  // // enable global
+    // EI      TI_GLOBAL/  
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -684,62 +684,62 @@ initInterrups:
 
 Timer0Irq:   // duty cycle of PWM  (time ON)
 
-    DI     TI_TIMER0     // enable the timer for cycle (duty cycle enabled at interrupt)
-    SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
-    SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
+    // DI     TI_TIMER0     // enable the timer for cycle (duty cycle enabled at interrupt)
+    // SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
+    // SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
     RETI
 
 //*******************************************
 Timer1Irq:    // for direction cycle of PWM
 
-changeVibrationDir:
-    GIO    Out_VibrateDIR, InBankOuput_2
-    COMP   0
-    JC     NZ, setOutDir
-    SIO    Out_VibrateDIR, GPbank_2, 1            // switch direction low
-    JA     checkVibr4Finished
-setOutDir:
-    SIO    Out_VibrateDIR, GPbank_2, 0            // switch direction high
+// changeVibrationDir:
+    // GIO    Out_VibrateDIR, InBankOuput_2
+    // COMP   0
+    // JC     NZ, setOutDir
+    // SIO    Out_VibrateDIR, GPbank_2, 1            // switch direction low
+    // JA     checkVibr4Finished
+// setOutDir:
+    // SIO    Out_VibrateDIR, GPbank_2, 0            // switch direction high
 
-checkVibr4Finished:
-    GGP    GB_vibrationTime_4_calc, GPbank_2      // 4 finished?
-    COMP   0
-    JC     LE, checkVibr56Finished                // yes, test vibr 5
-    SIO    Out_enaVibrate_4, GPbank_2, 0          // set ON vibr 4
-checkVibr56Finished:
-    GGP    GB_vibrationTime_56_calc, GPbank_2     // 56 finished?
-    COMP   0
-    JC     LE, returnIrq1                         // yes, continue
-    SIO    Out_enaVibrate_56, GPbank_2, 0         // set ON vibr 56
+// checkVibr4Finished:
+    // GGP    GB_vibrationTime_4_calc, GPbank_2      // 4 finished?
+    // COMP   0
+    // JC     LE, checkVibr56Finished                // yes, test vibr 5
+    // SIO    Out_enaVibrate_4, GPbank_2, 0          // set ON vibr 4
+// checkVibr56Finished:
+    // GGP    GB_vibrationTime_56_calc, GPbank_2     // 56 finished?
+    // COMP   0
+    // JC     LE, returnIrq1                         // yes, continue
+    // SIO    Out_enaVibrate_56, GPbank_2, 0         // set ON vibr 56
 
-returnIrq1:
-    GGP    GB_PwmDutyCycleMS, GPbank_2            // "vibration strength" need to re-initialize the timer each cycle
-    AGP    TI_TIMER0, GPbank_3                    // set duty cycle interrupt - percentage of the full (MS) cycle
-    VECT   TI_TIMER0, Timer0Irq
-    EI     TI_TIMER0         
+// returnIrq1:
+    // GGP    GB_PwmDutyCycleMS, GPbank_2            // "vibration strength" need to re-initialize the timer each cycle
+    // AGP    TI_TIMER0, GPbank_3                    // set duty cycle interrupt - percentage of the full (MS) cycle
+    // VECT   TI_TIMER0, Timer0Irq
+    // EI     TI_TIMER0         
     RETI
 
 //*******************************************
 Timer2Irq:   // calculate total vibration time 1000 MS 1 sec
 
-    DJNZ   GB_vibrationTime_4_calc, decrement56    //  if not zero: decrement and jump
-    SGP    GB_vibrator4done, GPbank_2, 1
-    GGP    GB_vibrator56done, GPbank_2
-    COMP   0
-    JC     GT, disableINTs
-decrement56:
-    DJNZ   GB_vibrationTime_56_calc, exitTimer2Irq  // if not zero: decrement and jump
-    SGP    GB_vibrator56done, GPbank_2, 1
-    GGP    GB_vibrator4done, GPbank_2
-    COMP   0
-    JC     LE, exitTimer2Irq
-disableINTs:
-    SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
-    SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
-    DI     TI_TIMER0
-    DI     TI_TIMER1                      
-    DI     TI_TIMER2                      
-exitTimer2Irq:
+    // DJNZ   GB_vibrationTime_4_calc, decrement56    //  if not zero: decrement and jump
+    // SGP    GB_vibrator4done, GPbank_2, 1
+    // GGP    GB_vibrator56done, GPbank_2
+    // COMP   0
+    // JC     GT, disableINTs
+// decrement56:
+    // DJNZ   GB_vibrationTime_56_calc, exitTimer2Irq  // if not zero: decrement and jump
+    // SGP    GB_vibrator56done, GPbank_2, 1
+    // GGP    GB_vibrator4done, GPbank_2
+    // COMP   0
+    // JC     LE, exitTimer2Irq
+// disableINTs:
+    // SIO    Out_enaVibrate_4, GPbank_2, 1           // switch off OUT0 high vibrator 4
+    // SIO    Out_enaVibrate_56, GPbank_2, 1          // switch off OUT1 high vibrator 56
+    // DI     TI_TIMER0
+    // DI     TI_TIMER1                      
+    // DI     TI_TIMER2                      
+// exitTimer2Irq:
     RETI
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
