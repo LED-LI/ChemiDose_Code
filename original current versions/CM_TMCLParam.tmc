@@ -1,0 +1,215 @@
+//***********************************************************
+//
+// Version:   2024-07-25
+//
+//*******************************************
+// General definitions
+//*******************************************
+set              =      1
+clr              =      0
+
+//*******************************************
+// WAIT definitions
+//*******************************************
+ACCUMULATOR_WAIT    =  -1
+
+//*******************************************
+// Definitions of global paramters (bank 2)
+//*******************************************
+GPbank_0            =     0 // General purpose 32 bit vars 0-255; 0-55 also in EEPROM
+GPbank_2            =     2 // User variables 32 bit vars 0-255; 0-55 also in EEPROM
+GPbank_3            =     3 // interrupt configuration
+
+//*******************************************
+// Definitions of output ports (SIO)
+//*******************************************
+OutBank_2  =  2  // for SIO outputs
+
+//*******************************************
+// Definitions of input ports (GIO)
+//*******************************************
+InBankDigital_0 = 0 // for GIO digital inputs
+InBankAnalog_1  = 1 // for GIO analog  inputs
+InBankOuput_2   = 2 // for GIO digital outputs
+
+//*******************************************
+// Definitions of axis paramters
+//*******************************************
+AP_TargetPosition           = 0 // Target position
+AP_ActualPosition           = 1 // Actual position
+AP_TargetSpeed              = 2 // Desired speed in velocity mode, automatically set in position mode
+AP_ActualSpeed              = 3 // Get current rotation speed
+AP_MaxPositioningSpeed      = 4 // Maximum speed in position mode
+AP_MaxAcceleration          = 5 // Maximum acceleration/deceleration
+AP_MaxCurrent               = 6 // Motor current (0..1500 for 1500mA modules; 0..255 for all modules with higher current 255=100%)
+AP_StandbyCurrent           = 7 // Motor standby current
+AP_PositionReachedFlag      = 8 // Is set to 1, if actual position equals target position
+AP_HomeSwitchState          = 9 // Logical state of the home switch input
+AP_RightLimitSwitchState   = 10 // Logical state of the right limit switch input
+AP_LeftLimitSwitchState    = 11 // Logical state of the left limit switch input
+AP_RightLimitSwitchDisable = 12 // Deactivates stop function of the right switch, if set to 1
+AP_LeftLimitSwitchDisable  = 13 // Deactivates the stop function of the left switch resp. reference switch, if set to 1
+
+//*******************************************
+// Definitions of advanced axis parameters
+//*******************************************
+AP_MinimumSpeed          = 130 // Always et to 1 for exact target reaching. Do Not Change!
+AP_ActualAcceleration    = 135 // Actual acceleration (Read only)
+AP_RampMode              = 138 // Ramp mode
+  Position_mode          =   0
+  SoftMode               =   1 // For special purposes, Exponential decrease of speed
+  Velocity_mode          =   2
+AP_MicrostepResolution   = 140 // Microstep resolution
+  microsteps_256         =   8
+  microsteps_64          =   6
+  microsteps_32          =   5
+  microsteps_16          =   4
+AP_SoftStopFlag          = 149 // Motor stops immediately (disregarding motor limit), when the reference or limit switch is hit, if set to 0
+AP_EndSwitchPowerDown    = 150 // when stopped by end sw: 0 - stay at run current; 1 - standby current
+AP_RampDivisor           = 153 // The exponent of the scaling factor for the ramp generator (0...13)
+AP_PulseDivisor          = 154 // The exponent of the scaling factor for the pulse (step) generator (0...13)
+AP_StepInterpolEnable    = 160 // 0-off; 1-On
+AP_DoubleStepEnable      = 161 // 0-off; 1-On
+AP_ChopperblankTime      = 162 //
+AP_ConstantTOffMode      = 163 // 0-off; 1-On
+AP_DisableFastDecayComp  = 164 // see 163
+AP_ChopperHysteresEnd    = 165 // see 163
+AP_ChopperHysteresStart  = 166 // see 163
+AP_ChopperOffTime        = 167 // TOff
+AP_SmartEnergycurrMin    = 168 // 0=1/2; 1=1/4 of CS
+AP_SmartEnergyCurdwnStep = 169 //
+AP_SmartEnergyHysteresis = 170 //
+AP_SmartEnergyCurUpStep  = 171 //
+AP_SmartEnergyHystStart  = 172 //
+AP_StallGuard2FilterEna  = 173 // 0=starndard;  1=filtered mode
+AP_StallGuard2Thresh     = 174 //
+AP_SlopeCtrlHighSide     = 175 //
+AP_SlopeCtrlLowSide      = 176 //
+AP_ShortProtectDisable   = 177 //
+AP_ShortDetectTimer      = 178 //
+AP_Vsense                = 179 //
+AP_SmartEnargyActualCurr = 180 //
+AP_StopOnStall           = 181 //
+AP_SmartEnergyThreshSpd  = 182 //
+AP_SmartEnergySlowCurr   = 183 //
+AP_RandomTOffMode        = 184 // 0=Chopper fixed off time; 1= random
+AP_RefSearchMode         = 193 // 1...8 Specifies number of switches for reference search
+AP_RefSearchSpeed        = 194 // 0...2047 Reference search speed 
+AP_RefSwitchSpeed        = 195 // 0...2047 Switching point speed (slower than parametr 194)
+AP_EndSwitchDistance     = 196 //
+AP_LastRefPosition       = 197 //
+AP_BoostCurrent          = 200 // 0...255 current for acceleration and deceleration (0=like parameter #6)
+AP_FreeWheelingDelay     = 204 // Time after which the power to the motor will be cut when its velocity has reached zero
+AP_LoadValue             = 206 // Actual Stallguard level (read only)
+AP_ExtendedErrorFlag     = 207 // 0 - no error; 1- stallguard err
+AP_TMC262ErrorFlags      = 208 // Driver error flags (read only)
+AP_GroupIndex            = 213 // Motor group index (TMCM_610/611/612)
+AP_PowerDownDelay        = 214 // [x 10ms] time for standby current
+
+//*******************************************
+// Definitions of use with AP_RefSearchMode
+//*******************************************
+APV_RefLeftSwitch        =   1 // Search left stop switch only
+APV_RefTwoSwitches       =   2 // Search right stop switch, then search left stop switch
+APV_RefTwoSwBothSides    =   3 // Search right stop switch, then search left stop switch from both sides
+APV_RefLeftSwBothSides   =   4 // Search left stop switch from both sides
+APV_RefHomeviaLeftSw     =   5 // Search home switch in negative direction, reverse the direction when left stop switch reached
+APV_RefHomeviaRightSw    =   6 // Search home switch in positive direction, reverse the direction when right stop switch reached
+APV_RefHomeLeft          =   7 // Search home switch in negative direction, ignore end switches (circular axis)
+APV_RefHomeRight         =   8 // Search home switch in positive direction, ignore end switches (circular axis)
+AVP_StartReverse         =  64 // Add this to start in reverse
+AVP_ReverseHomePolarity  = 128 // Add to reverse the polarity of the home switch 
+
+//*******************************************
+// Definitions of global paramters
+//*******************************************
+GB_RS485BaudRate         =  65 //
+  baud_rate_9600    =  0
+  baud_rate_57600   =  5
+GB_SerialAddress         =  66 //
+GB_ASCIImode             =  67 //
+GB_SerialHeartbeat       =  68 //
+GB_CANbitRate            =  69 //
+GB_CANreplyID            =  70 //
+GB_CANID                 =  71 //
+GB_TelegramPauseTime     =  75 //
+GB_SerialHostAddr        =  76 //
+GP_AutoStartMode         =  77 // Start runing on power up
+GB_EndSwitchPolarity     =  79 // 0...3
+  normalPolarity0to5   = 0
+  reversePolarity0to2  = 1
+  reversePolarity3to5  = 2
+  reversePolarity0to5  = 3
+GB_TMCLcodeProtect       =  81 //
+GB_CANheartbeat          =  82 //
+GB_CANsecondAddr         =  83 //
+GB_CoordinateStorage     =  84 // 0=RAM only; 1=always also in EEPROM
+GB_DoNotRestoreUserVars  =  85 //
+GB_SerialSecondAddr      =  87 //
+GB_TMCLapplStatus        = 128 // 0=stop; 1=run; 2=step; 3=reset
+GB_DownloadMode          = 129 //
+GB_TMCLprogramCounter    = 130 //
+GB_ResetApplication      = 131 // Stop a running TMCL program. Reset program counter and stack pointer to zero.
+                               // Reset accumulator and X register to zero. Reset all flags
+GB_TMCLtickTimer         = 132 // 32 bit milliseconds counter (RW)
+GB_RandomNumber          = 133 //
+GB_SuppressReply         = 255 //
+
+//*******************************************
+// Definitions of interrupt paramters
+//*******************************************
+TI_TIMER0  =      0   // Time between two interrupts  0. . . 4294967295 [ms]
+TI_TIMER1  =      1   // Time between two interrupts  0. . . 4294967295 [ms]
+TI_TIMER2  =      2   // Time between two interrupts  0. . . 4294967295 [ms]
+TI_POS_REACHED0 = 3   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POS_REACHED1 = 4   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POS_REACHED2 = 5   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POS_REACHED3 = 6   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POS_REACHED4 = 7   // 0=off, 1=low-high, 2=high-low, 3=both 
+TI_POS_REACHED5 = 8   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION0    = 9   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION1   = 10   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION2   = 11   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION3   = 12   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION4   = 13   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_POSITION5   = 14   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_STALL0      = 15   // 
+TI_STALL1      = 16   // 
+TI_STALL2      = 17   // 
+TI_STALL3      = 18   // 
+TI_STALL4      = 19   // 
+TI_STALL5      = 20   // 
+TI_DEVIATION0  = 21   // 
+TI_DEVIATION1  = 22   // 
+TI_DEVIATION2  = 23   // 
+TI_DEVIATION3  = 24   // 
+TI_DEVIATION4  = 25   // 
+TI_DEVIATION5  = 26   // 
+TI_STOPLEFT0   = 27   // Stop left  0 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT0  = 28   // Stop right 0 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPLEFT1   = 29   // Stop left  1 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT1  = 30   // Stop right 1 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPLEFT2   = 31   // Stop left  2 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT2  = 32   // Stop right 2 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPLEFT3   = 33   // Stop left  3 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT3  = 34   // Stop right 3 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPLEFT4   = 35   // Stop left  4 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT4  = 36   // Stop right 4 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPLEFT5   = 37   // Stop left  5 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_STOPRIGHT5  = 38   // Stop right 5 trigger transition  0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT0      = 39   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT1      = 40   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT2      = 41   // 0=off, 1=low-high, 2=high-low, 3=both 
+TI_INPUT3      = 42   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT4      = 43   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT5      = 44   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT6      = 45   // 0=off, 1=low-high, 2=high-low, 3=both
+TI_INPUT7      = 46   // 0=off, 1=low-high, 2=high-low, 3=both
+
+TI_GLOBAL      =  255
+
+  off          =   0
+  low_high     =   1
+  high_low     =   2
+  both         =   3
+
