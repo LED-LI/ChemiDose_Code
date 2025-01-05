@@ -41,6 +41,7 @@ ABORT_NoReport:
     WAIT    TICKS, 0, 100                                                // wait one second for all the motors to stop
     SAP     AP_StandbyCurrent, M_headRotateMotor, STBY_CUR_ROTATE_LOW    // Set standby current low to enable moving the rotation down
     // SAP     AP_MaxAcceleration, M_verticalMotor, ACC_VERT                // Set maximum acceleration
+    CSUB    homeCapHolderMotor                         // whenever stopped by force for any reson - release the syringe and/or the cap to enable extraction
     RST     backGroundProcess                         // Stop a running TMCL program. Reset program counter and stack pointer
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -81,7 +82,7 @@ continueClearErrors:    // stack is now empty
     
     RSGP    GB_ITL_Setup, GPbank_2
     // SGP     GB_ITL_Setup, GPbank_2, 0 // controls SetTestParams for ITL tests (0=vials 1-3, 1=vials 1,2,4,5 + fill 4,5 with 3CC and vibrate 15 SEC)
-    // (also 0=Client mode, 1= DEV mode)
+    // // // // // // // // // // // // // maybe ill also do (0=Client mode, 1= DEV mode)
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -168,15 +169,18 @@ setDefaultParams: // func_168
 SetToClientMode: // func_170 // client mode
     
     CALCV   LOAD, GB_SafetyMode, CLIENT_MODE
+
+    SGP     GB_ITL_Setup, GPbank_2, 0
+    STGP    GB_ITL_Setup, GPbank_2
     
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_N
     CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_N
     CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_N
     CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_N
     CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_N
-    CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE
-    CALCV   LOAD, GB_accepted_diviation_range, DEFAULT_ACCEPTED_DIVIATION_RANGE
-    CALCV   LOAD, GB_liquid_detection_border_aval, DEFAULT_LIQUID_DETECTION_BORDER_AVAL
+    // CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE
+    // CALCV   LOAD, GB_accepted_diviation_range, DEFAULT_ACCEPTED_DIVIATION_RANGE
+    // CALCV   LOAD, GB_liquid_detection_border_aval, DEFAULT_LIQUID_DETECTION_BORDER_AVAL
     CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
     CALCV   LOAD, GB_disposeYN, DISPOSE_Y
     
@@ -186,9 +190,9 @@ SetToClientMode: // func_170 // client mode
     STGP    GB_bypassSlidingDoorYN, GPbank_2
     STGP    GB_bypassDrawerClosedAndCheckOverFlowYN, GPbank_2
     STGP    GB_bypassBannerSensorsYN, GPbank_2
-    STGP    GB_piston_defined_vol_uL, GPbank_2
-    STGP    GB_accepted_diviation_range, GPbank_2
-    STGP    GB_liquid_detection_border_aval, GPbank_2
+    // STGP    GB_piston_defined_vol_uL, GPbank_2
+    // STGP    GB_accepted_diviation_range, GPbank_2
+    // STGP    GB_liquid_detection_border_aval, GPbank_2
     STGP    GB_ShowOverride, GPbank_2
     STGP    GB_disposeYN, GPbank_2
 
@@ -199,15 +203,18 @@ SetToDevMode: // func_172 // for development enviorement only !!!
     
     CALCV   LOAD, GB_SafetyMode, DEV_MODE
 
+    SGP     GB_ITL_Setup, GPbank_2, 1
+    STGP    GB_ITL_Setup, GPbank_2
+
     CALCV   LOAD, GB_skipCheckVial456, SKIPCHECK_Y
     CALCV   LOAD, GB_skipCheckBag, SKIPCHECK_Y
     CALCV   LOAD, GB_bypassSlidingDoorYN, BYPASS_Y
     CALCV   LOAD, GB_bypassDrawerClosedAndCheckOverFlowYN, BYPASS_Y
     CALCV   LOAD, GB_bypassBannerSensorsYN, BYPASS_Y
-    CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE // 15000
-    CALCV   LOAD, GB_accepted_diviation_range, BYPASS_ACCEPTED_DIVIATION_RANGE_VALUE // an arbitrary number that will cause the robot to skip the diviation test
-    CALCV   LOAD, GB_liquid_detection_border_aval, 500 
-    CALCV   LOAD, GB_ShowOverride, NORMAL_RUN
+    // CALCV   LOAD, GB_piston_defined_vol_uL, DEFAULT_MAX_VOL_OF_SYRINGE // 15000
+    // CALCV   LOAD, GB_accepted_diviation_range, BYPASS_ACCEPTED_DIVIATION_RANGE_VALUE // an arbitrary number that will cause the robot to skip the diviation test
+    // CALCV   LOAD, GB_liquid_detection_border_aval, 500 
+    CALCV   LOAD, GB_ShowOverride, SHOW_OVERRIDE
     CALCV   LOAD, GB_disposeYN, DISPOSE_N
     
     STGP    GB_SafetyMode, GPbank_2
@@ -216,9 +223,9 @@ SetToDevMode: // func_172 // for development enviorement only !!!
     STGP    GB_bypassSlidingDoorYN, GPbank_2
     STGP    GB_bypassDrawerClosedAndCheckOverFlowYN, GPbank_2
     STGP    GB_bypassBannerSensorsYN, GPbank_2
-    STGP    GB_piston_defined_vol_uL, GPbank_2
-    STGP    GB_accepted_diviation_range, GPbank_2
-    STGP    GB_liquid_detection_border_aval, GPbank_2
+    // STGP    GB_piston_defined_vol_uL, GPbank_2
+    // STGP    GB_accepted_diviation_range, GPbank_2
+    // STGP    GB_liquid_detection_border_aval, GPbank_2
     STGP    GB_ShowOverride, GPbank_2
     STGP    GB_disposeYN, GPbank_2
 
