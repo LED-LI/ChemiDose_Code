@@ -4,13 +4,13 @@
 //+ Description: CM software parameters                   +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2025-01-02                              +
+//+ last edited : 2025-01-05                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // This file is :  CM_Defines.tmc
 
-CURRENT_VERSION      =  20250102
+CURRENT_VERSION      =  20250105
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Definitions of motor numbers & home sensors
@@ -182,7 +182,7 @@ GB_disposeYN                    =  22    //
 // GB_DisposeDropVialsPos       =  23    // 
 // GB_ArmDropVials456Pos        =  24    // arm at disposal position for vials 4 5 6 
 
-GB_25                           =    25        
+GB_ITL_Setup                    =    25        
 GB_26                           =    26        
 GB_27                           =    27        
 
@@ -1004,7 +1004,7 @@ func_94:   CSUB insertNeedleIntoVialBelow
            JA     backGroundProcess
 func_96:   CSUB positionArmMotor
            JA     backGroundProcess
-func_98:   CSUB setTestParams
+func_98:   CSUB SetTestParams
            JA     backGroundProcess
 func_100:  CSUB drawVialMoreBack
            JA     backGroundProcess
@@ -1084,9 +1084,9 @@ func_166:  CSUB checkSyringeContent
            JA     backGroundProcess
 func_168:  CSUB setDefaultParams
            JA     backGroundProcess
-func_170:  CSUB setOutOfTheBox
+func_170:  CSUB SetToClientMode
            JA     backGroundProcess
-func_172:  CSUB setToDevMode
+func_172:  CSUB SetToDevMode
            JA     backGroundProcess
 func_174:  CSUB dummy_sub //  CSUB Tilt
            JA     backGroundProcess

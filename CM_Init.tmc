@@ -4,7 +4,7 @@
 //+ Description: CM software                              +
 //+                                                       +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+ last edited : 2025-01-02                              +
+//+ last edited : 2025-01-05                              +
 //+ by : LED                                              +
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -78,6 +78,10 @@ continueClearErrors:    // stack is now empty
     CSUB    INIT_MOTORS
     CSUB    ClearErrorsRAM
     // ***** // why did i cancel these ????
+    
+    RSGP    GB_ITL_Setup, GPbank_2
+    // SGP     GB_ITL_Setup, GPbank_2, 0 // controls SetTestParams for ITL tests (0=vials 1-3, 1=vials 1,2,4,5 + fill 4,5 with 3CC and vibrate 15 SEC)
+    // (also 0=Client mode, 1= DEV mode)
     JA      ABORT_NoReport                                     // no return stack
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -152,13 +156,16 @@ setDefaultParams: // func_168
     /////////////////////////////////////////////////////
     STGP    GB_DisposeDropVialsPos, GPbank_2          //
     ///////////////////////////////////////////////////
-
+    SGP     GB_currentVersion, GPbank_2, 0          //
+    STGP    GB_currentVersion, GPbank_2            //
+    ////////////////////////////////////////////////
+    
     RSUB
 
 // +++++++++++++++++++++++++++++++
 // GB_SafetyMode                   =  21 
 // +++++++++++++++++++++++++++++++
-setOutOfTheBox: // func_170 // client mode
+SetToClientMode: // func_170 // client mode
     
     CALCV   LOAD, GB_SafetyMode, CLIENT_MODE
     
@@ -188,7 +195,7 @@ setOutOfTheBox: // func_170 // client mode
     RSUB
 
 // +++++++++++++++++++++++++++++++
-setToDevMode: // func_172 // for development enviorement only !!!
+SetToDevMode: // func_172 // for development enviorement only !!!
     
     CALCV   LOAD, GB_SafetyMode, DEV_MODE
 
