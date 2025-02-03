@@ -127,6 +127,7 @@ returnInitDraw:
 
 SetTestParams:   //  98
 
+    
     SGP     GB_airToPullBefore,GPbank_2, 70                                    // multiply by "70%"
     CALCV   COMP, GB_ITL_Setup, 0
     JC      NE, NotITLSetup0
@@ -1151,6 +1152,7 @@ checkBag:
 skipCheckBag:
     CALCV   OR, GB_vialsExist, Bit_bag
 doneCheckVials:
+ // error handeling when vials are missing - need to move outside of this function or to add a variable so it wont report an error when scanning for vials     f r o m   t h e   U I  
     GGP     GB_vialsExist, GPbank_2                  // check if any vial is in
     COMP    0                                        // is the Vial in?
     JC      NE, returnVerifyAllVial                  // if not, continue

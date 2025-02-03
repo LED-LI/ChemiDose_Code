@@ -80,6 +80,7 @@ continueClearErrors:    // stack is now empty
     CSUB    ClearErrorsRAM
     // ***** // why did i cancel these ????
     
+    RSGP    GB_SafetyMode, GPbank_2
     RSGP    GB_ITL_Setup, GPbank_2
     // SGP     GB_ITL_Setup, GPbank_2, 0 // controls SetTestParams for ITL tests (0=vials 1-3, 1=vials 1,2,4,5 + fill 4,5 with 3CC and vibrate 15 SEC)
     // // // // // // // // // // // // // maybe ill also do (0=Client mode, 1= DEV mode)
@@ -237,7 +238,7 @@ SetToDevMode: // func_172 // for development enviorement only !!!
 INIT_MOTORS:       // func 16  Init user variables
 
     // SGP     GB_InitDone, GPbank_2, clr
-    CSUB    LEDS_OFF
+    // CSUB    LEDS_OFF
     CSUB    initSyringes
     // CSUB    initNeedles
     CSUB    initVerticalMotor
