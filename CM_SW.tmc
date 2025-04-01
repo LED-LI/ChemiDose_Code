@@ -1089,16 +1089,18 @@ returnCheckOkDraw:
 screenAllVials:  // sub 36     check the Vial status, set the global parameter
              // according to state
 
+
+// when showoveride is set (at show) will pretend that all vials exist
+    GGP     GB_ShowOverride, GPbank_2
+    COMP    clr
+    JC      EQ, startCheckVials 
+    SGP     GB_vialsExist, GPbank_2, %01111111       // set vials word to mark all vials and bag as present
+    JA      returnVerifyAllVial
+
+startCheckVials:
     SIO     Out_Multiplexer, OutBank_2, 1            // change relays to watch vials
     WAIT    TICKS, 0, 90/10                          // 90 ms
     SGP     GB_vialsExist, GPbank_2, 0               // clear vials word
-
-// when showovveride is set (at show) will pretend that all vials exist
-    GGP     GB_ShowOverride, GPbank_2
-    COMP    clr
-    JC      EQ, check1 
-    SGP     GB_vialsExist, GPbank_2, %01111111       // set vials word to mark all vials and bag as present
-    JA      returnVerifyAllVial
 
 check1:
     GIO     InX_vialIsIn1, InBankDigital_0             // check if Vial is in
@@ -1156,6 +1158,11 @@ doneCheckVials:
     GGP     GB_vialsExist, GPbank_2                  // check if any vial is in
     COMP    0                                        // is the Vial in?
     JC      NE, returnVerifyAllVial                  // if not, continue
+
+    GGP     GB_ScreenVialsForRUNTab, GPbank_2        // check if testing via the RUN tab in the GUI - no neecd for error reporting in this case
+    COMP    set                                      // if,
+    JC      EQ, returnVerifyAllVial                  // skip error reporting
+
  // error - no vials
     GGP     GB_special_Error, GPbank_2               // load the error word
     CALC    OR, BitEr_No_vials                       // add the error bit
@@ -1171,6 +1178,9 @@ returnVerifyAllVial:
 // canceled here and moved to after functions call - to allow UI to look if vial is in continuasly without driving the relay like crazy    
     // SIO     Out_Multiplexer, OutBank_2, 0            // change relays to watch inputs
     // WAIT    TICKS, 0, 100/10                         // 100 ms
+    
+    SGP    GB_ScreenVialsForRUNTab, GPbank_2, clr       // reset vial checking (from GUI) parameter
+
     RSUB
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -3286,7 +3296,7 @@ returnFromMoveFromLDcalibLocation:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 SetMotorIsMoving:
 
-    // CSUB    SafetyCheck
+    CSUB    SafetyCheck
     SGP     GB_MotorIsMoving, GPbank_2, set
 
     RSUB
@@ -3320,8 +3330,15 @@ endSafetyCheck:
     RSUB
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-LEDs_sub:
+homeLinearMotorGentlyIntoSensor: // FUNC_178    
+    
+    CSUB    moveLinearMotorIntoSensor
+    CSUB    FINDHOMELinearMotorAfterMovingIntoSensor
 
     RSUB
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+LEDs_sub:
 
+
+    RSUB
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
